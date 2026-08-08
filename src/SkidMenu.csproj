@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <DebugType>embedded</DebugType>
+
+        <VersionPrefix>1.2.2</VersionPrefix>
+        <AssemblyName>SkidMenu</AssemblyName>
+        <Product>SkidMenu</Product>
+        <Description>Among Us cheat menu</Description>
+        <Authors>SNOWHAXX</Authors>
+        <NoWarn>CA1416</NoWarn>
+		<UnityBaseLibsDirectory>C:\Program Files\Unity\Hub\Editor\2022.3.62f3\Editor\Data\PlaybackEngines\windowsstandalonesupport\Variations\il2cpp\Managed</UnityBaseLibsDirectory>
+	</PropertyGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="Assets\image.png">
+          <LogicalName>SkidMenu.Assets.image.png</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Assets\Roboto_Condensed-Bold.ttf">
+          <LogicalName>SkidMenu.Assets.Roboto_Condensed-Bold.ttf</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Assets\Roboto_Condensed-Regular.ttf">
+          <LogicalName>SkidMenu.Assets.Roboto_Condensed-Regular.ttf</LogicalName>
+        </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.735" Private="false" ExcludeAssets="runtime;native" />
+        <PackageReference Include="AmongUs.GameLibs.Steam" Version="2026.6.5" PrivateAssets="all" />
+
+        <PackageReference Include="BepInEx.AutoPlugin" Version="1.1.0" PrivateAssets="all" />
+        <PackageReference Include="BepInEx.IL2CPP.MSBuild" Version="2.1.0-rc.1" PrivateAssets="all" ExcludeAssets="runtime" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="routines\" />
+    </ItemGroup>
+
+    <Target Name="Copy" AfterTargets="Build" Condition="'$(AmongUs)' != ''">
+        <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(AmongUs)/BepInEx/plugins/" UseSymboliclinksIfPossible="true" />
+    </Target>
+</Project>
+
+
+
