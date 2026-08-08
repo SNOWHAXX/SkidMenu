@@ -16,10 +16,6 @@ SkidMenu is a host tool. It is meant to be run by the host of a private lobby, w
 
 SkidMenu is not affiliated with, endorsed by, or sponsored by Innersloth in any way. Whatever you choose to do with this menu, including any bans, account issues, or other consequences, is entirely your own responsibility, not the menu's.
 
-## Why Closed Source
-
-Honestly, there's no big reason behind it. Part of it is that I'm using this project to learn a bit of reverse engineering, and keeping it closed source is just part of that. I'll make it open source sooner or later . Spoiler: it's obfuscated with ConfuserEx.
-
 ## Compatible Among Us versions
 
 | Status | Versions |
