@@ -27,7 +27,6 @@ internal class DatingShitTab : ITab
         if (newFindDaters != CheatToggles.findDaters)
         {
             CheatToggles.findDaters = newFindDaters;
-            SkidMenu.findDaters.Value = newFindDaters;
             FindDatersLobbyPatch.forceReapply = true;
         }
 
@@ -164,7 +163,6 @@ internal class DatingShitTab : ITab
         if (newExtended != CheatToggles.extendedLobbyList)
         {
             CheatToggles.extendedLobbyList = newExtended;
-            SkidMenu.extendedLobbyList.Value = newExtended;
         }
         if (CheatToggles.extendedLobbyList)
         {

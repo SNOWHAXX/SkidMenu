@@ -11,6 +11,6 @@ static class ChatHistoryPatch
     internal static void ApplyHistorySize(ChatController ctrl)
     {
         if (ctrl == null) return;
-        ctrl.chatBubblePool.poolSize = SkidMenu.chatHistoryInfinite.Value ? 9999 : SkidMenu.chatHistorySize.Value;
+        ctrl.chatBubblePool.poolSize = SkidMenu.chatHistoryInfinite ? 9999 : SkidMenu.chatHistorySize;
     }
 }

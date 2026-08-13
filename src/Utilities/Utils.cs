@@ -843,8 +843,8 @@ public static class Utils
     // Opens the config file in the default text editor
     public static void OpenConfigFile()
     {
-        var configFilePath = SkidMenu.Plugin.Config.ConfigFilePath;
-        var configEditor = SkidMenu.configEditor.Value;
+        var configFilePath = SkidMenu.ProfilePath;
+        var configEditor = SkidMenu.configEditor;
 
         if (!string.IsNullOrWhiteSpace(configEditor))
         {

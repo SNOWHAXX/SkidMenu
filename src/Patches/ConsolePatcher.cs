@@ -52,7 +52,7 @@ public static class Console_LogKill
             string targetFmt = ConsoleHelper.Fmt(target);
             string room = ConsoleHelper.Room(target);
             string distStr = "";
-            if (SkidMenu.logShowDistance.Value && PlayerControl.LocalPlayer != null)
+            if (SkidMenu.logShowDistance && PlayerControl.LocalPlayer != null)
             {
                 float d = Utils.GetDistanceBetween(PlayerControl.LocalPlayer, target);
                 string dCol = d < 3f ? "FF3333" : d < 8f ? "FFAA00" : "33FF88";

@@ -67,8 +67,8 @@ namespace SkidMenu
         {
             if (!_configInitialized)
             {
-                BgHex   = SkidMenu.gameBgColorHex.Value;
-                TextHex = SkidMenu.gameTextColorHex.Value;
+                BgHex   = SkidMenu.gameBgColorHex;
+                TextHex = SkidMenu.gameTextColorHex;
                 _configInitialized = true;
             }
 

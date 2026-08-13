@@ -37,7 +37,7 @@ public class DoorsUI : MonoBehaviour
 
     private void OnGUI()
     {
-        if (!CheatToggles.showDoorsMenu || !(MenuUI.isGUIActive || SkidMenu.menuKeepSubwindowsOpen.Value) || SkidMenu.isPanicked) return;
+        if (!CheatToggles.showDoorsMenu || !(MenuUI.isGUIActive || SkidMenu.menuKeepSubwindowsOpen) || SkidMenu.isPanicked) return;
 
         UIHelpers.ApplyUIColor();
 

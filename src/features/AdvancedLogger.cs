@@ -69,7 +69,7 @@ namespace SkidMenu.features
 
 		private static void Write(string level, string msg)
 		{
-			if (!SkidMenu.advancedLogging.Value) return;
+			if (!SkidMenu.advancedLogging) return;
 			if (string.IsNullOrEmpty(CurrentLogFile) || _failed) return;
 			try
 			{

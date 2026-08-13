@@ -44,7 +44,7 @@ public static class MalumESP
 
     public static bool IsCursorOverSkidMenu()
     {
-        if (!(MenuUI.isGUIActive || SkidMenu.menuKeepSubwindowsOpen.Value)) return false;
+        if (!(MenuUI.isGUIActive || SkidMenu.menuKeepSubwindowsOpen)) return false;
         Vector2 guiMouse = new(Input.mousePosition.x, Screen.height - Input.mousePosition.y);
         return MenuUI.LastWindowRect.Contains(guiMouse)
             || ChatUI.LastWindowRect.Contains(guiMouse)

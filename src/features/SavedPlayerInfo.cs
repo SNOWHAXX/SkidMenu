@@ -102,8 +102,8 @@ public static class SavedPlayerInfo
             DataManager.Player.Customization.Pet       = PetId;
             DataManager.Player.Customization.NamePlate = NameplateId;
             DataManager.Player.Customization.Name      = Name;
-            SkidMenu.nameSpoofName.Value    = Name;
-            SkidMenu.nameSpoofEnabled.Value = true;
+            SkidMenu.nameSpoofName    = Name;
+            SkidMenu.nameSpoofEnabled = true;
             features.NameSpoofer.ApplyName(Name);
 
             // RPC calls only work in-lobby
@@ -116,8 +116,8 @@ public static class SavedPlayerInfo
             lp.RpcSetPet(PetId);
             if (!string.IsNullOrEmpty(NameplateId)) lp.RpcSetNamePlate(NameplateId);
             OutfitBypass.SetName(Name);
-            if (Level > 0) SkidMenu.spoofLevel.Value = Level.ToString();
-            if (!string.IsNullOrEmpty(Platform)) SkidMenu.spoofPlatform.Value = Platform;
+            if (Level > 0) SkidMenu.spoofLevel = Level.ToString();
+            if (!string.IsNullOrEmpty(Platform)) SkidMenu.spoofPlatform = Platform;
         }
         catch { }
     }

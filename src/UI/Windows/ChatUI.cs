@@ -48,7 +48,7 @@ public class ChatUI : MonoBehaviour
 
     private void OnGUI()
     {
-        if (!CheatToggles.showChatUI || !(MenuUI.isGUIActive || SkidMenu.menuKeepSubwindowsOpen.Value) || SkidMenu.isPanicked) return;
+        if (!CheatToggles.showChatUI || !(MenuUI.isGUIActive || SkidMenu.menuKeepSubwindowsOpen) || SkidMenu.isPanicked) return;
 
         _logStyle ??= new GUIStyle(GUI.skin.label)
         {

@@ -10,6 +10,8 @@ public class SpoofingTab : ITab
 
     private static string _spoofLevelInput = "";
     private static string _spoofPlatformInput = "";
+    private static string _spoofXboxIdInput = "";
+    private static string _spoofPsnIdInput = "";
     private static string _customNameInput = "";
     private static int _nameModeIndex = 0;
     private static int _nameLength = 10;
@@ -85,16 +87,18 @@ public class SpoofingTab : ITab
 
     private void InitializeInputFields()
     {
-        _spoofLevelInput = SkidMenu.spoofLevel.Value;
-        _spoofPlatformInput = SkidMenu.spoofPlatform.Value;
-        _randomMinInput = SkidMenu.spoofLevelRandomMin.Value.ToString();
-        _randomMaxInput = SkidMenu.spoofLevelRandomMax.Value.ToString();
+        _spoofLevelInput = SkidMenu.spoofLevel;
+        _spoofPlatformInput = SkidMenu.spoofPlatform;
+        _spoofXboxIdInput = features.Spoofer.spoofedXboxId.ToString();
+        _spoofPsnIdInput = features.Spoofer.spoofedPsnId.ToString();
+        _randomMinInput = SkidMenu.spoofLevelRandomMin.ToString();
+        _randomMaxInput = SkidMenu.spoofLevelRandomMax.ToString();
         _nameModeIndex = (int)features.NameSpoofer.Mode;
         _nameLength = features.NameSpoofer.RandomLength;
-        frRpcDelayTemp = SkidMenu.frRpcDelay.Value;
+        frRpcDelayTemp = SkidMenu.frRpcDelay;
 
         _excludedPlatforms.Clear();
-        var saved = SkidMenu.spoofPlatformExclusions.Value;
+        var saved = SkidMenu.spoofPlatformExclusions;
         if (!string.IsNullOrWhiteSpace(saved))
         {
             foreach (var entry in saved.Split(','))
@@ -105,7 +109,7 @@ public class SpoofingTab : ITab
             }
         }
 
-        foreach (var k in new[] { "spoofLevel", "spoofPlatform", "randomMin", "randomMax", "customName" })
+        foreach (var k in new[] { "spoofLevel", "spoofPlatform", "randomMin", "randomMax", "customName", "xboxId", "psnId" })
         {
             _focusedFields[k] = false;
             _cursorVisible[k] = true;
@@ -118,6 +122,8 @@ public class SpoofingTab : ITab
         _cursorPositions["randomMin"]     = _randomMinInput.Length;
         _cursorPositions["randomMax"]     = _randomMaxInput.Length;
         _cursorPositions["customName"]    = _customNameInput.Length;
+        _cursorPositions["xboxId"]        = _spoofXboxIdInput.Length;
+        _cursorPositions["psnId"]         = _spoofPsnIdInput.Length;
     }
 
     private void HandleCustomTextField(ref string content, string fieldKey, int width = 200, int height = 20)
@@ -253,9 +259,9 @@ public class SpoofingTab : ITab
         if (GUILayout.Button("Save", GUILayout.Width(50)))
         {
             if (int.TryParse(_spoofLevelInput, NumberStyles.Integer, CultureInfo.InvariantCulture, out int level) && level >= 1 && level <= 100001)
-                SkidMenu.spoofLevel.Value = _spoofLevelInput;
+                SkidMenu.spoofLevel = _spoofLevelInput;
             else
-                _spoofLevelInput = SkidMenu.spoofLevel.Value;
+                _spoofLevelInput = SkidMenu.spoofLevel;
         }
 
         string prevMin = _randomMinInput;
@@ -264,21 +270,21 @@ public class SpoofingTab : ITab
         HandleCustomTextField(ref _randomMaxInput, "randomMax", 50);
 
         if (_randomMinInput != prevMin && int.TryParse(_randomMinInput, NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsedMin) && parsedMin >= 1 && parsedMin <= 100001)
-            SkidMenu.spoofLevelRandomMin.Value = parsedMin;
+            SkidMenu.spoofLevelRandomMin = parsedMin;
         if (_randomMaxInput != prevMax && int.TryParse(_randomMaxInput, NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsedMax) && parsedMax >= 1 && parsedMax <= 100001)
-            SkidMenu.spoofLevelRandomMax.Value = parsedMax;
+            SkidMenu.spoofLevelRandomMax = parsedMax;
 
         if (GUILayout.Button("Random", GUILayout.Width(60)))
         {
-            int mn = SkidMenu.spoofLevelRandomMin.Value;
-            int mx = SkidMenu.spoofLevelRandomMax.Value;
+            int mn = SkidMenu.spoofLevelRandomMin;
+            int mx = SkidMenu.spoofLevelRandomMax;
             if (mn > mx) { int t = mn; mn = mx; mx = t; }
             _spoofLevelInput = UnityEngine.Random.Range(mn, mx + 1).ToString();
-            SkidMenu.spoofLevel.Value = _spoofLevelInput;
+            SkidMenu.spoofLevel = _spoofLevelInput;
         }
         if (GUILayout.Button("Disable", GUILayout.Width(60)))
         {
-            SkidMenu.spoofLevel.Value = "";
+            SkidMenu.spoofLevel = "";
             _spoofLevelInput = "";
         }
         GUILayout.EndHorizontal();
@@ -288,7 +294,12 @@ public class SpoofingTab : ITab
         GUILayout.BeginHorizontal();
         GUILayout.Label("Spoof Platform:", GUILayout.Width(150));
         HandleCustomTextField(ref _spoofPlatformInput, "spoofPlatform", 150);
-        if (GUILayout.Button("Save", GUILayout.Width(50))) SkidMenu.spoofPlatform.Value = _spoofPlatformInput;
+        if (GUILayout.Button("Save", GUILayout.Width(50)))
+        {
+            SkidMenu.spoofPlatform = _spoofPlatformInput;
+            if (Utils.StringToPlatformType(_spoofPlatformInput, out Platforms? savedPlatform))
+                features.Spoofer.spoofedPlatform = (Platforms)savedPlatform;
+        }
         if (GUILayout.Button("Random", GUILayout.Width(60)))
         {
             var pool = new List<string>();
@@ -297,17 +308,65 @@ public class SpoofingTab : ITab
             {
                 var picked = pool[UnityEngine.Random.Range(0, pool.Count)];
                 _spoofPlatformInput = picked;
-                SkidMenu.spoofPlatform.Value = picked;
+                SkidMenu.spoofPlatform = picked;
+                if (System.Enum.TryParse<Platforms>(picked, out var pickedPlatform))
+                    features.Spoofer.spoofedPlatform = pickedPlatform;
             }
         }
         if (GUILayout.Button("Disable", GUILayout.Width(60)))
         {
-            SkidMenu.spoofPlatform.Value = "";
+            SkidMenu.spoofPlatform = "";
             _spoofPlatformInput = "";
+            features.Spoofer.spoofedPlatform = Constants.GetPlatformType();
         }
         var excludeLabel = _platformExcludeOpen ? "Exclude ▲" : "Exclude ▼";
         if (GUILayout.Button(excludeLabel, GUILayout.Width(70))) _platformExcludeOpen = !_platformExcludeOpen;
         GUILayout.EndHorizontal();
+
+        bool spoofingXbox = _spoofPlatformInput.Equals("Xbox", System.StringComparison.OrdinalIgnoreCase);
+        bool spoofingPsn  = _spoofPlatformInput.Equals("Playstation", System.StringComparison.OrdinalIgnoreCase);
+        if (spoofingXbox || spoofingPsn)
+        {
+            GUILayout.Space(5);
+            if (spoofingXbox)
+            {
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Xbox XUID:", GUILayout.Width(150));
+                HandleCustomTextField(ref _spoofXboxIdInput, "xboxId", 150);
+                if (GUILayout.Button("Random", GUILayout.Width(60)))
+                {
+                    _spoofXboxIdInput = GenerateRandomPlatformId();
+                    features.Spoofer.spoofedXboxId = ulong.Parse(_spoofXboxIdInput);
+                }
+                if (GUILayout.Button("Save", GUILayout.Width(50)))
+                {
+                    if (ulong.TryParse(_spoofXboxIdInput, out var xid) && _spoofXboxIdInput.Length <= 20)
+                        features.Spoofer.spoofedXboxId = xid;
+                    else
+                        _spoofXboxIdInput = features.Spoofer.spoofedXboxId.ToString();
+                }
+                GUILayout.EndHorizontal();
+            }
+            if (spoofingPsn)
+            {
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("PSN ID:", GUILayout.Width(150));
+                HandleCustomTextField(ref _spoofPsnIdInput, "psnId", 150);
+                if (GUILayout.Button("Random", GUILayout.Width(60)))
+                {
+                    _spoofPsnIdInput = GenerateRandomPlatformId();
+                    features.Spoofer.spoofedPsnId = ulong.Parse(_spoofPsnIdInput);
+                }
+                if (GUILayout.Button("Save", GUILayout.Width(50)))
+                {
+                    if (ulong.TryParse(_spoofPsnIdInput, out var pid) && _spoofPsnIdInput.Length <= 20)
+                        features.Spoofer.spoofedPsnId = pid;
+                    else
+                        _spoofPsnIdInput = features.Spoofer.spoofedPsnId.ToString();
+                }
+                GUILayout.EndHorizontal();
+            }
+        }
 
         if (_platformExcludeOpen)
         {
@@ -325,7 +384,7 @@ public class SpoofingTab : ITab
                     {
                         if (newExcluded) _excludedPlatforms.Add(platform);
                         else _excludedPlatforms.Remove(platform);
-                        SkidMenu.spoofPlatformExclusions.Value = string.Join(",", _excludedPlatforms);
+                        SkidMenu.spoofPlatformExclusions = string.Join(",", _excludedPlatforms);
                     }
                 }
                 GUILayout.EndHorizontal();
@@ -357,8 +416,8 @@ public class SpoofingTab : ITab
         if (GUILayout.Button("Apply", GUILayout.Width(55)) && !string.IsNullOrWhiteSpace(_customNameInput))
         {
             features.NameSpoofer.ApplyName(_customNameInput);
-            SkidMenu.nameSpoofName.Value    = features.NameSpoofer.SpoofedName;
-            SkidMenu.nameSpoofEnabled.Value = true;
+            SkidMenu.nameSpoofName    = features.NameSpoofer.SpoofedName;
+            SkidMenu.nameSpoofEnabled = true;
         }
         GUILayout.EndHorizontal();
 
@@ -374,7 +433,7 @@ public class SpoofingTab : ITab
                 {
                     _nameModeIndex = i;
                     features.NameSpoofer.Mode = (features.NameSpoofer.RandomizerMode)i;
-                    SkidMenu.nameSpoofMode.Value = i;
+                    SkidMenu.nameSpoofMode = i;
                 }
                 GUI.color = Color.white;
             }
@@ -385,7 +444,7 @@ public class SpoofingTab : ITab
         GUILayout.BeginHorizontal();
         GUILayout.Label($"Length: {_nameLength}", GUILayout.Width(80));
         int newLength = (int)GUILayout.HorizontalSlider(_nameLength, 3, 10, GUILayout.Width(150));
-        if (newLength != _nameLength) { _nameLength = newLength; features.NameSpoofer.RandomLength = _nameLength; SkidMenu.nameSpoofLength.Value = _nameLength; }
+        if (newLength != _nameLength) { _nameLength = newLength; features.NameSpoofer.RandomLength = _nameLength; SkidMenu.nameSpoofLength = _nameLength; }
         if (GUILayout.Button("Generate & Apply", GUILayout.Width(130)))
         {
             features.NameSpoofer.Mode = (features.NameSpoofer.RandomizerMode)_nameModeIndex;
@@ -393,15 +452,15 @@ public class SpoofingTab : ITab
             string generated = features.NameSpoofer.Generate();
             _customNameInput = generated;
             features.NameSpoofer.ApplyName(generated);
-            SkidMenu.nameSpoofName.Value    = features.NameSpoofer.SpoofedName;
-            SkidMenu.nameSpoofEnabled.Value = true;
+            SkidMenu.nameSpoofName    = features.NameSpoofer.SpoofedName;
+            SkidMenu.nameSpoofEnabled = true;
         }
         if (GUILayout.Button("Disable", GUILayout.Width(65)))
         {
             features.NameSpoofer.Disable();
             _customNameInput = "";
-            SkidMenu.nameSpoofEnabled.Value = false;
-            SkidMenu.nameSpoofName.Value    = "";
+            SkidMenu.nameSpoofEnabled = false;
+            SkidMenu.nameSpoofName    = "";
         }
         GUILayout.EndHorizontal();
     }
@@ -426,17 +485,17 @@ public class SpoofingTab : ITab
 
         GUILayout.Label("What to randomize:", GUIStylePreset.TabSubtitle);
         GUILayout.BeginHorizontal();
-        SkidMenu.frRandLevel.Value    = GUIStylePreset.CustomToggle(SkidMenu.frRandLevel.Value, " Level", _w100);
-        SkidMenu.frRandPlatform.Value = GUIStylePreset.CustomToggle(SkidMenu.frRandPlatform.Value, " Platform", _w100);
-        SkidMenu.frRandName.Value    = GUIStylePreset.CustomToggle(SkidMenu.frRandName.Value, " Name", _w100);
-        SkidMenu.frRandColor.Value   = GUIStylePreset.CustomToggle(SkidMenu.frRandColor.Value, " Color", _w100);
+        SkidMenu.frRandLevel    = GUIStylePreset.CustomToggle(SkidMenu.frRandLevel, " Level", _w100);
+        SkidMenu.frRandPlatform = GUIStylePreset.CustomToggle(SkidMenu.frRandPlatform, " Platform", _w100);
+        SkidMenu.frRandName    = GUIStylePreset.CustomToggle(SkidMenu.frRandName, " Name", _w100);
+        SkidMenu.frRandColor   = GUIStylePreset.CustomToggle(SkidMenu.frRandColor, " Color", _w100);
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
-        SkidMenu.frRandHat.Value     = GUIStylePreset.CustomToggle(SkidMenu.frRandHat.Value, " Hat", _w100);
-        SkidMenu.frRandSkin.Value    = GUIStylePreset.CustomToggle(SkidMenu.frRandSkin.Value, " Skin", _w100);
-        SkidMenu.frRandVisor.Value   = GUIStylePreset.CustomToggle(SkidMenu.frRandVisor.Value, " Visor", _w100);
-        SkidMenu.frRandPet.Value       = GUIStylePreset.CustomToggle(SkidMenu.frRandPet.Value, " Pet", _w100);
-        SkidMenu.frRandNameplate.Value = GUIStylePreset.CustomToggle(SkidMenu.frRandNameplate.Value, " Nameplate", _w100);
+        SkidMenu.frRandHat     = GUIStylePreset.CustomToggle(SkidMenu.frRandHat, " Hat", _w100);
+        SkidMenu.frRandSkin    = GUIStylePreset.CustomToggle(SkidMenu.frRandSkin, " Skin", _w100);
+        SkidMenu.frRandVisor   = GUIStylePreset.CustomToggle(SkidMenu.frRandVisor, " Visor", _w100);
+        SkidMenu.frRandPet       = GUIStylePreset.CustomToggle(SkidMenu.frRandPet, " Pet", _w100);
+        SkidMenu.frRandNameplate = GUIStylePreset.CustomToggle(SkidMenu.frRandNameplate, " Nameplate", _w100);
         GUILayout.EndHorizontal();
 
         GUILayout.Space(6);
@@ -450,15 +509,15 @@ public class SpoofingTab : ITab
         GUILayout.Label("Auto-Randomize Triggers", GUIStylePreset.TabSubtitle);
         GUILayout.Space(4);
 
-        { bool _fv = GUIStylePreset.CustomToggle(FullyRandomizeTriggers.OnDeath, " After you die"); if (_fv != FullyRandomizeTriggers.OnDeath) { FullyRandomizeTriggers.OnDeath = _fv; SkidMenu.frOnDeath.Value = _fv; } }
-        { bool _fv = GUIStylePreset.CustomToggle(FullyRandomizeTriggers.OnKill, " After you kill someone"); if (_fv != FullyRandomizeTriggers.OnKill) { FullyRandomizeTriggers.OnKill = _fv; SkidMenu.frOnKill.Value = _fv; } }
-        { bool _fv = GUIStylePreset.CustomToggle(FullyRandomizeTriggers.OnMeetingStart, " When a meeting starts"); if (_fv != FullyRandomizeTriggers.OnMeetingStart) { FullyRandomizeTriggers.OnMeetingStart = _fv; SkidMenu.frOnMeetingStart.Value = _fv; } }
-        { bool _fv = GUIStylePreset.CustomToggle(FullyRandomizeTriggers.OnMeetingEnd, " When a meeting ends"); if (_fv != FullyRandomizeTriggers.OnMeetingEnd) { FullyRandomizeTriggers.OnMeetingEnd = _fv; SkidMenu.frOnMeetingEnd.Value = _fv; } }
-        { bool _fv = GUIStylePreset.CustomToggle(FullyRandomizeTriggers.OnLobbyLeave, " When leaving a lobby"); if (_fv != FullyRandomizeTriggers.OnLobbyLeave) { FullyRandomizeTriggers.OnLobbyLeave = _fv; SkidMenu.frOnLobbyLeave.Value = _fv; } }
-        { bool _fv = GUIStylePreset.CustomToggle(FullyRandomizeTriggers.OnGameEnd, " When a game ends"); if (_fv != FullyRandomizeTriggers.OnGameEnd) { FullyRandomizeTriggers.OnGameEnd = _fv; SkidMenu.frOnGameEnd.Value = _fv; } }
-        { bool _fv = GUIStylePreset.CustomToggle(FullyRandomizeTriggers.OnShapeshift, " When you shapeshift"); if (_fv != FullyRandomizeTriggers.OnShapeshift) { FullyRandomizeTriggers.OnShapeshift = _fv; SkidMenu.frOnShapeshift.Value = _fv; } }
-        { bool _fv = GUIStylePreset.CustomToggle(FullyRandomizeTriggers.OnVent, " When you enter a vent"); if (_fv != FullyRandomizeTriggers.OnVent) { FullyRandomizeTriggers.OnVent = _fv; SkidMenu.frOnVent.Value = _fv; } }
-        { bool _fv = GUIStylePreset.CustomToggle(FullyRandomizeTriggers.OnTaskComplete, " When you complete a task"); if (_fv != FullyRandomizeTriggers.OnTaskComplete) { FullyRandomizeTriggers.OnTaskComplete = _fv; SkidMenu.frOnTaskComplete.Value = _fv; } }
+        { bool _fv = GUIStylePreset.CustomToggle(FullyRandomizeTriggers.OnDeath, " After you die"); if (_fv != FullyRandomizeTriggers.OnDeath) { FullyRandomizeTriggers.OnDeath = _fv; } }
+        { bool _fv = GUIStylePreset.CustomToggle(FullyRandomizeTriggers.OnKill, " After you kill someone"); if (_fv != FullyRandomizeTriggers.OnKill) { FullyRandomizeTriggers.OnKill = _fv; } }
+        { bool _fv = GUIStylePreset.CustomToggle(FullyRandomizeTriggers.OnMeetingStart, " When a meeting starts"); if (_fv != FullyRandomizeTriggers.OnMeetingStart) { FullyRandomizeTriggers.OnMeetingStart = _fv; } }
+        { bool _fv = GUIStylePreset.CustomToggle(FullyRandomizeTriggers.OnMeetingEnd, " When a meeting ends"); if (_fv != FullyRandomizeTriggers.OnMeetingEnd) { FullyRandomizeTriggers.OnMeetingEnd = _fv; } }
+        { bool _fv = GUIStylePreset.CustomToggle(FullyRandomizeTriggers.OnLobbyLeave, " When leaving a lobby"); if (_fv != FullyRandomizeTriggers.OnLobbyLeave) { FullyRandomizeTriggers.OnLobbyLeave = _fv; } }
+        { bool _fv = GUIStylePreset.CustomToggle(FullyRandomizeTriggers.OnGameEnd, " When a game ends"); if (_fv != FullyRandomizeTriggers.OnGameEnd) { FullyRandomizeTriggers.OnGameEnd = _fv; } }
+        { bool _fv = GUIStylePreset.CustomToggle(FullyRandomizeTriggers.OnShapeshift, " When you shapeshift"); if (_fv != FullyRandomizeTriggers.OnShapeshift) { FullyRandomizeTriggers.OnShapeshift = _fv; } }
+        { bool _fv = GUIStylePreset.CustomToggle(FullyRandomizeTriggers.OnVent, " When you enter a vent"); if (_fv != FullyRandomizeTriggers.OnVent) { FullyRandomizeTriggers.OnVent = _fv; } }
+        { bool _fv = GUIStylePreset.CustomToggle(FullyRandomizeTriggers.OnTaskComplete, " When you complete a task"); if (_fv != FullyRandomizeTriggers.OnTaskComplete) { FullyRandomizeTriggers.OnTaskComplete = _fv; } }
         FullyRandomizeTriggers.OnEjected        = GUIStylePreset.CustomToggle(FullyRandomizeTriggers.OnEjected, " When you get ejected");
         FullyRandomizeTriggers.OnSabotage       = GUIStylePreset.CustomToggle(FullyRandomizeTriggers.OnSabotage, " When a sabotage starts");
         FullyRandomizeTriggers.OnExitVent       = GUIStylePreset.CustomToggle(FullyRandomizeTriggers.OnExitVent, " When you exit a vent");
@@ -473,22 +532,31 @@ public class SpoofingTab : ITab
         FullyRandomizeTriggers.ShowNotification = GUIStylePreset.CustomToggle(FullyRandomizeTriggers.ShowNotification, " Show notification on randomize");
     }
 
+    private static string GenerateRandomPlatformId()
+    {
+        var sb = new System.Text.StringBuilder(16);
+        sb.Append((char)('0' + UnityEngine.Random.Range(2, 10)));
+        for (int i = 1; i < 16; i++)
+            sb.Append((char)('0' + UnityEngine.Random.Range(0, 10)));
+        return sb.ToString();
+    }
+
     public static void DoFullyRandomize()
     {
         float delay = frRpcDelayTemp;
 
         int randomLevel = 1;
-        if (SkidMenu.frRandLevel.Value)
+        if (SkidMenu.frRandLevel)
         {
-            int minVal = SkidMenu.spoofLevelRandomMin.Value;
-            int maxVal = SkidMenu.spoofLevelRandomMax.Value;
+            int minVal = SkidMenu.spoofLevelRandomMin;
+            int maxVal = SkidMenu.spoofLevelRandomMax;
             if (minVal > maxVal) { int t = minVal; minVal = maxVal; maxVal = t; }
             randomLevel = UnityEngine.Random.Range(minVal, maxVal + 1);
             _spoofLevelInput = randomLevel.ToString();
-            SkidMenu.spoofLevel.Value = _spoofLevelInput;
+            SkidMenu.spoofLevel = _spoofLevelInput;
         }
 
-        if (SkidMenu.frRandPlatform.Value)
+        if (SkidMenu.frRandPlatform)
         {
             var pool = new List<string>();
             foreach (var p in AllPlatforms) if (!_excludedPlatforms.Contains(p)) pool.Add(p);
@@ -496,14 +564,26 @@ public class SpoofingTab : ITab
             {
                 var picked = pool[UnityEngine.Random.Range(0, pool.Count)];
                 _spoofPlatformInput = picked;
-                SkidMenu.spoofPlatform.Value = picked;
+                SkidMenu.spoofPlatform = picked;
                 if (System.Enum.TryParse<Platforms>(picked, out var parsedPlatform))
+                {
                     features.Spoofer.spoofedPlatform = parsedPlatform;
+                    if (parsedPlatform == Platforms.Xbox)
+                    {
+                        _spoofXboxIdInput = GenerateRandomPlatformId();
+                        features.Spoofer.spoofedXboxId = ulong.Parse(_spoofXboxIdInput);
+                    }
+                    else if (parsedPlatform == Platforms.Playstation)
+                    {
+                        _spoofPsnIdInput = GenerateRandomPlatformId();
+                        features.Spoofer.spoofedPsnId = ulong.Parse(_spoofPsnIdInput);
+                    }
+                }
             }
         }
 
         string generatedName = features.NameSpoofer.SpoofedName;
-        if (SkidMenu.frRandName.Value)
+        if (SkidMenu.frRandName)
         {
             features.NameSpoofer.Mode = (features.NameSpoofer.RandomizerMode)_nameModeIndex;
             features.NameSpoofer.RandomLength = _nameLength;
@@ -520,13 +600,13 @@ public class SpoofingTab : ITab
             var allVisors    = hatManager.allVisors;
             var allPets      = hatManager.allPets;
             var allNameplates = hatManager.allNamePlates;
-            if (SkidMenu.frRandHat.Value      && allHats      != null && allHats.Count      > 0) AmongUs.Data.DataManager.Player.Customization.Hat      = allHats[UnityEngine.Random.Range(0, allHats.Count)].ProdId;
-            if (SkidMenu.frRandSkin.Value     && allSkins     != null && allSkins.Count     > 0) AmongUs.Data.DataManager.Player.Customization.Skin     = allSkins[UnityEngine.Random.Range(0, allSkins.Count)].ProdId;
-            if (SkidMenu.frRandVisor.Value    && allVisors    != null && allVisors.Count    > 0) AmongUs.Data.DataManager.Player.Customization.Visor    = allVisors[UnityEngine.Random.Range(0, allVisors.Count)].ProdId;
-            if (SkidMenu.frRandPet.Value      && allPets      != null && allPets.Count      > 0) AmongUs.Data.DataManager.Player.Customization.Pet      = allPets[UnityEngine.Random.Range(0, allPets.Count)].ProdId;
-            if (SkidMenu.frRandNameplate.Value && allNameplates != null && allNameplates.Count > 0) AmongUs.Data.DataManager.Player.Customization.NamePlate = allNameplates[UnityEngine.Random.Range(0, allNameplates.Count)].ProdId;
+            if (SkidMenu.frRandHat      && allHats      != null && allHats.Count      > 0) AmongUs.Data.DataManager.Player.Customization.Hat      = allHats[UnityEngine.Random.Range(0, allHats.Count)].ProdId;
+            if (SkidMenu.frRandSkin     && allSkins     != null && allSkins.Count     > 0) AmongUs.Data.DataManager.Player.Customization.Skin     = allSkins[UnityEngine.Random.Range(0, allSkins.Count)].ProdId;
+            if (SkidMenu.frRandVisor    && allVisors    != null && allVisors.Count    > 0) AmongUs.Data.DataManager.Player.Customization.Visor    = allVisors[UnityEngine.Random.Range(0, allVisors.Count)].ProdId;
+            if (SkidMenu.frRandPet      && allPets      != null && allPets.Count      > 0) AmongUs.Data.DataManager.Player.Customization.Pet      = allPets[UnityEngine.Random.Range(0, allPets.Count)].ProdId;
+            if (SkidMenu.frRandNameplate && allNameplates != null && allNameplates.Count > 0) AmongUs.Data.DataManager.Player.Customization.NamePlate = allNameplates[UnityEngine.Random.Range(0, allNameplates.Count)].ProdId;
         }
-        if (SkidMenu.frRandColor.Value)
+        if (SkidMenu.frRandColor)
             AmongUs.Data.DataManager.Player.Customization.Color = (byte)UnityEngine.Random.Range(0, Palette.PlayerColors.Length);
 
         AmongUs.Data.DataManager.Player.Save();
@@ -543,21 +623,21 @@ public class SpoofingTab : ITab
 
             var steps = new List<System.Action>();
 
-            if (SkidMenu.frRandLevel.Value)
+            if (SkidMenu.frRandLevel)
                 steps.Add(() => lp.RpcSetLevel(lvl));
-            if (SkidMenu.frRandName.Value)
+            if (SkidMenu.frRandName)
                 steps.Add(() => OutfitBypass.SetName(generatedName));
-            if (SkidMenu.frRandColor.Value)
+            if (SkidMenu.frRandColor)
                 steps.Add(() => OutfitBypass.SetColor(AmongUsClient.Instance.AmHost || !Utilities.IsColorTaken(color) ? color : Utilities.GetFreeColor()));
-            if (SkidMenu.frRandHat.Value)
+            if (SkidMenu.frRandHat)
                 steps.Add(() => lp.RpcSetHat(hat));
-            if (SkidMenu.frRandSkin.Value)
+            if (SkidMenu.frRandSkin)
                 steps.Add(() => lp.RpcSetSkin(skin));
-            if (SkidMenu.frRandVisor.Value)
+            if (SkidMenu.frRandVisor)
                 steps.Add(() => lp.RpcSetVisor(visor));
-            if (SkidMenu.frRandPet.Value)
+            if (SkidMenu.frRandPet)
                 steps.Add(() => lp.RpcSetPet(pet));
-            if (SkidMenu.frRandNameplate.Value)
+            if (SkidMenu.frRandNameplate)
                 steps.Add(() => lp.RpcSetNamePlate(AmongUs.Data.DataManager.Player.Customization.NamePlate));
             steps.Add(() => { if (FullyRandomizeTriggers.ShowNotification) SkidMenu.notifications.Send("Fully Randomized", $"Lv.{randomLevel} | {_spoofPlatformInput} | {generatedName}", 5f); });
 

@@ -39,8 +39,8 @@ public class SettingsTab : ITab
 
     private void InitializeInputFields()
     {
-        _menuKeybindInput = SkidMenu.menuKeybind.Value;
-        _menuColorInput = SkidMenu.menuHtmlColor.Value;
+        _menuKeybindInput = SkidMenu.menuKeybind;
+        _menuColorInput = SkidMenu.menuHtmlColor;
         _scaleHInput = CheatToggles.menuScaleH.ToString(CultureInfo.InvariantCulture);
         _scaleVInput = CheatToggles.menuScaleV.ToString(CultureInfo.InvariantCulture);
         _fpsInput = CheatToggles.maxFpsValue.ToString();
@@ -60,15 +60,15 @@ public class SettingsTab : ITab
         GUILayout.BeginHorizontal();
         GUILayout.Label("Menu Keybind:", GUILayout.Width(150));
         HandleCustomTextField(ref _menuKeybindInput, "menuKeybind", 150);
-        if (GUILayout.Button("Save", GUILayout.Width(100))) SkidMenu.menuKeybind.Value = _menuKeybindInput;
+        if (GUILayout.Button("Save", GUILayout.Width(100))) SkidMenu.menuKeybind = _menuKeybindInput;
         GUILayout.EndHorizontal();
 
         GUILayout.Space(5);
 
         GUILayout.Space(5);
-        SkidMenu.menuOpenOnMouse.Value = GUIStylePreset.CustomToggle(SkidMenu.menuOpenOnMouse.Value, " Open Menu on Mouse Position");
+        SkidMenu.menuOpenOnMouse = GUIStylePreset.CustomToggle(SkidMenu.menuOpenOnMouse, " Open Menu on Mouse Position");
         GUILayout.Space(5);
-        SkidMenu.autoLoadProfile.Value = GUIStylePreset.CustomToggle(SkidMenu.autoLoadProfile.Value, " Auto-Load Profile on Startup");
+        SkidMenu.autoLoadProfile = GUIStylePreset.CustomToggle(SkidMenu.autoLoadProfile, " Auto-Load Profile on Startup");
 
         GUILayout.Space(5);
 
@@ -156,11 +156,11 @@ public class SettingsTab : ITab
     {
         GUILayout.Label("Logging", GUIStylePreset.TabSubtitle);
 
-        SkidMenu.advancedLogging.Value = GUIStylePreset.CustomToggle(SkidMenu.advancedLogging.Value, " Advanced Logging");
+        SkidMenu.advancedLogging = GUIStylePreset.CustomToggle(SkidMenu.advancedLogging, " Advanced Logging");
         GUILayout.Space(3);
         GUILayout.Label("Logs everything to a dated file so crashes and bugs are easy to report", GUIStylePreset.TabSubtitle);
 
-        if (SkidMenu.advancedLogging.Value)
+        if (SkidMenu.advancedLogging)
         {
             GUILayout.Space(5);
             if (!string.IsNullOrEmpty(AdvancedLogger.CurrentLogFile))

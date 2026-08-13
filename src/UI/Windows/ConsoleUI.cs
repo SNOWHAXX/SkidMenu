@@ -44,7 +44,7 @@ public class ConsoleUI : MonoBehaviour
 
     private void OnGUI()
     {
-        if (!CheatToggles.showConsole || !(MenuUI.isGUIActive || SkidMenu.menuKeepSubwindowsOpen.Value) || SkidMenu.isPanicked) return;
+        if (!CheatToggles.showConsole || !(MenuUI.isGUIActive || SkidMenu.menuKeepSubwindowsOpen) || SkidMenu.isPanicked) return;
 
         _logStyle ??= new GUIStyle(GUI.skin.label)
         {

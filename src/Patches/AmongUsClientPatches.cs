@@ -40,7 +40,7 @@ public static class AmongUsClient_Update
         // GuestMode cheats are commented out as they are broken in latest updates
 
         // Code to treat temp accounts the same as full accounts, including access to friend codes
-        // if (!EOSManager.Instance.loginFlowFinished || !SkidMenu.guestMode.Value) return;
+        // if (!EOSManager.Instance.loginFlowFinished || !SkidMenu.guestMode) return;
         // DataManager.Player.Account.LoginStatus = EOSManager.AccountLoginStatus.LoggedIn;
 
         // if (!string.IsNullOrWhiteSpace(EOSManager.Instance.FriendCode)) return;

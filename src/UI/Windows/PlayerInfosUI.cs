@@ -29,7 +29,7 @@ public class PlayerInfosUI : MonoBehaviour
 
     private void OnGUI()
     {
-        if (!IsOpen || !(MenuUI.isGUIActive || SkidMenu.menuKeepSubwindowsOpen.Value) || SkidMenu.isPanicked) return;
+        if (!IsOpen || !(MenuUI.isGUIActive || SkidMenu.menuKeepSubwindowsOpen) || SkidMenu.isPanicked) return;
         var prevSkin = GUI.skin;
         GUI.skin = MenuUI.GetCustomSkin();
         _windowRect = GUI.Window((int)WindowId.PlayerInfosUI, _windowRect, (GUI.WindowFunction)Draw, "", GUIStylePreset.WindowStyle);

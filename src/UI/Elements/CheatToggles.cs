@@ -391,18 +391,18 @@ public struct CheatToggles
         writer.WriteLine($"FindDaters.MaxPlayers = {FindDatersLobbyPatch.maxPlayers} = KeyCode.None");
         writer.WriteLine($"FindDaters.UseChatFilter = {FindDatersLobbyPatch.useChatFilter} = KeyCode.None");
         writer.WriteLine($"ExtendedList.ExtraSlots = {ExtendedLobbyListPatch.extraSlots} = KeyCode.None");
-        writer.WriteLine($"FR.RandLevel = {SkidMenu.frRandLevel.Value} = KeyCode.None");
+        writer.WriteLine($"FR.RandLevel = {SkidMenu.frRandLevel} = KeyCode.None");
         writer.WriteLine($"FR.SpamEnabled = {SpoofingTab.frSpamEnabled} = KeyCode.None");
         writer.WriteLine($"FR.SpamDelay = {SpoofingTab.frSpamDelay.ToString(System.Globalization.CultureInfo.InvariantCulture)} = KeyCode.None");
         writer.WriteLine($"FR.ShowNotification = {FullyRandomizeTriggers.ShowNotification} = KeyCode.None");
-        writer.WriteLine($"FR.RandPlatform = {SkidMenu.frRandPlatform.Value} = KeyCode.None");
-        writer.WriteLine($"FR.RandName = {SkidMenu.frRandName.Value} = KeyCode.None");
-        writer.WriteLine($"FR.RandHat = {SkidMenu.frRandHat.Value} = KeyCode.None");
-        writer.WriteLine($"FR.RandSkin = {SkidMenu.frRandSkin.Value} = KeyCode.None");
-        writer.WriteLine($"FR.RandVisor = {SkidMenu.frRandVisor.Value} = KeyCode.None");
-        writer.WriteLine($"FR.RandPet = {SkidMenu.frRandPet.Value} = KeyCode.None");
-        writer.WriteLine($"FR.RandNameplate = {SkidMenu.frRandNameplate.Value} = KeyCode.None");
-        writer.WriteLine($"FR.RandColor = {SkidMenu.frRandColor.Value} = KeyCode.None");
+        writer.WriteLine($"FR.RandPlatform = {SkidMenu.frRandPlatform} = KeyCode.None");
+        writer.WriteLine($"FR.RandName = {SkidMenu.frRandName} = KeyCode.None");
+        writer.WriteLine($"FR.RandHat = {SkidMenu.frRandHat} = KeyCode.None");
+        writer.WriteLine($"FR.RandSkin = {SkidMenu.frRandSkin} = KeyCode.None");
+        writer.WriteLine($"FR.RandVisor = {SkidMenu.frRandVisor} = KeyCode.None");
+        writer.WriteLine($"FR.RandPet = {SkidMenu.frRandPet} = KeyCode.None");
+        writer.WriteLine($"FR.RandNameplate = {SkidMenu.frRandNameplate} = KeyCode.None");
+        writer.WriteLine($"FR.RandColor = {SkidMenu.frRandColor} = KeyCode.None");
         writer.WriteLine($"FR.RpcDelay = {SpoofingTab.frRpcDelayTemp.ToString(System.Globalization.CultureInfo.InvariantCulture)} = KeyCode.None");
         writer.WriteLine($"FR.OnDeath = {FullyRandomizeTriggers.OnDeath} = KeyCode.None");
         writer.WriteLine($"FR.OnKill = {FullyRandomizeTriggers.OnKill} = KeyCode.None");
@@ -428,6 +428,10 @@ public struct CheatToggles
         writer.WriteLine($"Self.GameTextColor = {SelfTab.TextHex} = KeyCode.None");
         writer.WriteLine($"Self.ChatFont = {ChatFontChanger.Enabled} = KeyCode.None");
         writer.WriteLine($"Self.ChatFontType = {ChatFontChanger.FontType} = KeyCode.None");
+        writer.WriteLine($"NameSpoof.SpoofedName = {SkidMenu.nameSpoofName} = KeyCode.None");
+        writer.WriteLine($"NameSpoof.Enabled = {SkidMenu.nameSpoofEnabled} = KeyCode.None");
+        writer.WriteLine($"NameSpoof.Mode = {SkidMenu.nameSpoofMode} = KeyCode.None");
+        writer.WriteLine($"NameSpoof.Length = {SkidMenu.nameSpoofLength} = KeyCode.None");
         writer.WriteLine($"Chat.History = {features.ChatEnhancements.EnableChatHistory} = KeyCode.None");
         writer.WriteLine($"Chat.ExtendedChat = {features.ChatEnhancements.EnableExtendedChat} = KeyCode.None");
         writer.WriteLine($"Chat.ColorCommand = {features.ChatEnhancements.EnableColorCommand} = KeyCode.None");
@@ -448,6 +452,52 @@ public struct CheatToggles
         writer.WriteLine($"Spoofer.ShouldSpoofVersion = {Spoofer.shouldSpoofVersion} = KeyCode.None");
         writer.WriteLine($"Spoofer.SpoofedVersion = {Spoofer.spoofedVersion} = KeyCode.None");
         writer.WriteLine($"Spoofer.UseModdedProtocol = {Spoofer.useModdedProtocol} = KeyCode.None");
+        writer.WriteLine($"Spoofer.XboxId = {Spoofer.spoofedXboxId} = KeyCode.None");
+        writer.WriteLine($"Spoofer.PsnId = {Spoofer.spoofedPsnId} = KeyCode.None");
+        writer.WriteLine($"GUI.MenuKeybind = {SkidMenu.menuKeybind} = KeyCode.None");
+        writer.WriteLine($"GUI.MenuColor = {SkidMenu.menuHtmlColor} = KeyCode.None");
+        writer.WriteLine($"GUI.OpenOnMouse = {SkidMenu.menuOpenOnMouse} = KeyCode.None");
+        writer.WriteLine($"GUI.KeepSubwindows = {SkidMenu.menuKeepSubwindowsOpen} = KeyCode.None");
+        writer.WriteLine($"Spoof.Level = {SkidMenu.spoofLevel} = KeyCode.None");
+        writer.WriteLine($"Spoof.LevelMin = {SkidMenu.spoofLevelRandomMin} = KeyCode.None");
+        writer.WriteLine($"Spoof.LevelMax = {SkidMenu.spoofLevelRandomMax} = KeyCode.None");
+        writer.WriteLine($"Spoof.Platform = {SkidMenu.spoofPlatform} = KeyCode.None");
+        writer.WriteLine($"Spoof.PlatformExclusions = {SkidMenu.spoofPlatformExclusions} = KeyCode.None");
+        writer.WriteLine($"Guest.FriendCode = {SkidMenu.guestFriendCode} = KeyCode.None");
+        writer.WriteLine($"Guest.Enabled = {SkidMenu.guestMode} = KeyCode.None");
+        writer.WriteLine($"Profile.AutoLoad = {SkidMenu.autoLoadProfile} = KeyCode.None");
+        writer.WriteLine($"Config.Editor = {SkidMenu.configEditor} = KeyCode.None");
+        writer.WriteLine($"Dating.FindDaters = {CheatToggles.findDaters} = KeyCode.None");
+        writer.WriteLine($"Dating.ExtendedList = {CheatToggles.extendedLobbyList} = KeyCode.None");
+        writer.WriteLine($"AC.MaxLevel = {SkidMenu.maxPlayerLevel} = KeyCode.None");
+        writer.WriteLine($"AC.MaxTeleport = {SkidMenu.maxTeleportDistance.ToString(System.Globalization.CultureInfo.InvariantCulture)} = KeyCode.None");
+        writer.WriteLine($"Chat.HistorySize = {SkidMenu.chatHistorySize} = KeyCode.None");
+        writer.WriteLine($"Chat.HistoryInfinite = {SkidMenu.chatHistoryInfinite} = KeyCode.None");
+        writer.WriteLine($"Log.PlayerJoin = {SkidMenu.logPlayerJoin} = KeyCode.None");
+        writer.WriteLine($"Log.GuardianProtect = {CheatToggles.logGuardianProtect} = KeyCode.None");
+        writer.WriteLine($"Log.ShowDistance = {SkidMenu.logShowDistance} = KeyCode.None");
+        writer.WriteLine($"Log.Advanced = {SkidMenu.advancedLogging} = KeyCode.None");
+        writer.WriteLine($"FR.NameHostOnly = {SkidMenu.frRandNameHostOnly} = KeyCode.None");
+        writer.WriteLine($"FR.ColorHostOnly = {SkidMenu.frRandColorHostOnly} = KeyCode.None");
+        writer.WriteLine($"FR.Trigger.OnDeath = {FullyRandomizeTriggers.OnDeath} = KeyCode.None");
+        writer.WriteLine($"FR.Trigger.OnKill = {FullyRandomizeTriggers.OnKill} = KeyCode.None");
+        writer.WriteLine($"FR.Trigger.OnMeetingStart = {FullyRandomizeTriggers.OnMeetingStart} = KeyCode.None");
+        writer.WriteLine($"FR.Trigger.OnMeetingEnd = {FullyRandomizeTriggers.OnMeetingEnd} = KeyCode.None");
+        writer.WriteLine($"FR.Trigger.OnLobbyLeave = {FullyRandomizeTriggers.OnLobbyLeave} = KeyCode.None");
+        writer.WriteLine($"FR.Trigger.OnGameEnd = {FullyRandomizeTriggers.OnGameEnd} = KeyCode.None");
+        writer.WriteLine($"FR.Trigger.OnShapeshift = {FullyRandomizeTriggers.OnShapeshift} = KeyCode.None");
+        writer.WriteLine($"FR.Trigger.OnShapeshiftBack = {FullyRandomizeTriggers.OnShapeshiftBack} = KeyCode.None");
+        writer.WriteLine($"FR.Trigger.OnVent = {FullyRandomizeTriggers.OnVent} = KeyCode.None");
+        writer.WriteLine($"FR.Trigger.OnExitVent = {FullyRandomizeTriggers.OnExitVent} = KeyCode.None");
+        writer.WriteLine($"FR.Trigger.OnTaskComplete = {FullyRandomizeTriggers.OnTaskComplete} = KeyCode.None");
+        writer.WriteLine($"FR.Trigger.OnEjected = {FullyRandomizeTriggers.OnEjected} = KeyCode.None");
+        writer.WriteLine($"FR.Trigger.OnSabotage = {FullyRandomizeTriggers.OnSabotage} = KeyCode.None");
+        writer.WriteLine($"FR.Trigger.OnVanish = {FullyRandomizeTriggers.OnVanish} = KeyCode.None");
+        writer.WriteLine($"FR.Trigger.OnReappear = {FullyRandomizeTriggers.OnReappear} = KeyCode.None");
+        writer.WriteLine($"FR.Trigger.OnVotekicked = {FullyRandomizeTriggers.OnVotekicked} = KeyCode.None");
+        writer.WriteLine($"FR.Trigger.OnPlayerJoin = {FullyRandomizeTriggers.OnPlayerJoin} = KeyCode.None");
+        writer.WriteLine($"FR.Trigger.OnPlayerLeave = {FullyRandomizeTriggers.OnPlayerLeave} = KeyCode.None");
+        writer.WriteLine($"FR.Trigger.ShowNotification = {FullyRandomizeTriggers.ShowNotification} = KeyCode.None");
         writer.WriteLine($"ZoomOut.ScrollSpeed = {MalumESP.ZoomScrollSpeed.ToString(System.Globalization.CultureInfo.InvariantCulture)} = KeyCode.None");
         writer.WriteLine($"ZoomOut.Smoothness = {MalumESP.ZoomSmoothness.ToString(System.Globalization.CultureInfo.InvariantCulture)} = KeyCode.None");
         writer.WriteLine($"ZoomOut.MaxDistance = {MalumESP.ZoomMaxDistance.ToString(System.Globalization.CultureInfo.InvariantCulture)} = KeyCode.None");
@@ -1218,7 +1268,7 @@ public struct CheatToggles
                     if (float.TryParse(valuePart, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var lcjx)) features.LagCompensation.JitterMax = System.Math.Clamp(lcjx, 1f, 60f);
                     continue;
                 case "FR.RandLevel":
-                    if (bool.TryParse(valuePart, out var frl)) SkidMenu.frRandLevel.Value = frl;
+                    if (bool.TryParse(valuePart, out var frl)) SkidMenu.frRandLevel = frl;
                     continue;
                 case "FR.SpamEnabled":
                     if (bool.TryParse(valuePart, out var frse)) SpoofingTab.frSpamEnabled = frse;
@@ -1230,31 +1280,31 @@ public struct CheatToggles
                     if (bool.TryParse(valuePart, out var frsn)) FullyRandomizeTriggers.ShowNotification = frsn;
                     continue;
                 case "FR.RandPlatform":
-                    if (bool.TryParse(valuePart, out var frp)) SkidMenu.frRandPlatform.Value = frp;
+                    if (bool.TryParse(valuePart, out var frp)) SkidMenu.frRandPlatform = frp;
                     continue;
                 case "FR.RandName":
-                    if (bool.TryParse(valuePart, out var frn)) SkidMenu.frRandName.Value = frn;
+                    if (bool.TryParse(valuePart, out var frn)) SkidMenu.frRandName = frn;
                     continue;
                 case "FR.RandHat":
-                    if (bool.TryParse(valuePart, out var frh)) SkidMenu.frRandHat.Value = frh;
+                    if (bool.TryParse(valuePart, out var frh)) SkidMenu.frRandHat = frh;
                     continue;
                 case "FR.RandSkin":
-                    if (bool.TryParse(valuePart, out var frs)) SkidMenu.frRandSkin.Value = frs;
+                    if (bool.TryParse(valuePart, out var frs)) SkidMenu.frRandSkin = frs;
                     continue;
                 case "FR.RandVisor":
-                    if (bool.TryParse(valuePart, out var frv)) SkidMenu.frRandVisor.Value = frv;
+                    if (bool.TryParse(valuePart, out var frv)) SkidMenu.frRandVisor = frv;
                     continue;
                 case "FR.RandPet":
-                    if (bool.TryParse(valuePart, out var frpe)) SkidMenu.frRandPet.Value = frpe;
+                    if (bool.TryParse(valuePart, out var frpe)) SkidMenu.frRandPet = frpe;
                     continue;
                 case "FR.RandNameplate":
-                    if (bool.TryParse(valuePart, out var frnp)) SkidMenu.frRandNameplate.Value = frnp;
+                    if (bool.TryParse(valuePart, out var frnp)) SkidMenu.frRandNameplate = frnp;
                     continue;
                 case "FR.RandColor":
-                    if (bool.TryParse(valuePart, out var frc)) SkidMenu.frRandColor.Value = frc;
+                    if (bool.TryParse(valuePart, out var frc)) SkidMenu.frRandColor = frc;
                     continue;
                 case "FR.RpcDelay":
-                    if (float.TryParse(valuePart, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var frd)) { SkidMenu.frRpcDelay.Value = frd; SpoofingTab.frRpcDelayTemp = frd; }
+                    if (float.TryParse(valuePart, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var frd)) { SkidMenu.frRpcDelay = frd; SpoofingTab.frRpcDelayTemp = frd; }
                     continue;
                 case "FR.OnDeath":
                     if (bool.TryParse(valuePart, out var fod)) FullyRandomizeTriggers.OnDeath = fod;
@@ -1330,6 +1380,18 @@ public struct CheatToggles
                 case "Self.ChatFontType":
                     if (int.TryParse(valuePart, out var scft)) ChatFontChanger.FontType = System.Math.Clamp(scft, 0, 20);
                     continue;
+                case "NameSpoof.SpoofedName":
+                    SkidMenu.nameSpoofName = valuePart;
+                    continue;
+                case "NameSpoof.Enabled":
+                    if (bool.TryParse(valuePart, out var nsse)) { SkidMenu.nameSpoofEnabled = nsse; if (nsse && !string.IsNullOrWhiteSpace(SkidMenu.nameSpoofName)) NameSpoofer.ApplyName(SkidMenu.nameSpoofName); }
+                    continue;
+                case "NameSpoof.Mode":
+                    if (int.TryParse(valuePart, out var nsme)) { SkidMenu.nameSpoofMode = nsme; NameSpoofer.Mode = (NameSpoofer.RandomizerMode)nsme; }
+                    continue;
+                case "NameSpoof.Length":
+                    if (int.TryParse(valuePart, out var nsle)) { SkidMenu.nameSpoofLength = nsle; NameSpoofer.RandomLength = nsle; }
+                    continue;
                 case "Chat.History":
                     if (bool.TryParse(valuePart, out var ch)) features.ChatEnhancements.EnableChatHistory = ch;
                     continue;
@@ -1389,6 +1451,146 @@ public struct CheatToggles
                     continue;
                 case "Spoofer.UseModdedProtocol":
                     if (bool.TryParse(valuePart, out var sump)) Spoofer.useModdedProtocol = sump;
+                    continue;
+                case "Spoofer.XboxId":
+                    if (ulong.TryParse(valuePart, out var sxid)) Spoofer.spoofedXboxId = sxid;
+                    continue;
+                case "Spoofer.PsnId":
+                    if (ulong.TryParse(valuePart, out var spsid)) Spoofer.spoofedPsnId = spsid;
+                    continue;
+                case "GUI.MenuKeybind":
+                    if (!string.IsNullOrWhiteSpace(valuePart)) SkidMenu.menuKeybind = valuePart;
+                    continue;
+                case "GUI.MenuColor":
+                    SkidMenu.menuHtmlColor = valuePart;
+                    continue;
+                case "GUI.OpenOnMouse":
+                    if (bool.TryParse(valuePart, out var gom)) SkidMenu.menuOpenOnMouse = gom;
+                    continue;
+                case "GUI.KeepSubwindows":
+                    if (bool.TryParse(valuePart, out var gks)) SkidMenu.menuKeepSubwindowsOpen = gks;
+                    continue;
+                case "Spoof.Level":
+                    SkidMenu.spoofLevel = valuePart;
+                    continue;
+                case "Spoof.LevelMin":
+                    if (int.TryParse(valuePart, out var slmin)) SkidMenu.spoofLevelRandomMin = System.Math.Clamp(slmin, 1, 100001);
+                    continue;
+                case "Spoof.LevelMax":
+                    if (int.TryParse(valuePart, out var slmax)) SkidMenu.spoofLevelRandomMax = System.Math.Clamp(slmax, 1, 100001);
+                    continue;
+                case "Spoof.Platform":
+                    SkidMenu.spoofPlatform = valuePart;
+                    if (Utils.StringToPlatformType(valuePart, out Platforms? spoofedPlat))
+                        Spoofer.spoofedPlatform = (Platforms)spoofedPlat;
+                    continue;
+                case "Spoof.PlatformExclusions":
+                    SkidMenu.spoofPlatformExclusions = valuePart;
+                    continue;
+                case "Guest.FriendCode":
+                    SkidMenu.guestFriendCode = valuePart;
+                    continue;
+                case "Guest.Enabled":
+                    if (bool.TryParse(valuePart, out var ge)) SkidMenu.guestMode = ge;
+                    continue;
+                case "Profile.AutoLoad":
+                    if (bool.TryParse(valuePart, out var pal)) SkidMenu.autoLoadProfile = pal;
+                    continue;
+                case "Config.Editor":
+                    if (!string.IsNullOrWhiteSpace(valuePart)) SkidMenu.configEditor = valuePart;
+                    continue;
+                case "Dating.FindDaters":
+                    if (bool.TryParse(valuePart, out var dfd)) { CheatToggles.findDaters = dfd; }
+                    continue;
+                case "Dating.ExtendedList":
+                    if (bool.TryParse(valuePart, out var del)) { CheatToggles.extendedLobbyList = del; }
+                    continue;
+                case "AC.MaxLevel":
+                    if (int.TryParse(valuePart, out var aml)) SkidMenu.maxPlayerLevel = System.Math.Clamp(aml, 1, 100000);
+                    continue;
+                case "AC.MaxTeleport":
+                    if (float.TryParse(valuePart, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var amt)) SkidMenu.maxTeleportDistance = System.Math.Clamp(amt, 1f, 500f);
+                    continue;
+                case "Chat.HistorySize":
+                    if (int.TryParse(valuePart, out var chs)) SkidMenu.chatHistorySize = System.Math.Clamp(chs, 5, 500);
+                    continue;
+                case "Chat.HistoryInfinite":
+                    if (bool.TryParse(valuePart, out var chi)) SkidMenu.chatHistoryInfinite = chi;
+                    continue;
+                case "Log.PlayerJoin":
+                    if (bool.TryParse(valuePart, out var lpj)) SkidMenu.logPlayerJoin = lpj;
+                    continue;
+                case "Log.GuardianProtect":
+                    if (bool.TryParse(valuePart, out var lgp)) { CheatToggles.logGuardianProtect = lgp; }
+                    continue;
+                case "Log.ShowDistance":
+                    if (bool.TryParse(valuePart, out var lsd)) SkidMenu.logShowDistance = lsd;
+                    continue;
+                case "Log.Advanced":
+                    if (bool.TryParse(valuePart, out var lad)) SkidMenu.advancedLogging = lad;
+                    continue;
+                case "FR.NameHostOnly":
+                    if (bool.TryParse(valuePart, out var frnho)) SkidMenu.frRandNameHostOnly = frnho;
+                    continue;
+                case "FR.ColorHostOnly":
+                    if (bool.TryParse(valuePart, out var frcho)) SkidMenu.frRandColorHostOnly = frcho;
+                    continue;
+                case "FR.Trigger.OnDeath":
+                    if (bool.TryParse(valuePart, out var tOnDeath)) { FullyRandomizeTriggers.OnDeath = tOnDeath; }
+                    continue;
+                case "FR.Trigger.OnKill":
+                    if (bool.TryParse(valuePart, out var tOnKill)) { FullyRandomizeTriggers.OnKill = tOnKill; }
+                    continue;
+                case "FR.Trigger.OnMeetingStart":
+                    if (bool.TryParse(valuePart, out var tOnMeetingStart)) { FullyRandomizeTriggers.OnMeetingStart = tOnMeetingStart; }
+                    continue;
+                case "FR.Trigger.OnMeetingEnd":
+                    if (bool.TryParse(valuePart, out var tOnMeetingEnd)) { FullyRandomizeTriggers.OnMeetingEnd = tOnMeetingEnd; }
+                    continue;
+                case "FR.Trigger.OnLobbyLeave":
+                    if (bool.TryParse(valuePart, out var tOnLobbyLeave)) { FullyRandomizeTriggers.OnLobbyLeave = tOnLobbyLeave; }
+                    continue;
+                case "FR.Trigger.OnGameEnd":
+                    if (bool.TryParse(valuePart, out var tOnGameEnd)) { FullyRandomizeTriggers.OnGameEnd = tOnGameEnd; }
+                    continue;
+                case "FR.Trigger.OnShapeshift":
+                    if (bool.TryParse(valuePart, out var tOnShapeshift)) { FullyRandomizeTriggers.OnShapeshift = tOnShapeshift; }
+                    continue;
+                case "FR.Trigger.OnShapeshiftBack":
+                    if (bool.TryParse(valuePart, out var tOnShapeshiftBack)) FullyRandomizeTriggers.OnShapeshiftBack = tOnShapeshiftBack;
+                    continue;
+                case "FR.Trigger.OnVent":
+                    if (bool.TryParse(valuePart, out var tOnVent)) { FullyRandomizeTriggers.OnVent = tOnVent; }
+                    continue;
+                case "FR.Trigger.OnExitVent":
+                    if (bool.TryParse(valuePart, out var tOnExitVent)) FullyRandomizeTriggers.OnExitVent = tOnExitVent;
+                    continue;
+                case "FR.Trigger.OnTaskComplete":
+                    if (bool.TryParse(valuePart, out var tOnTaskComplete)) { FullyRandomizeTriggers.OnTaskComplete = tOnTaskComplete; }
+                    continue;
+                case "FR.Trigger.OnEjected":
+                    if (bool.TryParse(valuePart, out var tOnEjected)) FullyRandomizeTriggers.OnEjected = tOnEjected;
+                    continue;
+                case "FR.Trigger.OnSabotage":
+                    if (bool.TryParse(valuePart, out var tOnSabotage)) FullyRandomizeTriggers.OnSabotage = tOnSabotage;
+                    continue;
+                case "FR.Trigger.OnVanish":
+                    if (bool.TryParse(valuePart, out var tOnVanish)) FullyRandomizeTriggers.OnVanish = tOnVanish;
+                    continue;
+                case "FR.Trigger.OnReappear":
+                    if (bool.TryParse(valuePart, out var tOnReappear)) FullyRandomizeTriggers.OnReappear = tOnReappear;
+                    continue;
+                case "FR.Trigger.OnVotekicked":
+                    if (bool.TryParse(valuePart, out var tOnVotekicked)) FullyRandomizeTriggers.OnVotekicked = tOnVotekicked;
+                    continue;
+                case "FR.Trigger.OnPlayerJoin":
+                    if (bool.TryParse(valuePart, out var tOnPlayerJoin)) FullyRandomizeTriggers.OnPlayerJoin = tOnPlayerJoin;
+                    continue;
+                case "FR.Trigger.OnPlayerLeave":
+                    if (bool.TryParse(valuePart, out var tOnPlayerLeave)) FullyRandomizeTriggers.OnPlayerLeave = tOnPlayerLeave;
+                    continue;
+                case "FR.Trigger.ShowNotification":
+                    if (bool.TryParse(valuePart, out var tShowNotification)) FullyRandomizeTriggers.ShowNotification = tShowNotification;
                     continue;
                 case "ZoomOut.ScrollSpeed":
                     if (float.TryParse(valuePart, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var zss)) MalumESP.ZoomScrollSpeed = System.Math.Clamp(zss, 0.5f, 5f);

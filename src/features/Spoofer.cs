@@ -8,6 +8,8 @@ namespace SkidMenu.features
 		public static int spoofedVersion = Constants.GetBroadcastVersion();
 		public static bool useModdedProtocol = false;
 		public static Platforms spoofedPlatform = Constants.GetPlatformType();
+		public static ulong spoofedXboxId = 2584878536129841;
+		public static ulong spoofedPsnId = 0;
 
 		[HarmonyPatch(typeof(Constants), nameof(Constants.GetBroadcastVersion))]
 		class SpoofVersion
@@ -51,18 +53,18 @@ namespace SkidMenu.features
 				switch (spoofedPlatform)
 				{
 					case Platforms.StandaloneWin10:
-						__instance.XboxPlatformId = 2584878536129841;
+						__instance.XboxPlatformId = spoofedXboxId;
 						break;
 
 					case Platforms.Xbox:
 						// You can find the proper XUID for an Xbox gamertag at https://www.cxkes.me/xbox/xuid
 						__instance.PlatformName = "Major Nelson";
-						__instance.XboxPlatformId = 2584878536129841;
+						__instance.XboxPlatformId = spoofedXboxId;
 						break;
 
 					case Platforms.Playstation:
 						__instance.PlatformName = "";
-						__instance.PsnPlatformId = 0;
+						__instance.PsnPlatformId = spoofedPsnId;
 						break;
 
 					case Platforms.Switch:

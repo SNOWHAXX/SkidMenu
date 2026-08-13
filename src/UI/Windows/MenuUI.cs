@@ -94,12 +94,12 @@ public class MenuUI : MonoBehaviour
     private void Update()
     {
 
-        if (Input.GetKeyDown(Utils.StringToKeycode(SkidMenu.menuKeybind.Value)))
+        if (Input.GetKeyDown(Utils.StringToKeycode(SkidMenu.menuKeybind)))
         {
             // Enable or disable GUI with DELETE key
             isGUIActive = !isGUIActive;
 
-            if (SkidMenu.menuOpenOnMouse.Value)
+            if (SkidMenu.menuOpenOnMouse)
             {
                 // Teleport the window to the mouse for immediate use
                 Vector2 mousePosition = Input.mousePosition;
@@ -149,7 +149,7 @@ public class MenuUI : MonoBehaviour
         _wasInGameplay = currentlyInGameplay;
         if (CheatToggles.reloadConfig)
         {
-            SkidMenu.Plugin.Config.Reload();
+            CheatToggles.LoadTogglesFromProfile();
             CheatToggles.reloadConfig = false;
             FpsCapHelper.Apply();
         }

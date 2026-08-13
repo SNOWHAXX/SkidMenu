@@ -24,7 +24,7 @@ public class RolesUI : MonoBehaviour
 
     private void OnGUI()
     {
-        if (!CheatToggles.showRolesMenu || !(MenuUI.isGUIActive || SkidMenu.menuKeepSubwindowsOpen.Value) || SkidMenu.isPanicked) return;
+        if (!CheatToggles.showRolesMenu || !(MenuUI.isGUIActive || SkidMenu.menuKeepSubwindowsOpen) || SkidMenu.isPanicked) return;
 
         UIHelpers.ApplyUIColor();
 

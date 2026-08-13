@@ -5,7 +5,7 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <DebugType>embedded</DebugType>
 
-        <VersionPrefix>1.2.2</VersionPrefix>
+        <VersionPrefix>1.2.3</VersionPrefix>
         <AssemblyName>SkidMenu</AssemblyName>
         <Product>SkidMenu</Product>
         <Description>Among Us cheat menu</Description>

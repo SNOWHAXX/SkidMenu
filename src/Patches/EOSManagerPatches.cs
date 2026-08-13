@@ -20,7 +20,7 @@ namespace SkidMenu;
 //         __instance.DeleteDeviceID(new System.Action(__instance.EndMergeGuestAccountFlow));
 
 //         // Log into a new temp account if the user is playing in guest mode
-//         if (!SkidMenu.guestMode.Value) return true;
+//         if (!SkidMenu.guestMode) return true;
 //         __instance.StartTempAccountFlow();
 //         __instance.CloseStartupWaitScreen();
 

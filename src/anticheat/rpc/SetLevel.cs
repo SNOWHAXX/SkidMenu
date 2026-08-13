@@ -7,7 +7,7 @@ namespace SkidMenu.anticheat.rpc
         public override void Validate(PlayerControl player, MessageReader reader, ref bool blockRpc)
         {
             uint level = reader.ReadPackedUInt32();
-            uint maxLevel = (uint)SkidMenu.maxPlayerLevel.Value;
+            uint maxLevel = (uint)SkidMenu.maxPlayerLevel;
 
             if (level > maxLevel)
             {

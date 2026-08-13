@@ -192,12 +192,12 @@ namespace SkidMenu
                 GUILayout.Space(2);
             }
 
-            int maxLevel = SkidMenu.maxPlayerLevel.Value;
+            int maxLevel = SkidMenu.maxPlayerLevel;
             GUILayout.BeginHorizontal();
             GUILayout.Label($"  Max allowed level:  {maxLevel}", GUILayout.Width(200));
             int newMax = Mathf.RoundToInt(GUILayout.HorizontalSlider(maxLevel, 100, 100001, GUILayout.Width(160)));
             if (newMax != maxLevel)
-                SkidMenu.maxPlayerLevel.Value = newMax;
+                SkidMenu.maxPlayerLevel = newMax;
             GUILayout.EndHorizontal();
             GUI.color = new Color(0.75f, 0.75f, 0.75f);
             GUILayout.Label("  Players above this level will be flagged on SetLevel RPC.");

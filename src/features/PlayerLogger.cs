@@ -25,7 +25,7 @@ namespace SkidMenu.features
 
 				SkidMenu.Log.LogMessage($"[PlayerLogger] {clientData.PlayerName} ({__instance.NetId}) joined on {platformData.Platform}. friendcode {clientData.FriendCode}, puid {clientData.ProductUserId}");
 
-				if (!SkidMenu.logPlayerJoin.Value) return;
+				if (!SkidMenu.logPlayerJoin) return;
 
 				string msg = $"<color=#{nameHex}>{clientData.PlayerName}</color> <color=#44ff44>joined</color>  <color=#fb0>Lv:{level}</color> <color=#555>|</color> <color=#88ddff>{platform}</color>";
 				ConsoleUI.Log(msg, "44ff44");

@@ -16,7 +16,7 @@ public static class Constants_GetPlatformData
     // Postfix patch of Constants.GetPlatformData to spoof the user's platform type
     public static void Postfix(ref PlatformSpecificData __result)
     {
-        if (Utils.StringToPlatformType(SkidMenu.spoofPlatform.Value, out Platforms? platformType))
+        if (Utils.StringToPlatformType(SkidMenu.spoofPlatform, out Platforms? platformType))
         {
             __result = new PlatformSpecificData
             {

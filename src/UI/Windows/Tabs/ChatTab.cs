@@ -124,21 +124,21 @@ public class ChatTab : ITab
 
         GUILayout.Space(4);
 
-        bool inf = GUIStylePreset.CustomToggle(SkidMenu.chatHistoryInfinite.Value, " Infinite bubble pool");
-        if (inf != SkidMenu.chatHistoryInfinite.Value)
+        bool inf = GUIStylePreset.CustomToggle(SkidMenu.chatHistoryInfinite, " Infinite bubble pool");
+        if (inf != SkidMenu.chatHistoryInfinite)
         {
-            SkidMenu.chatHistoryInfinite.Value = inf;
+            SkidMenu.chatHistoryInfinite = inf;
             if (HudManager.Instance?.Chat != null)
                 ChatHistoryPatch.ApplyHistorySize(HudManager.Instance.Chat);
         }
-        if (!SkidMenu.chatHistoryInfinite.Value)
+        if (!SkidMenu.chatHistoryInfinite)
         {
             GUILayout.BeginHorizontal();
-            GUILayout.Label($"Pool size: {SkidMenu.chatHistorySize.Value}", GUILayout.Width(100));
-            int size = Mathf.RoundToInt(GUILayout.HorizontalSlider(SkidMenu.chatHistorySize.Value, 5, 500));
-            if (size != SkidMenu.chatHistorySize.Value)
+            GUILayout.Label($"Pool size: {SkidMenu.chatHistorySize}", GUILayout.Width(100));
+            int size = Mathf.RoundToInt(GUILayout.HorizontalSlider(SkidMenu.chatHistorySize, 5, 500));
+            if (size != SkidMenu.chatHistorySize)
             {
-                SkidMenu.chatHistorySize.Value = size;
+                SkidMenu.chatHistorySize = size;
                 if (HudManager.Instance?.Chat != null)
                     ChatHistoryPatch.ApplyHistorySize(HudManager.Instance.Chat);
             }

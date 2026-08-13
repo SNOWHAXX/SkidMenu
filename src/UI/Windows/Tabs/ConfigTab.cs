@@ -51,7 +51,12 @@ public class ConfigTab : ITab
         Spoofer.useModdedProtocol = GUIStylePreset.CustomToggle(Spoofer.useModdedProtocol, "Use Modded Protocol");
 
         GUILayout.Label($"Spoofed Platform: {Spoofer.spoofedPlatform}");
-        Spoofer.spoofedPlatform = (Platforms)GUILayout.HorizontalSlider((float)Spoofer.spoofedPlatform, 0, 10);
+        Platforms newSpoofedPlatform = (Platforms)GUILayout.HorizontalSlider((float)Spoofer.spoofedPlatform, 0, 10);
+        if (newSpoofedPlatform != Spoofer.spoofedPlatform)
+        {
+            Spoofer.spoofedPlatform = newSpoofedPlatform;
+            SkidMenu.spoofPlatform = Spoofer.spoofedPlatform.ToString();
+        }
 
         GUILayout.EndVertical();
     }

@@ -411,9 +411,9 @@ public class PlayersTab : ITab
                 uint lvl = target.Data.PlayerLevel;
                 steps.Add(() => lp.RpcSetLevel(lvl));
                 string platform = Utils.PlatformTypeToString(client.PlatformData.Platform);
-                steps.Add(() => { SkidMenu.spoofPlatform.Value = platform; });
+                steps.Add(() => { SkidMenu.spoofPlatform = platform; });
             }
-            SkidMenu.routines.fullyRandomize.Schedule(steps, SkidMenu.frRpcDelay.Value);
+            SkidMenu.routines.fullyRandomize.Schedule(steps, SkidMenu.frRpcDelay);
         }
 
         if (GUILayout.Button("Report Body"))
