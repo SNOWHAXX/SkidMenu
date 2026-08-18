@@ -12,7 +12,7 @@ A host-side toolkit for running private Among Us lobbies. SkidMenu puts per-play
 
 ## For Hosts and Private Lobbies
 
-SkidMenu is a host tool. It is meant to be run by the host of a private lobby, with friends who know what you're running and are fine with it. It is not a tool for public lobbies against strangers. Keep it in lobbies you host or run, and everyone keeps having a good time.
+SkidMenu is a host utility tool. It is meant to be run by the host of a private lobby, with friends who know what you're running and are fine with it. It is not a tool for public lobbies against strangers. Keep it in lobbies you host or run, and everyone keeps having a good time.
 
 SkidMenu is not affiliated with, endorsed by, or sponsored by Innersloth in any way. Whatever you choose to do with this menu, including any bans, account issues, or other consequences, is entirely your own responsibility, not the menu's.
 
