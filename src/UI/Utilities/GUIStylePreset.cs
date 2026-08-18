@@ -8,1006 +8,855 @@ using UnityEngine;
 
 namespace SkidMenu
 {
-	// Token: 0x020000CC RID: 204
-	public static class GUIStylePreset
-	{
-		// Token: 0x1700000A RID: 10
-		// (get) Token: 0x060001B0 RID: 432 RVA: 0x00018FBF File Offset: 0x000171BF
-		public static Font FontRegular
-		{
-			get
-			{
-				Font result;
-				if ((result = GUIStylePreset._fontRegular) == null)
-				{
-					result = (GUIStylePreset._fontRegular = GUIStylePreset.LoadFont("Roboto_Condensed-Regular.ttf"));
-				}
-				return result;
-			}
-		}
+    public static class GUIStylePreset
+    {
+        public static Font FontRegular
+        {
+            get
+            {
+                if (_fontRegular == null) _fontRegular = LoadFont("Roboto_Condensed-Regular.ttf");
+                return _fontRegular;
+            }
+        }
 
-		// Token: 0x1700000B RID: 11
-		// (get) Token: 0x060001B1 RID: 433 RVA: 0x00018FDA File Offset: 0x000171DA
-		public static Font FontBold
-		{
-			get
-			{
-				Font result;
-				if ((result = GUIStylePreset._fontBold) == null)
-				{
-					result = (GUIStylePreset._fontBold = GUIStylePreset.LoadFont("Roboto_Condensed-Bold.ttf"));
-				}
-				return result;
-			}
-		}
+        public static Font FontBold
+        {
+            get
+            {
+                if (_fontBold == null) _fontBold = LoadFont("Roboto_Condensed-Bold.ttf");
+                return _fontBold;
+            }
+        }
 
-		// Token: 0x060001B2 RID: 434 RVA: 0x00018FF8 File Offset: 0x000171F8
-		private static Font LoadFont(string filename)
-		{
-			try
-			{
-				Assembly executingAssembly = Assembly.GetExecutingAssembly();
-				string resName = "SkidMenu.Assets." + filename;
-				using (Stream stream = executingAssembly.GetManifestResourceStream(resName))
-				{
-					if (stream != null)
-					{
-						byte[] bytes = new byte[stream.Length];
-						stream.Read(bytes, 0, bytes.Length);
-						string text = Path.Combine(Paths.BepInExRootPath, filename);
-						File.WriteAllBytes(text, bytes);
-						Font font = Font.CreateDynamicFontFromOSFont(text, 14);
-						if (font != null) return font;
-						font = new Font(text);
-						font.hideFlags = HideFlags.HideAndDontSave;
-						return font;
-					}
-				}
-			}
-			catch
-			{
-			}
-			return null;
-		}
+        private static Font LoadFont(string filename)
+        {
+            try
+            {
+                Assembly assembly = Assembly.GetExecutingAssembly();
+                string resName = "SkidMenu.Assets." + filename;
+                using (Stream stream = assembly.GetManifestResourceStream(resName))
+                {
+                    if (stream != null)
+                    {
+                        byte[] bytes = new byte[stream.Length];
+                        stream.Read(bytes, 0, bytes.Length);
+                        string path = Path.Combine(Paths.BepInExRootPath, filename);
+                        File.WriteAllBytes(path, bytes);
+                        Font font = Font.CreateDynamicFontFromOSFont(path, 14);
+                        if (font != null) return font;
+                        font = new Font(path);
+                        font.hideFlags = HideFlags.HideAndDontSave;
+                        return font;
+                    }
+                }
+            }
+            catch
+            {
+            }
+            return null;
+        }
 
-		// Token: 0x060001B3 RID: 435 RVA: 0x00019084 File Offset: 0x00017284
-		public static Texture2D LoadEmbeddedTexture(string filename)
-		{
-			try
-			{
-				string path = Path.Combine(Paths.BepInExRootPath, filename);
-				if (!File.Exists(path))
-				{
-					Debug.LogError("[SkidMenu] File not found: " + path);
-					return null;
-				}
-				byte[] bytes = File.ReadAllBytes(path);
-				Texture2D tex = new Texture2D(2, 2, TextureFormat.RGBA32, false);
-				tex.hideFlags = (UnityEngine.HideFlags)61;
-				ImageConversion.LoadImage(tex, bytes, false);
-				DefaultInterpolatedStringHandler defaultInterpolatedStringHandler = new DefaultInterpolatedStringHandler(29, 3);
-				defaultInterpolatedStringHandler.AppendLiteral("[SkidMenu] Loaded texture ");
-				defaultInterpolatedStringHandler.AppendFormatted(filename);
-				defaultInterpolatedStringHandler.AppendLiteral(": ");
-				defaultInterpolatedStringHandler.AppendFormatted<int>(tex.width);
-				defaultInterpolatedStringHandler.AppendLiteral("x");
-				defaultInterpolatedStringHandler.AppendFormatted<int>(tex.height);
-				Debug.Log(defaultInterpolatedStringHandler.ToStringAndClear());
-				return tex;
-			}
-			catch (Exception e)
-			{
-				string str = "[SkidMenu] LoadEmbeddedTexture error: ";
-				Exception ex = e;
-				Debug.LogError(str + ((ex != null) ? ex.ToString() : null));
-			}
-			return null;
-		}
+        public static Texture2D LoadEmbeddedTexture(string filename)
+        {
+            try
+            {
+                string path = Path.Combine(Paths.BepInExRootPath, filename);
+                if (!File.Exists(path))
+                {
+                    Debug.LogError("[SkidMenu] File not found: " + path);
+                    return null;
+                }
+                byte[] bytes = File.ReadAllBytes(path);
+                Texture2D tex = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+                tex.hideFlags = (HideFlags)61;
+                ImageConversion.LoadImage(tex, bytes, false);
+                Debug.Log($"[SkidMenu] Loaded texture {filename}: {tex.width}x{tex.height}");
+                return tex;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("[SkidMenu] LoadEmbeddedTexture error: " + e);
+            }
+            return null;
+        }
 
-		// Token: 0x060001B4 RID: 436 RVA: 0x00019188 File Offset: 0x00017388
-		private static Font LoadFontFromBytes(byte[] bytes, string name)
-		{
-			try
-			{
-				string text = Path.Combine(Paths.BepInExRootPath, name);
-				File.WriteAllBytes(text, bytes);
-				return new Font(text);
-			}
-			catch
-			{
-			}
-			return null;
-		}
+        private static Texture2D MakeTex(Color c)
+        {
+            if (_texCache.TryGetValue(c, out var existing) && existing != null) return existing;
+            var t = new Texture2D(1, 1);
+            t.SetPixel(0, 0, c);
+            t.Apply();
+            t.hideFlags = (HideFlags)61;
+            _texCache[c] = t;
+            return t;
+        }
 
-		// Token: 0x060001B5 RID: 437 RVA: 0x000191C8 File Offset: 0x000173C8
-		private static Texture2D MakeTex(Color c)
-		{
-			Texture2D existing;
-			if (GUIStylePreset._texCache.TryGetValue(c, out existing) && existing != null)
-			{
-				return existing;
-			}
-			Texture2D t = new Texture2D(1, 1);
-			t.SetPixel(0, 0, c);
-			t.Apply();
-			t.hideFlags = (UnityEngine.HideFlags)61;
-			GUIStylePreset._texCache[c] = t;
-			return t;
-		}
+        public static Texture2D MakeTex1x1(Color c) => MakeTex(c);
 
-		// Token: 0x060001B6 RID: 438 RVA: 0x0001921B File Offset: 0x0001741B
-		public static Texture2D MakeTex1x1(Color c)
-		{
-			return GUIStylePreset.MakeTex(c);
-		}
+        public static Texture2D MakeRoundedSolid(int size, Color fill, int radius, float borderAlpha)
+        {
+            Color border = new Color(0f, 0f, 0f, borderAlpha);
+            var t = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            var px = new Color[size * size];
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    if (!InRoundRect(x, y, 0, 0, size, size, radius))
+                    {
+                        px[y * size + x] = new Color(0f, 0f, 0f, 0f);
+                    }
+                    else if (IsRoundedBorder(x, y, size, radius))
+                    {
+                        px[y * size + x] = border;
+                    }
+                    else
+                    {
+                        px[y * size + x] = fill;
+                    }
+                }
+            }
+            t.SetPixels(px);
+            t.Apply();
+            t.filterMode = FilterMode.Bilinear;
+            t.wrapMode = TextureWrapMode.Clamp;
+            t.hideFlags = (HideFlags)61;
+            return t;
+        }
 
-		// Token: 0x060001B7 RID: 439 RVA: 0x00019224 File Offset: 0x00017424
-		private static Texture2D GetToggleOff()
-		{
-			if (GUIStylePreset._toggleOff != null)
-			{
-				return GUIStylePreset._toggleOff;
-			}
-			GUIStylePreset._toggleOff = GUIStylePreset.MakeRoundedTex(16, GUIStylePreset._bgHover, new Color(0f, 0f, 0f, 0f), 4, 0);
-			return GUIStylePreset._toggleOff;
-		}
+        public static Texture2D MakeRoundedSolidInner(int size, Color fill, int radius, float borderAlpha, Color innerFill, int innerPad)
+        {
+            Color border = new Color(0f, 0f, 0f, borderAlpha);
+            var t = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            var px = new Color[size * size];
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    if (!InRoundRect(x, y, 0, 0, size, size, radius))
+                    {
+                        px[y * size + x] = new Color(0f, 0f, 0f, 0f);
+                    }
+                    else if (IsRoundedBorder(x, y, size, radius))
+                    {
+                        px[y * size + x] = border;
+                    }
+                    else if (innerFill.a > 0f && InRoundRect(x, y, innerPad, innerPad, size - innerPad, size - innerPad, Mathf.Max(1, radius - 1)))
+                    {
+                        px[y * size + x] = innerFill;
+                    }
+                    else
+                    {
+                        px[y * size + x] = fill;
+                    }
+                }
+            }
+            t.SetPixels(px);
+            t.Apply();
+            t.filterMode = FilterMode.Bilinear;
+            t.wrapMode = TextureWrapMode.Clamp;
+            t.hideFlags = (HideFlags)61;
+            return t;
+        }
 
-		// Token: 0x060001B8 RID: 440 RVA: 0x00019275 File Offset: 0x00017475
-		private static Texture2D GetToggleOn()
-		{
-			if (GUIStylePreset._toggleOn != null)
-			{
-				return GUIStylePreset._toggleOn;
-			}
-			GUIStylePreset._toggleOn = GUIStylePreset.MakeRoundedTex(16, GUIStylePreset._bgHover, GUIStylePreset._accent, 4, 4);
-			return GUIStylePreset._toggleOn;
-		}
+        private static bool InSmoothRoundRect(int px, int py, int x0, int y0, int x1, int y1, int r)
+        {
+            if (px < x0 || px >= x1 || py < y0 || py >= y1) return false;
+            if (px >= x0 + r && px < x1 - r) return true;
+            if (py >= y0 + r && py < y1 - r) return true;
+            int cx = px < x0 + r ? x0 + r : x1 - r - 1;
+            int cy = py < y0 + r ? y0 + r : y1 - r - 1;
+            return Dist(px, py, cx, cy) < r;
+        }
 
-		// Token: 0x060001B9 RID: 441 RVA: 0x000192A8 File Offset: 0x000174A8
-		private static Texture2D MakeRoundedTex(int size, Color fill, Color innerFill, int radius, int innerPad)
-		{
-			Texture2D t = new Texture2D(size, size, TextureFormat.RGBA32, false);
-			Color clear;
-			clear = new Color(0f, 0f, 0f, 0f);
-			for (int y = 0; y < size; y++)
-			{
-				for (int x = 0; x < size; x++)
-				{
-					if (!GUIStylePreset.InRoundRect(x, y, 0, 0, size, size, radius))
-					{
-						t.SetPixel(x, y, clear);
-					}
-					else
-					{
-						bool inner = innerFill.a > 0f && GUIStylePreset.InRoundRect(x, y, innerPad, innerPad, size - innerPad, size - innerPad, Mathf.Max(1, radius - 1));
-						t.SetPixel(x, y, inner ? innerFill : fill);
-					}
-				}
-			}
-			t.Apply();
-			t.filterMode = FilterMode.Bilinear;
-			t.hideFlags = (UnityEngine.HideFlags)61;
-			return t;
-		}
+        private static Texture2D MakeSmoothBand(int canvas, int y0, int y1, Color fill, int radius, float borderAlpha)
+        {
+            const int ss = 4;
+            Color border = new Color(0f, 0f, 0f, borderAlpha);
+            int N = canvas * ss;
+            int D = N * ss;
+            int R = radius * ss * ss;
+            int by0 = y0 * ss * ss;
+            int by1 = y1 * ss * ss;
+            var cov = new float[N * N];
+            for (int y = 0; y < N; y++)
+            {
+                for (int x = 0; x < N; x++)
+                {
+                    int subX = x * ss;
+                    int subY = y * ss;
+                    float c = 0f;
+                    for (int sy = 0; sy < ss; sy++)
+                    {
+                        for (int sx = 0; sx < ss; sx++)
+                        {
+                            if (InSmoothRoundRect(subX + sx, subY + sy, 0, by0, D, by1, R)) c += 1f;
+                        }
+                    }
+                    cov[y * N + x] = c / (ss * ss);
+                }
+            }
+            var t = new Texture2D(N, N, TextureFormat.RGBA32, false);
+            var px = new Color[N * N];
+            for (int y = 0; y < N; y++)
+            {
+                for (int x = 0; x < N; x++)
+                {
+                    float c = cov[y * N + x];
+                    if (c <= 0f)
+                    {
+                        px[y * N + x] = new Color(0f, 0f, 0f, 0f);
+                        continue;
+                    }
+                    bool edge = false;
+                    for (int dy = -1; dy <= 1 && !edge; dy++)
+                    {
+                        for (int dx = -1; dx <= 1 && !edge; dx++)
+                        {
+                            int nx = x + dx;
+                            int ny = y + dy;
+                            if (nx < 0 || ny < 0 || nx >= N || ny >= N || cov[ny * N + nx] <= 0f) edge = true;
+                        }
+                    }
+                    Color col = edge ? border : fill;
+                    px[y * N + x] = new Color(col.r, col.g, col.b, col.a * c);
+                }
+            }
+            t.SetPixels(px);
+            t.Apply();
+            t.filterMode = FilterMode.Bilinear;
+            t.wrapMode = TextureWrapMode.Clamp;
+            t.hideFlags = (HideFlags)61;
+            return t;
+        }
 
-		// Token: 0x060001BA RID: 442 RVA: 0x00019360 File Offset: 0x00017560
-		private static bool InRoundRect(int px, int py, int x0, int y0, int x1, int y1, int r)
-		{
-			if (px < x0 || px >= x1 || py < y0 || py >= y1)
-			{
-				return false;
-			}
-			if (px < x0 + r && py < y0 + r)
-			{
-				return GUIStylePreset.Dist(px, py, x0 + r, y0 + r) < (float)r;
-			}
-			if (px >= x1 - r && py < y0 + r)
-			{
-				return GUIStylePreset.Dist(px, py, x1 - r - 1, y0 + r) < (float)r;
-			}
-			if (px < x0 + r && py >= y1 - r)
-			{
-				return GUIStylePreset.Dist(px, py, x0 + r, y1 - r - 1) < (float)r;
-			}
-			return px < x1 - r || py < y1 - r || GUIStylePreset.Dist(px, py, x1 - r - 1, y1 - r - 1) < (float)r;
-		}
+        public static Texture2D MakeRoundedSolidSmooth(int size, Color fill, int radius, float borderAlpha)
+        {
+            return MakeSmoothBand(size, 0, size, fill, radius, borderAlpha);
+        }
 
-		// Token: 0x060001BB RID: 443 RVA: 0x0001941E File Offset: 0x0001761E
-		private static float Dist(int ax, int ay, int bx, int by)
-		{
-			return Mathf.Sqrt((float)((ax - bx) * (ax - bx) + (ay - by) * (ay - by)));
-		}
+        public static Texture2D MakeSliderTrack(Color fill, int bandHeight, int radius, float borderAlpha)
+        {
+            return MakeSmoothBand(bandHeight + 6, 3, 3 + bandHeight, fill, radius, borderAlpha);
+        }
 
-		// Token: 0x1700000C RID: 12
-		// (get) Token: 0x060001BC RID: 444 RVA: 0x00019438 File Offset: 0x00017638
-		public static GUIStyle Separator
-		{
-			get
-			{
-				if (GUIStylePreset._separator == null)
-				{
-					GUIStylePreset._separator = new GUIStyle(GUI.skin.box)
-					{
-						normal = 
-						{
-							background = GUIStylePreset.MakeTex(new Color(0.25f, 0.25f, 0.3f, 1f))
-						},
-						margin = new RectOffset
-						{
-							top = 6,
-							bottom = 6,
-							left = 2,
-							right = 2
-						},
-						padding = new RectOffset(),
-						border = new RectOffset()
-					};
-				}
-				return GUIStylePreset._separator;
-			}
-		}
+        public static Texture2D MakeRoundedPanel(Color fill, int radius, float borderAlpha, float sheen, float shade)
+        {
+            const int size = 32;
+            Color border = new Color(0f, 0f, 0f, borderAlpha);
+            var t = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            var px = new Color[size * size];
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    if (!InRoundRect(x, y, 0, 0, size, size, radius))
+                    {
+                        px[y * size + x] = new Color(0f, 0f, 0f, 0f);
+                    }
+                    else if (IsRoundedBorder(x, y, size, radius))
+                    {
+                        px[y * size + x] = border;
+                    }
+                    else
+                    {
+                        float t0 = (float)y / (size - 1);
+                        px[y * size + x] = Color.Lerp(Lighten(fill, sheen), Darken(fill, shade), t0);
+                    }
+                }
+            }
+            t.SetPixels(px);
+            t.Apply();
+            t.filterMode = FilterMode.Bilinear;
+            t.wrapMode = TextureWrapMode.Clamp;
+            t.hideFlags = (HideFlags)61;
+            return t;
+        }
 
-		// Token: 0x1700000D RID: 13
-		// (get) Token: 0x060001BD RID: 445 RVA: 0x000194CC File Offset: 0x000176CC
-		public static GUIStyle DarkSeparator
-		{
-			get
-			{
-				if (GUIStylePreset._darkSeparator == null)
-				{
-					GUIStylePreset._darkSeparator = new GUIStyle(GUI.skin.box)
-					{
-						normal = 
-						{
-							background = GUIStylePreset.MakeTex(new Color(0.15f, 0.15f, 0.15f, 1f))
-						},
-						margin = new RectOffset
-						{
-							top = 4,
-							bottom = 4
-						},
-						padding = new RectOffset(),
-						border = new RectOffset()
-					};
-				}
-				return GUIStylePreset._darkSeparator;
-			}
-		}
+        private static Texture2D MakeWindowTex()
+        {
+            const int size = 32;
+            const int radius = 10;
+            Color fill = new Color(0.07f, 0.07f, 0.07f, 0.82f);
+            Color border = new Color(0f, 0f, 0f, 0.6f);
+            var t = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            var px = new Color[size * size];
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    if (!InRoundRect(x, y, 0, 0, size, size, radius))
+                    {
+                        px[y * size + x] = new Color(0f, 0f, 0f, 0f);
+                    }
+                    else if (IsRoundedBorder(x, y, size, radius))
+                    {
+                        px[y * size + x] = border;
+                    }
+                    else
+                    {
+                        float t0 = (float)y / (size - 1);
+                        px[y * size + x] = Color.Lerp(Lighten(fill, 0.05f), Darken(fill, 0.10f), t0);
+                    }
+                }
+            }
+            for (int x = radius; x < size - radius; x++)
+            {
+                px[1 * size + x] = _accent;
+                px[2 * size + x] = _accent;
+            }
+            t.SetPixels(px);
+            t.Apply();
+            t.filterMode = FilterMode.Bilinear;
+            t.wrapMode = TextureWrapMode.Clamp;
+            t.hideFlags = (HideFlags)61;
+            return t;
+        }
 
-		// Token: 0x1700000E RID: 14
-		// (get) Token: 0x060001BE RID: 446 RVA: 0x00019554 File Offset: 0x00017754
-		public static GUIStyle NormalButton
-		{
-			get
-			{
-				if (GUIStylePreset._normalButton == null)
-				{
-					GUIStylePreset._normalButton = new GUIStyle(GUI.skin.button)
-					{
-						font = GUIStylePreset.FontRegular,
-						fontSize = 13,
-						alignment = (UnityEngine.TextAnchor)4,
-						padding = new RectOffset
-						{
-							left = 12,
-							right = 12,
-							top = 4,
-							bottom = 8
-						},
-						margin = new RectOffset
-						{
-							left = 3,
-							right = 3,
-							top = 3,
-							bottom = 3
-						},
-						richText = true,
-						wordWrap = false,
-						normal = 
-						{
-							background = GUIStylePreset.MakeTex(GUIStylePreset._bg),
-							textColor = GUIStylePreset._text
-						},
-						hover = 
-						{
-							background = GUIStylePreset.MakeTex(GUIStylePreset._bgHover),
-							textColor = Color.white
-						},
-						active = 
-						{
-							background = GUIStylePreset.MakeTex(GUIStylePreset._bgActive),
-							textColor = Color.white
-						}
-					};
-				}
-				return GUIStylePreset._normalButton;
-			}
-		}
+        private static Color Lighten(Color c, float amt) => Color.Lerp(c, Color.white, amt);
 
-		// Token: 0x1700000F RID: 15
-		// (get) Token: 0x060001BF RID: 447 RVA: 0x0001966C File Offset: 0x0001786C
-		public static GUIStyle NormalToggle
-		{
-			get
-			{
-				if (GUIStylePreset._normalToggle == null)
-				{
-					GUIStylePreset._normalToggle = new GUIStyle(GUI.skin.toggle)
-					{
-						font = GUIStylePreset.FontRegular,
-						fontSize = 13,
-						padding = new RectOffset
-						{
-							left = 4,
-							right = 5,
-							top = 2,
-							bottom = 2
-						},
-						margin = new RectOffset
-						{
-							left = 3,
-							right = 3,
-							top = 3,
-							bottom = 3
-						},
-						alignment = (UnityEngine.TextAnchor)3,
-						richText = true,
-						fixedWidth = 0f,
-						fixedHeight = 0f,
-						normal = 
-						{
-							background = null,
-							textColor = GUIStylePreset._textDim
-						},
-						onNormal = 
-						{
-							background = null,
-							textColor = GUIStylePreset._text
-						},
-						hover = 
-						{
-							background = null,
-							textColor = GUIStylePreset._text
-						},
-						onHover = 
-						{
-							background = null,
-							textColor = Color.white
-						}
-					};
-				}
-				return GUIStylePreset._normalToggle;
-			}
-		}
+        private static Color Darken(Color c, float amt) => Color.Lerp(c, Color.black, amt);
 
-		// Token: 0x17000010 RID: 16
-		// (get) Token: 0x060001C0 RID: 448 RVA: 0x00019794 File Offset: 0x00017994
-		public static GUIStyle TabButton
-		{
-			get
-			{
-				if (GUIStylePreset._tabButton == null)
-				{
-					GUIStylePreset._tabButton = new GUIStyle(GUI.skin.button)
-					{
-						font = GUIStylePreset.FontRegular,
-						fontSize = 13,
-						padding = new RectOffset
-						{
-							left = 10,
-							right = 10,
-							top = 6,
-							bottom = 10
-						},
-						margin = new RectOffset
-						{
-							left = 2,
-							right = 2,
-							top = 2,
-							bottom = 2
-						},
-						alignment = (UnityEngine.TextAnchor)4,
-						wordWrap = false,
-						richText = true,
-						clipping = UnityEngine.TextClipping.Clip,
-						normal = 
-						{
-							background = GUIStylePreset.MakeTex(GUIStylePreset._bg),
-							textColor = GUIStylePreset._textDim
-						},
-						hover = 
-						{
-							background = GUIStylePreset.MakeTex(GUIStylePreset._bgHover),
-							textColor = GUIStylePreset._text
-						},
-						active = 
-						{
-							background = GUIStylePreset.MakeTex(GUIStylePreset._bgActive),
-							textColor = Color.white
-						}
-					};
-				}
-				return GUIStylePreset._tabButton;
-			}
-		}
+        private static bool IsRoundedBorder(int px, int py, int size, int radius)
+        {
+            if (!InRoundRect(px, py, 0, 0, size, size, radius)) return false;
+            if (!InRoundRect(px - 1, py, 0, 0, size, size, radius)) return true;
+            if (!InRoundRect(px + 1, py, 0, 0, size, size, radius)) return true;
+            if (!InRoundRect(px, py - 1, 0, 0, size, size, radius)) return true;
+            if (!InRoundRect(px, py + 1, 0, 0, size, size, radius)) return true;
+            return false;
+        }
 
-		// Token: 0x17000011 RID: 17
-		// (get) Token: 0x060001C1 RID: 449 RVA: 0x000198AC File Offset: 0x00017AAC
-		public static GUIStyle TabButtonSelected
-		{
-			get
-			{
-				if (GUIStylePreset._tabButtonSelected == null)
-				{
-					GUIStylePreset._tabButtonSelected = new GUIStyle(GUI.skin.button)
-					{
-						font = GUIStylePreset.FontBold,
-						fontSize = 13,
-						padding = new RectOffset
-						{
-							left = 10,
-							right = 10,
-							top = 6,
-							bottom = 10
-						},
-						margin = new RectOffset
-						{
-							left = 2,
-							right = 2,
-							top = 2,
-							bottom = 2
-						},
-						alignment = (UnityEngine.TextAnchor)4,
-						wordWrap = true,
-						richText = true,
-						normal = 
-						{
-							background = GUIStylePreset.MakeTex(GUIStylePreset._accent),
-							textColor = new Color(0.05f, 0.05f, 0.07f, 1f)
-						},
-						hover = 
-						{
-							background = GUIStylePreset.MakeTex(GUIStylePreset._accentHov),
-							textColor = new Color(0.05f, 0.05f, 0.07f, 1f)
-						},
-						active = 
-						{
-							background = GUIStylePreset.MakeTex(GUIStylePreset._accentHov),
-							textColor = new Color(0.05f, 0.05f, 0.07f, 1f)
-						}
-					};
-				}
-				return GUIStylePreset._tabButtonSelected;
-			}
-		}
+        private static bool InRoundRect(int px, int py, int x0, int y0, int x1, int y1, int r)
+        {
+            if (px < x0 || px >= x1 || py < y0 || py >= y1) return false;
+            if (px < x0 + r && py < y0 + r) return Dist(px, py, x0 + r, y0 + r) < r;
+            if (px >= x1 - r && py < y0 + r) return Dist(px, py, x1 - r - 1, y0 + r) < r;
+            if (px < x0 + r && py >= y1 - r) return Dist(px, py, x0 + r, y1 - r - 1) < r;
+            return px < x1 - r || py < y1 - r || Dist(px, py, x1 - r - 1, y1 - r - 1) < r;
+        }
 
-		// Token: 0x17000012 RID: 18
-		// (get) Token: 0x060001C2 RID: 450 RVA: 0x00019A00 File Offset: 0x00017C00
-		public static GUIStyle TabTitle
-		{
-			get
-			{
-				if (GUIStylePreset._tabTitle == null)
-				{
-					GUIStylePreset._tabTitle = new GUIStyle(GUI.skin.label)
-					{
-						font = GUIStylePreset.FontBold,
-						fontSize = 20,
-						alignment = (UnityEngine.TextAnchor)3,
-						padding = new RectOffset
-						{
-							left = 8,
-							right = 8,
-							top = 6,
-							bottom = 6
-						},
-						margin = new RectOffset
-						{
-							left = 0,
-							right = 0,
-							top = 0,
-							bottom = 4
-						},
-						richText = true,
-						normal = 
-						{
-							textColor = Color.white
-						}
-					};
-				}
-				return GUIStylePreset._tabTitle;
-			}
-		}
+        private static float Dist(int ax, int ay, int bx, int by)
+        {
+            return Mathf.Sqrt((float)((ax - bx) * (ax - bx) + (ay - by) * (ay - by)));
+        }
 
-		// Token: 0x17000013 RID: 19
-		// (get) Token: 0x060001C3 RID: 451 RVA: 0x00019AB0 File Offset: 0x00017CB0
-		public static GUIStyle TabSubtitle
-		{
-			get
-			{
-				if (GUIStylePreset._tabSubtitle == null)
-				{
-					GUIStylePreset._tabSubtitle = new GUIStyle(GUI.skin.label)
-					{
-						font = GUIStylePreset.FontBold,
-						fontSize = 13,
-						alignment = (UnityEngine.TextAnchor)3,
-						padding = new RectOffset
-						{
-							left = 8,
-							right = 8,
-							top = 4,
-							bottom = 4
-						},
-						margin = new RectOffset
-						{
-							left = 0,
-							right = 0,
-							top = 2,
-							bottom = 2
-						},
-						richText = true,
-						normal = 
-						{
-							textColor = new Color(0.6f, 0.75f, 1f, 1f)
-						}
-					};
-				}
-				return GUIStylePreset._tabSubtitle;
-			}
-		}
+        public static GUIStyle Separator
+        {
+            get
+            {
+                if (_separator == null)
+                {
+                    _separator = new GUIStyle(GUI.skin.box)
+                    {
+                        normal = { background = MakeTex(new Color(0.25f, 0.25f, 0.3f, 1f)) },
+                        margin = new RectOffset { top = 6, bottom = 6, left = 2, right = 2 },
+                        padding = new RectOffset(),
+                        border = new RectOffset()
+                    };
+                }
+                return _separator;
+            }
+        }
 
-		// Token: 0x17000014 RID: 20
-		// (get) Token: 0x060001C4 RID: 452 RVA: 0x00019B74 File Offset: 0x00017D74
-		public static GUIStyle ModernBox
-		{
-			get
-			{
-				if (GUIStylePreset._modernBox == null)
-				{
-					GUIStylePreset._modernBox = new GUIStyle(GUI.skin.box)
-					{
-						normal = 
-						{
-							background = GUIStylePreset.MakeTex(new Color(0f, 0f, 0f, 0f))
-						},
-						padding = new RectOffset
-						{
-							left = 8,
-							right = 8,
-							top = 8,
-							bottom = 8
-						},
-						margin = new RectOffset
-						{
-							left = 3,
-							right = 3,
-							top = 4,
-							bottom = 4
-						},
-						border = new RectOffset
-						{
-							left = 1,
-							right = 1,
-							top = 1,
-							bottom = 1
-						}
-					};
-				}
-				return GUIStylePreset._modernBox;
-			}
-		}
+        public static GUIStyle DarkSeparator
+        {
+            get
+            {
+                if (_darkSeparator == null)
+                {
+                    _darkSeparator = new GUIStyle(GUI.skin.box)
+                    {
+                        normal = { background = MakeTex(new Color(0.15f, 0.15f, 0.15f, 1f)) },
+                        margin = new RectOffset { top = 4, bottom = 4 },
+                        padding = new RectOffset(),
+                        border = new RectOffset()
+                    };
+                }
+                return _darkSeparator;
+            }
+        }
 
-		// Token: 0x17000015 RID: 21
-		// (get) Token: 0x060001C5 RID: 453 RVA: 0x00019C44 File Offset: 0x00017E44
-		public static GUIStyle SectionHeader
-		{
-			get
-			{
-				if (GUIStylePreset._sectionHeader == null)
-				{
-					GUIStylePreset._sectionHeader = new GUIStyle(GUI.skin.label)
-					{
-						font = GUIStylePreset.FontBold,
-						fontSize = 14,
-						alignment = (UnityEngine.TextAnchor)3,
-						padding = new RectOffset
-						{
-							left = 6,
-							right = 6,
-							top = 4,
-							bottom = 4
-						},
-						margin = new RectOffset
-						{
-							left = 2,
-							right = 2,
-							top = 6,
-							bottom = 4
-						},
-						richText = true,
-						normal = 
-						{
-							textColor = Color.white
-						}
-					};
-				}
-				return GUIStylePreset._sectionHeader;
-			}
-		}
+        public static GUIStyle NormalButton
+        {
+            get
+            {
+                if (_normalButton == null)
+                {
+                    _normalButton = new GUIStyle(GUI.skin.button)
+                    {
+                        font = FontRegular,
+                        fontSize = 13,
+                        alignment = TextAnchor.MiddleLeft,
+                        padding = new RectOffset { left = 14, right = 14, top = 5, bottom = 8 },
+                        margin = new RectOffset { left = 3, right = 3, top = 4, bottom = 4 },
+                        border = new RectOffset { left = 6, right = 6, top = 6, bottom = 6 },
+                        richText = true,
+                        wordWrap = false,
+                        normal = { background = MakeRoundedPanel(_bg, 6, 0.55f, 0.05f, 0.10f), textColor = _text },
+                        hover = { background = MakeRoundedPanel(_bgHover, 6, 0.55f, 0.05f, 0.08f), textColor = Color.white },
+                        active = { background = MakeRoundedPanel(_bgActive, 6, 0.55f, 0.04f, 0.06f), textColor = Color.white }
+                    };
+                }
+                return _normalButton;
+            }
+        }
 
-		// Token: 0x17000016 RID: 22
-		// (get) Token: 0x060001C6 RID: 454 RVA: 0x00019CF4 File Offset: 0x00017EF4
-		public static GUIStyle ModernLabel
-		{
-			get
-			{
-				if (GUIStylePreset._modernLabel == null)
-				{
-					GUIStylePreset._modernLabel = new GUIStyle(GUI.skin.label)
-					{
-						font = GUIStylePreset.FontRegular,
-						fontSize = 13,
-						alignment = (UnityEngine.TextAnchor)3,
-						padding = new RectOffset
-						{
-							left = 4,
-							right = 4,
-							top = 3,
-							bottom = 3
-						},
-						margin = new RectOffset
-						{
-							left = 2,
-							right = 2,
-							top = 1,
-							bottom = 1
-						},
-						richText = true,
-						wordWrap = true,
-						normal = 
-						{
-							textColor = GUIStylePreset._textDim
-						}
-					};
-				}
-				return GUIStylePreset._modernLabel;
-			}
-		}
+        public static GUIStyle NormalToggle
+        {
+            get
+            {
+                if (_normalToggle == null)
+                {
+                    _normalToggle = new GUIStyle(GUI.skin.toggle)
+                    {
+                        font = FontRegular,
+                        fontSize = 13,
+                        padding = new RectOffset { left = 6, right = 5, top = 2, bottom = 2 },
+                        margin = new RectOffset { left = 2, right = 2, top = 4, bottom = 4 },
+                        alignment = TextAnchor.MiddleLeft,
+                        richText = true,
+                        fixedWidth = 0f,
+                        fixedHeight = 0f,
+                        normal = { background = null, textColor = _textDim },
+                        onNormal = { background = null, textColor = _text },
+                        hover = { background = null, textColor = _text },
+                        onHover = { background = null, textColor = Color.white }
+                    };
+                }
+                return _normalToggle;
+            }
+        }
 
-		// Token: 0x17000017 RID: 23
-		// (get) Token: 0x060001C7 RID: 455 RVA: 0x00019DAA File Offset: 0x00017FAA
-		public static Texture2D SliderTrack
-		{
-			get
-			{
-				Texture2D result;
-				if ((result = GUIStylePreset._sliderTrack) == null)
-				{
-					result = (GUIStylePreset._sliderTrack = GUIStylePreset.MakeTex(new Color(0.18f, 0.18f, 0.18f, 1f)));
-				}
-				return result;
-			}
-		}
+        public static GUIStyle TabButton
+        {
+            get
+            {
+                if (_tabButton == null)
+                {
+                    _tabButton = new GUIStyle(GUI.skin.button)
+                    {
+                        font = FontRegular,
+                        fontSize = 13,
+                        padding = new RectOffset { left = 12, right = 12, top = 8, bottom = 9 },
+                        margin = new RectOffset { left = 3, right = 3, top = 3, bottom = 3 },
+                        border = new RectOffset { left = 6, right = 6, top = 6, bottom = 6 },
+                        alignment = TextAnchor.MiddleLeft,
+                        wordWrap = false,
+                        richText = true,
+                        clipping = TextClipping.Clip,
+                        normal = { background = MakeRoundedPanel(_bg, 6, 0.5f, 0.04f, 0.12f), textColor = _textDim },
+                        hover = { background = MakeRoundedPanel(_bgHover, 6, 0.5f, 0.05f, 0.09f), textColor = _text },
+                        active = { background = MakeRoundedPanel(_bgActive, 6, 0.5f, 0.04f, 0.07f), textColor = Color.white }
+                    };
+                }
+                return _tabButton;
+            }
+        }
 
-		// Token: 0x17000018 RID: 24
-		// (get) Token: 0x060001C8 RID: 456 RVA: 0x00019DD9 File Offset: 0x00017FD9
-		public static Texture2D SliderThumb
-		{
-			get
-			{
-				Texture2D result;
-				if ((result = GUIStylePreset._sliderThumb) == null)
-				{
-					result = (GUIStylePreset._sliderThumb = GUIStylePreset.MakeTex(new Color(0.6f, 1f, 0.99f, 1f)));
-				}
-				return result;
-			}
-		}
+        public static GUIStyle TabButtonSelected
+        {
+            get
+            {
+                if (_tabButtonSelected == null)
+                {
+                    _tabButtonSelected = new GUIStyle(GUI.skin.button)
+                    {
+                        font = FontBold,
+                        fontSize = 13,
+                        padding = new RectOffset { left = 12, right = 12, top = 8, bottom = 9 },
+                        margin = new RectOffset { left = 3, right = 3, top = 3, bottom = 3 },
+                        border = new RectOffset { left = 6, right = 6, top = 6, bottom = 6 },
+                        alignment = TextAnchor.MiddleLeft,
+                        wordWrap = true,
+                        richText = true,
+                        normal = { background = MakeRoundedPanel(_accent, 6, 0.7f, 0f, 0.14f), textColor = new Color(0.05f, 0.05f, 0.07f, 1f) },
+                        hover = { background = MakeRoundedPanel(_accentHov, 6, 0.7f, 0f, 0.12f), textColor = new Color(0.05f, 0.05f, 0.07f, 1f) },
+                        active = { background = MakeRoundedPanel(_accentHov, 6, 0.7f, 0f, 0.12f), textColor = new Color(0.05f, 0.05f, 0.07f, 1f) }
+                    };
+                }
+                return _tabButtonSelected;
+            }
+        }
 
-		// Token: 0x17000019 RID: 25
-		// (get) Token: 0x060001C9 RID: 457 RVA: 0x00019E08 File Offset: 0x00018008
-		public static GUIStyle WindowStyle
-		{
-			get
-			{
-				if (GUIStylePreset._windowStyle == null)
-				{
-					GUIStylePreset._windowStyle = new GUIStyle(GUI.skin.window)
-					{
-						normal = 
-						{
-							background = GUIStylePreset.MakeTex(new Color(0.07f, 0.07f, 0.07f, 0.8f)),
-							textColor = Color.white
-						},
-						onNormal = 
-						{
-							background = GUIStylePreset.MakeTex(new Color(0.07f, 0.07f, 0.07f, 0.8f)),
-							textColor = Color.white
-						},
-						fontSize = 13,
-						fontStyle = (UnityEngine.FontStyle)1,
-						alignment = (UnityEngine.TextAnchor)1,
-						border = new RectOffset
-						{
-							left = 0,
-							right = 0,
-							top = 0,
-							bottom = 0
-						},
-						padding = new RectOffset
-						{
-							left = 6,
-							right = 6,
-							top = 26,
-							bottom = 6
-						}
-					};
-				}
-				return GUIStylePreset._windowStyle;
-			}
-		}
+        public static GUIStyle TabTitle
+        {
+            get
+            {
+                if (_tabTitle == null)
+                {
+                    _tabTitle = new GUIStyle(GUI.skin.label)
+                    {
+                        font = FontBold,
+                        fontSize = 20,
+                        alignment = TextAnchor.MiddleLeft,
+                        padding = new RectOffset { left = 8, right = 8, top = 6, bottom = 6 },
+                        margin = new RectOffset { left = 0, right = 0, top = 0, bottom = 4 },
+                        richText = true,
+                        normal = { textColor = Color.white }
+                    };
+                }
+                return _tabTitle;
+            }
+        }
 
-		// Token: 0x1700001A RID: 26
-		// (get) Token: 0x060001CA RID: 458 RVA: 0x00019F0F File Offset: 0x0001810F
-		public static GUIStyle InfoLabel
-		{
-			get
-			{
-				return GUIStylePreset.ModernLabel;
-			}
-		}
+        public static GUIStyle TabSubtitle
+        {
+            get
+            {
+                if (_tabSubtitle == null)
+                {
+                    _tabSubtitle = new GUIStyle(GUI.skin.label)
+                    {
+                        font = FontBold,
+                        fontSize = 13,
+                        alignment = TextAnchor.MiddleLeft,
+                        padding = new RectOffset { left = 8, right = 8, top = 4, bottom = 4 },
+                        margin = new RectOffset { left = 0, right = 0, top = 2, bottom = 2 },
+                        richText = true,
+                        normal = { textColor = new Color(0.6f, 0.75f, 1f, 1f) }
+                    };
+                }
+                return _tabSubtitle;
+            }
+        }
 
-		public static GUIStyle SectionBox
-		{
-			get
-			{
-				if (GUIStylePreset._sectionBox == null)
-				{
-					GUIStylePreset._sectionBox = new GUIStyle(GUI.skin.box)
-					{
-						normal =
-						{
-							background = GUIStylePreset.MakeRoundedTex(16, new Color(0.13f, 0.13f, 0.13f, 1f), new Color(0.13f, 0.13f, 0.13f, 1f), 4, 0),
-							textColor = GUIStylePreset._text
-						},
-						border = new RectOffset { left = 4, right = 4, top = 4, bottom = 4 },
-						padding = new RectOffset { left = 8, right = 8, top = 6, bottom = 6 },
-						margin = new RectOffset { left = 2, right = 2, top = 4, bottom = 4 }
-					};
-				}
-				return GUIStylePreset._sectionBox;
-			}
-		}
+        public static GUIStyle ModernBox
+        {
+            get
+            {
+                if (_modernBox == null)
+                {
+                    _modernBox = new GUIStyle(GUI.skin.box)
+                    {
+                        normal = { background = MakeRoundedPanel(new Color(0.05f, 0.05f, 0.05f, 0.32f), 8, 0.35f, 0.06f, 0.05f) },
+                        padding = new RectOffset { left = 8, right = 8, top = 8, bottom = 8 },
+                        margin = new RectOffset { left = 3, right = 3, top = 4, bottom = 4 },
+                        border = new RectOffset { left = 8, right = 8, top = 8, bottom = 8 }
+                    };
+                }
+                return _modernBox;
+            }
+        }
 
-		public static GUIStyle NormalTextField
-		{
-			get
-			{
-				if (GUIStylePreset._normalTextField == null)
-				{
-					GUIStylePreset._normalTextField = new GUIStyle(GUI.skin.textField)
-					{
-						font = GUIStylePreset.FontRegular,
-						fontSize = 13,
-						alignment = (UnityEngine.TextAnchor)3,
-						padding = new RectOffset
-						{
-							left = 6,
-							right = 6,
-							top = 3,
-							bottom = 3
-						},
-						margin = new RectOffset
-						{
-							left = 3,
-							right = 3,
-							top = 3,
-							bottom = 3
-						},
-						normal = 
-						{
-							background = GUIStylePreset.MakeTex(new Color(0.15f, 0.15f, 0.15f, 1f)),
-							textColor = GUIStylePreset._text
-						},
-						focused =
-						{
-							background = GUIStylePreset.MakeTex(new Color(0.21f, 0.21f, 0.21f, 1f)),
-							textColor = Color.white
-						},
-						hover =
-						{
-							background = GUIStylePreset.MakeTex(new Color(0.18f, 0.18f, 0.18f, 1f)),
-							textColor = GUIStylePreset._text
-						}
-					};
-				}
-				return GUIStylePreset._normalTextField;
-			}
-		}
+        public static GUIStyle SectionHeader
+        {
+            get
+            {
+                if (_sectionHeader == null)
+                {
+                    _sectionHeader = new GUIStyle(GUI.skin.label)
+                    {
+                        font = FontBold,
+                        fontSize = 14,
+                        alignment = TextAnchor.MiddleLeft,
+                        padding = new RectOffset { left = 6, right = 6, top = 4, bottom = 4 },
+                        margin = new RectOffset { left = 2, right = 2, top = 6, bottom = 4 },
+                        richText = true,
+                        normal = { textColor = Color.white }
+                    };
+                }
+                return _sectionHeader;
+            }
+        }
 
-		// Token: 0x1700001B RID: 27
-		// (get) Token: 0x060001CB RID: 459 RVA: 0x00019F18 File Offset: 0x00018118
-		private static GUIStyle ToggleBoxOff
-		{
-			get
-			{
-				if (GUIStylePreset._toggleBoxOff == null)
-				{
-					GUIStylePreset._toggleBoxOff = new GUIStyle
-					{
-						normal = 
-						{
-							background = GUIStylePreset.GetToggleOff()
-						},
-						fixedWidth = 16f,
-						fixedHeight = 16f,
-						margin = new RectOffset
-						{
-							left = 3,
-							right = 4,
-							top = 3,
-							bottom = 3
-						},
-						padding = new RectOffset()
-					};
-				}
-				return GUIStylePreset._toggleBoxOff;
-			}
-		}
+        public static GUIStyle ModernLabel
+        {
+            get
+            {
+                if (_modernLabel == null)
+                {
+                    _modernLabel = new GUIStyle(GUI.skin.label)
+                    {
+                        font = FontRegular,
+                        fontSize = 13,
+                        alignment = TextAnchor.MiddleLeft,
+                        padding = new RectOffset { left = 4, right = 4, top = 3, bottom = 3 },
+                        margin = new RectOffset { left = 2, right = 2, top = 1, bottom = 1 },
+                        richText = true,
+                        wordWrap = true,
+                        normal = { textColor = _textDim }
+                    };
+                }
+                return _modernLabel;
+            }
+        }
 
-		// Token: 0x1700001C RID: 28
-		// (get) Token: 0x060001CC RID: 460 RVA: 0x00019F94 File Offset: 0x00018194
-		private static GUIStyle ToggleBoxOn
-		{
-			get
-			{
-				if (GUIStylePreset._toggleBoxOn == null)
-				{
-					GUIStylePreset._toggleBoxOn = new GUIStyle
-					{
-						normal = 
-						{
-							background = GUIStylePreset.GetToggleOn()
-						},
-						fixedWidth = 16f,
-						fixedHeight = 16f,
-						margin = new RectOffset
-						{
-							left = 3,
-							right = 4,
-							top = 3,
-							bottom = 3
-						},
-						padding = new RectOffset()
-					};
-				}
-				return GUIStylePreset._toggleBoxOn;
-			}
-		}
+        public static Texture2D SliderTrack
+        {
+            get
+            {
+                if (_sliderTrack == null) _sliderTrack = MakeSliderTrack(new Color(0.18f, 0.18f, 0.18f, 1f), 8, 3, 0.4f);
+                return _sliderTrack;
+            }
+        }
 
-		// Token: 0x060001CD RID: 461 RVA: 0x0001A010 File Offset: 0x00018210
-		private static readonly GUILayoutOption[] _toggleIconOpts  = { GUILayout.Width(16f), GUILayout.Height(16f) };
-		private static readonly GUILayoutOption[] _toggleLabelOpts = { GUILayout.ExpandWidth(false) };
+        public static Texture2D SliderThumb
+        {
+            get
+            {
+                if (_sliderThumb == null) _sliderThumb = MakeRoundedSolidSmooth(16, _accent, 8, 0.5f);
+                return _sliderThumb;
+            }
+        }
 
-		public static bool CustomToggle(bool value, string label, params GUILayoutOption[] options)
-		{
-			GUILayout.BeginHorizontal(options);
-			bool clicked = GUILayout.Button("", value ? GUIStylePreset.ToggleBoxOn : GUIStylePreset.ToggleBoxOff, _toggleIconOpts);
-			GUILayout.Label(label, GUIStylePreset.NormalToggle, _toggleLabelOpts);
-			GUILayout.EndHorizontal();
-			if (!clicked)
-			{
-				return value;
-			}
-			return !value;
-		}
+        public static Texture2D SliderThumbHover
+        {
+            get
+            {
+                if (_sliderThumbHover == null) _sliderThumbHover = MakeRoundedSolidSmooth(16, _accentHov, 8, 0.5f);
+                return _sliderThumbHover;
+            }
+        }
 
-		// Token: 0x060001CE RID: 462 RVA: 0x0001A088 File Offset: 0x00018288
-		public static void Reset()
-		{
-			GUIStylePreset._toggleOff = (GUIStylePreset._toggleOn = null);
-			GUIStylePreset._toggleBoxOff = (GUIStylePreset._toggleBoxOn = null);
-			GUIStylePreset._separator = (GUIStylePreset._darkSeparator = (GUIStylePreset._normalButton = (GUIStylePreset._normalToggle = null)));
-			GUIStylePreset._tabButton = (GUIStylePreset._tabButtonSelected = (GUIStylePreset._tabTitle = (GUIStylePreset._tabSubtitle = null)));
-			GUIStylePreset._modernBox = (GUIStylePreset._sectionHeader = (GUIStylePreset._modernLabel = (GUIStylePreset._normalTextField = (GUIStylePreset._sectionBox = (GUIStylePreset._windowStyle = null)))));
-			GUIStylePreset._sliderTrack = (GUIStylePreset._sliderThumb = null);
-			GUIStylePreset._fontRegular = (GUIStylePreset._fontBold = null);
-			if (GUIStylePreset._toggleOff != null) { UnityEngine.Object.Destroy(GUIStylePreset._toggleOff); GUIStylePreset._toggleOff = null; }
-			if (GUIStylePreset._toggleOn  != null) { UnityEngine.Object.Destroy(GUIStylePreset._toggleOn);  GUIStylePreset._toggleOn  = null; }
-			if (GUIStylePreset._fontRegular != null) { UnityEngine.Object.Destroy(GUIStylePreset._fontRegular); }
-			if (GUIStylePreset._fontBold    != null) { UnityEngine.Object.Destroy(GUIStylePreset._fontBold); }
-			foreach (Texture2D tex in GUIStylePreset._texCache.Values)
-			{
-				if (tex != null) UnityEngine.Object.Destroy(tex);
-			}
-			GUIStylePreset._texCache.Clear();
-		}
+        public static Texture2D ActionButtonBg
+        {
+            get
+            {
+                if (_actionButtonBg == null)
+                    _actionButtonBg = MakeRoundedPanel(new Color(0.22f, 0.22f, 0.22f, 1f), 6, 0.55f, 0.05f, 0.09f);
+                return _actionButtonBg;
+            }
+        }
 
-		// Token: 0x04000227 RID: 551
-		private static GUIStyle _separator;
+        public static Texture2D WhiteButtonBg
+        {
+            get
+            {
+                if (_whiteButtonBg == null)
+                    _whiteButtonBg = MakeRoundedPanel(new Color(0.4f, 0.4f, 0.4f, 1f), 6, 0.5f, 0.03f, 0.05f);
+                return _whiteButtonBg;
+            }
+        }
 
-		// Token: 0x04000228 RID: 552
-		private static GUIStyle _darkSeparator;
+        public static GUIStyle WindowStyle
+        {
+            get
+            {
+                if (_windowStyle == null)
+                {
+                    if (_windowTex == null) _windowTex = MakeWindowTex();
+                    _windowStyle = new GUIStyle(GUI.skin.window)
+                    {
+                        normal = { background = _windowTex, textColor = Color.white },
+                        onNormal = { background = _windowTex, textColor = Color.white },
+                        fontSize = 14,
+                        fontStyle = FontStyle.Bold,
+                        alignment = TextAnchor.UpperCenter,
+                        border = new RectOffset { left = 10, right = 10, top = 10, bottom = 10 },
+                        padding = new RectOffset { left = 8, right = 8, top = 34, bottom = 8 }
+                    };
+                }
+                return _windowStyle;
+            }
+        }
 
-		// Token: 0x04000229 RID: 553
-		private static GUIStyle _normalButton;
+        public static GUIStyle InfoLabel => ModernLabel;
 
-		// Token: 0x0400022A RID: 554
-		private static GUIStyle _normalToggle;
+        public static GUIStyle SectionBox
+        {
+            get
+            {
+                if (_sectionBox == null)
+                {
+                    _sectionBox = new GUIStyle(GUI.skin.box)
+                    {
+                        normal = { background = MakeRoundedPanel(new Color(0.13f, 0.13f, 0.13f, 1f), 8, 0.45f, 0.05f, 0.08f), textColor = _text },
+                        border = new RectOffset { left = 8, right = 8, top = 8, bottom = 8 },
+                        padding = new RectOffset { left = 8, right = 8, top = 6, bottom = 6 },
+                        margin = new RectOffset { left = 2, right = 2, top = 4, bottom = 4 }
+                    };
+                }
+                return _sectionBox;
+            }
+        }
 
-		// Token: 0x0400022B RID: 555
-		private static GUIStyle _tabButton;
+        public static GUIStyle NormalTextField
+        {
+            get
+            {
+                if (_normalTextField == null)
+                {
+                    _normalTextField = new GUIStyle(GUI.skin.textField)
+                    {
+                        font = FontRegular,
+                        fontSize = 13,
+                        alignment = TextAnchor.MiddleLeft,
+                        padding = new RectOffset { left = 7, right = 7, top = 4, bottom = 4 },
+                        margin = new RectOffset { left = 3, right = 3, top = 4, bottom = 4 },
+                        border = new RectOffset { left = 6, right = 6, top = 6, bottom = 6 },
+                        normal = { background = MakeRoundedPanel(new Color(0.15f, 0.15f, 0.15f, 1f), 6, 0.5f, 0.06f, 0.10f), textColor = _text },
+                        focused = { background = MakeRoundedPanel(new Color(0.21f, 0.21f, 0.21f, 1f), 6, 0.0f, 0.05f, 0.08f), textColor = Color.white },
+                        hover = { background = MakeRoundedPanel(new Color(0.18f, 0.18f, 0.18f, 1f), 6, 0.5f, 0.05f, 0.09f), textColor = _text }
+                    };
+                }
+                return _normalTextField;
+            }
+        }
 
-		// Token: 0x0400022C RID: 556
-		private static GUIStyle _tabButtonSelected;
+        private static GUIStyle ToggleBoxOff
+        {
+            get
+            {
+                if (_toggleBoxOff == null)
+                {
+                    _toggleBoxOff = new GUIStyle
+                    {
+                        normal = { background = MakeRoundedSolid(18, _bgHover, 5, 0.5f) },
+                        fixedWidth = 18f,
+                        fixedHeight = 18f,
+                        margin = new RectOffset { left = 3, right = 5, top = 4, bottom = 4 },
+                        padding = new RectOffset()
+                    };
+                }
+                return _toggleBoxOff;
+            }
+        }
 
-		// Token: 0x0400022D RID: 557
-		private static GUIStyle _tabTitle;
+        private static GUIStyle ToggleBoxOn
+        {
+            get
+            {
+                if (_toggleBoxOn == null)
+                {
+                    _toggleBoxOn = new GUIStyle
+                    {
+                        normal = { background = MakeRoundedSolidInner(18, _bgHover, 5, 0.5f, _accent, 3) },
+                        fixedWidth = 18f,
+                        fixedHeight = 18f,
+                        margin = new RectOffset { left = 3, right = 5, top = 4, bottom = 4 },
+                        padding = new RectOffset()
+                    };
+                }
+                return _toggleBoxOn;
+            }
+        }
 
-		// Token: 0x0400022E RID: 558
-		private static GUIStyle _tabSubtitle;
+        private static readonly GUILayoutOption[] _toggleIconOpts = { GUILayout.Width(18f), GUILayout.Height(18f) };
+        private static readonly GUILayoutOption[] _toggleLabelOpts = { GUILayout.ExpandWidth(false) };
 
-		// Token: 0x0400022F RID: 559
-		private static GUIStyle _modernBox;
+        public static bool CustomToggle(bool value, string label, params GUILayoutOption[] options)
+        {
+            GUILayout.BeginHorizontal(options);
+            bool clicked = GUILayout.Button("", value ? ToggleBoxOn : ToggleBoxOff, _toggleIconOpts);
+            GUILayout.Label(label, NormalToggle, _toggleLabelOpts);
+            GUILayout.EndHorizontal();
+            if (!clicked) return value;
+            return !value;
+        }
 
-		// Token: 0x04000230 RID: 560
-		private static GUIStyle _sectionHeader;
+        public static void Reset()
+        {
+            _separator = null;
+            _darkSeparator = null;
+            _normalButton = null;
+            _normalToggle = null;
+            _tabButton = null;
+            _tabButtonSelected = null;
+            _tabTitle = null;
+            _tabSubtitle = null;
+            _modernBox = null;
+            _sectionHeader = null;
+            _modernLabel = null;
+            _normalTextField = null;
+            _sectionBox = null;
+            _windowStyle = null;
+            _sliderTrack = null;
+            _sliderThumb = null;
+            _sliderThumbHover = null;
+            _actionButtonBg = null;
+            _whiteButtonBg = null;
+            _toggleBoxOff = null;
+            _toggleBoxOn = null;
+            _windowTex = null;
+            _cornerOverlayStyle = null;
+            foreach (var tex in _texCache.Values)
+            {
+                if (tex != null) UnityEngine.Object.Destroy(tex);
+            }
+            _texCache.Clear();
+        }
 
-		// Token: 0x04000231 RID: 561
-		private static GUIStyle _modernLabel;
-		private static GUIStyle _normalTextField;
-		private static GUIStyle _sectionBox;
+        private static GUIStyle _separator;
+        private static GUIStyle _darkSeparator;
+        private static GUIStyle _normalButton;
+        private static GUIStyle _normalToggle;
+        private static GUIStyle _tabButton;
+        private static GUIStyle _tabButtonSelected;
+        private static GUIStyle _tabTitle;
+        private static GUIStyle _tabSubtitle;
+        private static GUIStyle _modernBox;
+        private static GUIStyle _sectionHeader;
+        private static GUIStyle _modernLabel;
+        private static GUIStyle _normalTextField;
+        private static GUIStyle _sectionBox;
+        private static GUIStyle _windowStyle;
+        private static GUIStyle _toggleBoxOff;
+        private static GUIStyle _toggleBoxOn;
+        private static Texture2D _windowTex;
 
-		// Token: 0x04000232 RID: 562
-		private static readonly Dictionary<Color, Texture2D> _texCache = new Dictionary<Color, Texture2D>();
+        private static readonly Dictionary<Color, Texture2D> _texCache = new Dictionary<Color, Texture2D>();
+        private static Font _fontRegular;
+        private static Font _fontBold;
+        private static Texture2D _sliderTrack;
+        private static Texture2D _sliderThumb;
+        private static Texture2D _sliderThumbHover;
+        private static Texture2D _actionButtonBg;
+        private static Texture2D _whiteButtonBg;
 
-		// Token: 0x04000233 RID: 563
-		private static Font _fontRegular;
+        private static readonly Color _bg = new Color(0.1f, 0.1f, 0.1f, 1f);
+        private static readonly Color _bgHover = new Color(0.16f, 0.16f, 0.16f, 1f);
+        private static readonly Color _bgActive = new Color(0.22f, 0.22f, 0.22f, 1f);
+        private static readonly Color _accent = new Color(0.6f, 1f, 0.99f, 1f);
+        private static readonly Color _accentHov = new Color(0.75f, 1f, 0.99f, 1f);
+        private static readonly Color _text = new Color(0.93f, 0.93f, 0.95f, 1f);
+        private static readonly Color _textDim = new Color(0.7f, 0.7f, 0.73f, 1f);
 
-		// Token: 0x04000234 RID: 564
-		private static Font _fontBold;
+        private static GUIStyle _cornerOverlayStyle;
 
-		// Token: 0x04000235 RID: 565
-		private static readonly Color _bg = new Color(0.1f, 0.1f, 0.1f, 1f);
+        public static GUIStyle CornerOverlayStyle
+        {
+            get
+            {
+                if (_cornerOverlayStyle == null)
+                {
+                    _cornerOverlayStyle = new GUIStyle
+                    {
+                        normal = { background = GenerateCornerOverlay() },
+                        border = new RectOffset { left = 10, right = 10, top = 10, bottom = 10 },
+                        padding = new RectOffset(),
+                        margin = new RectOffset(),
+                        overflow = new RectOffset()
+                    };
+                }
+                return _cornerOverlayStyle;
+            }
+        }
 
-		// Token: 0x04000236 RID: 566
-		private static readonly Color _bgHover = new Color(0.16f, 0.16f, 0.16f, 1f);
+        private static Texture2D GenerateCornerOverlay()
+        {
+            const int size = 32;
+            const int radius = 10;
+            Color fill = new Color(0.07f, 0.07f, 0.07f, 0.82f);
 
-		// Token: 0x04000237 RID: 567
-		private static readonly Color _bgActive = new Color(0.22f, 0.22f, 0.22f, 1f);
-
-		// Token: 0x04000238 RID: 568
-		private static readonly Color _accent = new Color(0.6f, 1f, 0.99f, 1f);
-
-		// Token: 0x04000239 RID: 569
-		private static readonly Color _accentHov = new Color(0.75f, 1f, 0.99f, 1f);
-
-		// Token: 0x0400023A RID: 570
-		private static readonly Color _text = new Color(0.93f, 0.93f, 0.95f, 1f);
-
-		// Token: 0x0400023B RID: 571
-		private static readonly Color _textDim = new Color(0.7f, 0.7f, 0.73f, 1f);
-
-		// Token: 0x0400023C RID: 572
-		private static Texture2D _toggleOff;
-
-		// Token: 0x0400023D RID: 573
-		private static Texture2D _toggleOn;
-
-		// Token: 0x0400023E RID: 574
-		private static Texture2D _sliderTrack;
-
-		// Token: 0x0400023F RID: 575
-		private static Texture2D _sliderThumb;
-
-		// Token: 0x04000240 RID: 576
-		private static GUIStyle _windowStyle;
-
-		// Token: 0x04000241 RID: 577
-		private static GUIStyle _toggleBoxOff;
-
-		// Token: 0x04000242 RID: 578
-		private static GUIStyle _toggleBoxOn;
-	}
+            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            var px = new Color[size * size];
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    if (InRoundRect(x, y, 0, 0, size, size, radius))
+                        px[y * size + x] = Color.clear;
+                    else
+                        px[y * size + x] = fill;
+                }
+            }
+            tex.SetPixels(px);
+            tex.Apply();
+            tex.filterMode = FilterMode.Bilinear;
+            tex.wrapMode = TextureWrapMode.Clamp;
+            tex.hideFlags = (HideFlags)61;
+            return tex;
+        }
+    }
 }

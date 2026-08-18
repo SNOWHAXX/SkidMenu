@@ -1840,6 +1840,7 @@ public struct CheatToggles
                 case "WindowRect.Console": if (TryParseRect(valuePart, out var rc)) { ConsoleUI.PendingRect = rc; ConsoleUI.PendingRectSet = true; } break;
                 case "WindowRect.Doors":   if (TryParseRect(valuePart, out var rd)) { DoorsUI.PendingRect = rd; DoorsUI.PendingRectSet = true; } break;
                 case "WindowRect.Tasks":   if (TryParseRect(valuePart, out var rt)) { TasksUI.PendingRect = rt; TasksUI.PendingRectSet = true; } break;
+                case "Profile.AutoLoad":   if (bool.TryParse(valuePart, out var pal2)) SkidMenu.autoLoadProfile = pal2; break;
             }
         }
     }

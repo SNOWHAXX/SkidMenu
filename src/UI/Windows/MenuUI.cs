@@ -321,21 +321,23 @@ public class MenuUI : MonoBehaviour
 
     public static void DrawBgAndOverlay(float w, float h)
     {
-        var bgTex = GetBgTexture();
-        if (bgTex != null)
+        if (_bgBoxStyle == null) { _bgBoxStyle = new GUIStyle(); _bgBoxStyle.normal.background = GetBgTexture(); }
+        if (_bgBoxStyle.normal.background != null)
         {
             var prev = GUI.color;
             GUI.color = new Color(1f, 1f, 1f, 0.09f);
-            GUI.Box(new Rect(0, 0, w, h), GUIContent.none, new GUIStyle { normal = { background = bgTex } });
+            GUI.Box(new Rect(0, 0, w, h), GUIContent.none, _bgBoxStyle);
             GUI.color = prev;
         }
         if (_overlayTex != null)
         {
+            if (_overlayBoxStyle == null) { _overlayBoxStyle = new GUIStyle(); _overlayBoxStyle.normal.background = _overlayTex; }
             var prev = GUI.color;
             GUI.color = new Color(1f, 1f, 1f, 0.05f);
-            GUI.Box(new Rect(0, 0, w, h), GUIContent.none, new GUIStyle { normal = { background = _overlayTex } });
+            GUI.Box(new Rect(0, 0, w, h), GUIContent.none, _overlayBoxStyle);
             GUI.color = prev;
         }
+        GUI.Box(new Rect(0, 0, w, h), GUIContent.none, GUIStylePreset.CornerOverlayStyle);
     }
 
     public static GUISkin GetCustomSkin()
@@ -353,11 +355,12 @@ public class MenuUI : MonoBehaviour
         }
         _customSkin = UnityEngine.Object.Instantiate(GUI.skin);
         _customSkin.button.fontSize        = 13;
-        _customSkin.button.padding         = new RectOffset { left = 10, right = 10, top = 6, bottom = 6 };
+        _customSkin.button.padding         = new RectOffset { left = 8, right = 8, top = 6, bottom = 7 };
         _customSkin.button.margin          = new RectOffset { left = 3, right = 3, top = 3, bottom = 3 };
-        _customSkin.button.normal.background  = GUIStylePreset.MakeTex1x1(new Color(0.13f, 0.13f, 0.13f, 1f));
-        _customSkin.button.hover.background   = GUIStylePreset.MakeTex1x1(new Color(0.18f, 0.18f, 0.18f, 1f));
-        _customSkin.button.active.background  = GUIStylePreset.MakeTex1x1(new Color(0.23f, 0.23f, 0.23f, 1f));
+        _customSkin.button.border          = new RectOffset { left = 6, right = 6, top = 6, bottom = 6 };
+        _customSkin.button.normal.background  = GUIStylePreset.MakeRoundedPanel(new Color(0.13f, 0.13f, 0.13f, 1f), 6, 0.5f, 0.05f, 0.10f);
+        _customSkin.button.hover.background   = GUIStylePreset.MakeRoundedPanel(new Color(0.18f, 0.18f, 0.18f, 1f), 6, 0.5f, 0.05f, 0.08f);
+        _customSkin.button.active.background  = GUIStylePreset.MakeRoundedPanel(new Color(0.23f, 0.23f, 0.23f, 1f), 6, 0.5f, 0.04f, 0.06f);
         _customSkin.button.normal.textColor   = new Color(0.88f, 0.88f, 0.90f, 1f);
         _customSkin.button.hover.textColor    = Color.white;
         _customSkin.button.active.textColor   = Color.white;
@@ -375,34 +378,45 @@ public class MenuUI : MonoBehaviour
         _customSkin.button.font                     = GUIStylePreset.FontRegular;
         _customSkin.toggle.font                     = GUIStylePreset.FontRegular;
         _customSkin.label.normal.textColor       = new Color(0.88f, 0.88f, 0.90f, 1f);
-        var sliderTrack = GUIStylePreset.MakeTex1x1(new Color(0.18f, 0.18f, 0.18f, 1f));
-        var sliderThumb = GUIStylePreset.MakeTex1x1(new Color(0.60f, 1.00f, 0.99f, 1f));
-        _customSkin.horizontalSlider.normal.background      = sliderTrack;
-        _customSkin.horizontalSlider.hover.background       = sliderTrack;
-        _customSkin.horizontalSliderThumb.normal.background = sliderThumb;
-        _customSkin.horizontalSliderThumb.hover.background  = sliderThumb;
-        _customSkin.horizontalSliderThumb.active.background = GUIStylePreset.MakeTex1x1(new Color(0.75f, 1.00f, 0.99f, 1f));
-        _customSkin.horizontalSliderThumb.fixedWidth        = 12f;
-        _customSkin.horizontalSliderThumb.fixedHeight       = 12f;
+        _customSkin.horizontalSlider.normal.background      = GUIStylePreset.SliderTrack;
+        _customSkin.horizontalSlider.hover.background       = GUIStylePreset.SliderTrack;
+        _customSkin.horizontalSlider.active.background      = GUIStylePreset.SliderTrack;
+        _customSkin.horizontalSlider.padding                = new RectOffset();
+        _customSkin.horizontalSlider.margin                 = new RectOffset();
+        _customSkin.horizontalSlider.border                 = new RectOffset { left = 12, right = 12, top = 12, bottom = 12 };
+        _customSkin.horizontalSlider.fixedHeight            = 14f;
+        _customSkin.horizontalSliderThumb.normal.background = GUIStylePreset.SliderThumb;
+        _customSkin.horizontalSliderThumb.hover.background  = GUIStylePreset.SliderThumbHover;
+        _customSkin.horizontalSliderThumb.active.background = GUIStylePreset.SliderThumbHover;
+        _customSkin.horizontalSliderThumb.padding           = new RectOffset();
+        _customSkin.horizontalSliderThumb.margin            = new RectOffset();
+        _customSkin.horizontalSliderThumb.border            = new RectOffset();
+        _customSkin.horizontalSliderThumb.fixedWidth        = 16f;
+        _customSkin.horizontalSliderThumb.fixedHeight       = 16f;
 
-        var scrollTrack = GUIStylePreset.MakeTex1x1(new Color(0.10f, 0.10f, 0.10f, 1f));
-        var scrollThumb = GUIStylePreset.MakeTex1x1(new Color(0.28f, 0.28f, 0.28f, 1f));
-        var scrollThumbHov = GUIStylePreset.MakeTex1x1(new Color(0.38f, 0.38f, 0.38f, 1f));
+        var scrollTrack = GUIStylePreset.MakeRoundedSolid(8, new Color(0.10f, 0.10f, 0.10f, 1f), 3, 0.3f);
+        var scrollThumb = GUIStylePreset.MakeRoundedSolid(8, new Color(0.28f, 0.28f, 0.28f, 1f), 3, 0.4f);
+        var scrollThumbHov = GUIStylePreset.MakeRoundedSolid(8, new Color(0.38f, 0.38f, 0.38f, 1f), 3, 0.4f);
 
         _customSkin.verticalScrollbar.normal.background        = scrollTrack;
         _customSkin.verticalScrollbar.fixedWidth               = 6f;
+        _customSkin.verticalScrollbar.border                   = new RectOffset { left = 2, right = 2, top = 2, bottom = 2 };
         _customSkin.verticalScrollbarThumb.normal.background   = scrollThumb;
         _customSkin.verticalScrollbarThumb.hover.background    = scrollThumbHov;
         _customSkin.verticalScrollbarThumb.active.background   = scrollThumbHov;
         _customSkin.verticalScrollbarThumb.fixedWidth          = 6f;
+        _customSkin.verticalScrollbarThumb.border              = new RectOffset { left = 2, right = 2, top = 2, bottom = 2 };
         _customSkin.verticalScrollbarUpButton.fixedHeight      = 0f;
         _customSkin.verticalScrollbarDownButton.fixedHeight    = 0f;
 
         _customSkin.horizontalScrollbar.normal.background      = scrollTrack;
-        _customSkin.horizontalScrollbar.fixedHeight            = 9f;
+        _customSkin.horizontalScrollbar.fixedHeight            = 6f;
+        _customSkin.horizontalScrollbar.border                 = new RectOffset { left = 2, right = 2, top = 2, bottom = 2 };
         _customSkin.horizontalScrollbarThumb.normal.background = scrollThumb;
         _customSkin.horizontalScrollbarThumb.hover.background  = scrollThumbHov;
-        _customSkin.horizontalScrollbarThumb.fixedHeight       = 9f;
+        _customSkin.horizontalScrollbarThumb.active.background = scrollThumbHov;
+        _customSkin.horizontalScrollbarThumb.fixedHeight       = 6f;
+        _customSkin.horizontalScrollbarThumb.border            = new RectOffset { left = 2, right = 2, top = 2, bottom = 2 };
         _customSkin.horizontalScrollbarLeftButton.fixedWidth   = 0f;
         _customSkin.horizontalScrollbarRightButton.fixedWidth  = 0f;
 
@@ -454,24 +468,7 @@ public class MenuUI : MonoBehaviour
         GUI.skin = prevSkin;
         GUI.backgroundColor = Color.white;
 
-        var bgTex = GetBgTexture();
-        if (bgTex != null)
-        {
-            if (_bgBoxStyle == null) { _bgBoxStyle = new GUIStyle(); _bgBoxStyle.normal.background = bgTex; }
-            var prevColor2 = GUI.color;
-            GUI.color = new Color(1f, 1f, 1f, 0.09f);
-            GUI.Box(new Rect(0, 0, windowWidth, windowHeight), GUIContent.none, _bgBoxStyle);
-            GUI.color = prevColor2;
-        }
-
-        if (_overlayTex != null)
-        {
-            if (_overlayBoxStyle == null) { _overlayBoxStyle = new GUIStyle(); _overlayBoxStyle.normal.background = _overlayTex; }
-            var prevColor3 = GUI.color;
-            GUI.color = new Color(1f, 1f, 1f, 0.05f);
-            GUI.Box(new Rect(0, 0, windowWidth, windowHeight), GUIContent.none, _overlayBoxStyle);
-            GUI.color = prevColor3;
-        }
+        DrawBgAndOverlay(windowWidth, windowHeight);
 
         GUI.DragWindow();
     }
