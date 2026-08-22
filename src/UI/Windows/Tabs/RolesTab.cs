@@ -60,7 +60,6 @@ public class RolesTab : ITab
         GUILayout.Space(15);
 
         DrawScientist();
-
         GUILayout.Space(15);
 
         DrawDetective();
@@ -69,6 +68,10 @@ public class RolesTab : ITab
         GUILayout.Space(15);
 
         DrawGuardianAngel();
+
+        GUILayout.Space(15);
+
+        DrawJudge();
 
         GUILayout.EndVertical();
 
@@ -219,6 +222,14 @@ public class RolesTab : ITab
         CheatToggles.gaInfiniteRange = GUIStylePreset.CustomToggle(CheatToggles.gaInfiniteRange, " Infinite Protect Range");
 
         CheatToggles.gaIgnoreImpostors = GUIStylePreset.CustomToggle(CheatToggles.gaIgnoreImpostors, " Ignore Impostors");
+    }
+
+    private void DrawJudge()
+    {
+        GUILayout.Label("Judge", GUIStylePreset.TabSubtitle);
+
+        features.JudgeCheats.InstantUnlock  = GUIStylePreset.CustomToggle(features.JudgeCheats.InstantUnlock, " Instant Overrule Unlock");
+        features.JudgeCheats.InfiniteGavels = GUIStylePreset.CustomToggle(features.JudgeCheats.InfiniteGavels, " Infinite Gavels");
     }
 }
 

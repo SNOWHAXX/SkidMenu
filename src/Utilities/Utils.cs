@@ -32,8 +32,8 @@ public static class Utils
     public static bool isHost => (AmongUsClient.Instance && AmongUsClient.Instance.AmHost) || CheatToggles.bypassHostOnly;
     public static bool isInGame => AmongUsClient.Instance && AmongUsClient.Instance.GameState == InnerNetClient.GameStates.Started && isPlayer;
     public static bool isMeeting => MeetingHud.Instance;
-    public static bool isMeetingVoting => isMeeting && MeetingHud.Instance.state is MeetingHud.VoteStates.Voted or MeetingHud.VoteStates.NotVoted;
-    public static bool isMeetingProceeding => isMeeting && MeetingHud.Instance.state is MeetingHud.VoteStates.Proceeding;
+    public static bool isMeetingVoting => isMeeting && MeetingHud.Instance.CurrentState is MeetingHud.MeetingStates.Voted or MeetingHud.MeetingStates.NotVoted;
+    public static bool isMeetingProceeding => isMeeting && MeetingHud.Instance.CurrentState is MeetingHud.MeetingStates.Proceeding;
     public static bool isExiling => ExileController.Instance && !(isAirshipMap && SpawnInMinigame.Instance.isActiveAndEnabled);
     public static bool isAnySabotageActive => ShipStatus.Instance && SabotageSystem.AnyActive;
     public static bool isNormalGame => GameOptionsManager.Instance.CurrentGameOptions.GameMode == GameModes.Normal;
@@ -596,6 +596,7 @@ public static class Utils
             case RoleTypes.Noisemaker:    return new Color(0.56f, 0.93f, 0.56f);
             case RoleTypes.Engineer:      return new Color(1f,    0.41f, 0.71f);
             case RoleTypes.Tracker:       return new Color(0.5f,  0f,    0.5f);
+            case RoleTypes.Judge:         return new Color(0.25f, 0.5f,  1f);
             default:
                 var rn = GetRoleName(playerInfo).ToLowerInvariant();
                 if (rn.Contains("viper"))     return new Color(0f,   0.39f, 0f);

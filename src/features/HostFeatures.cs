@@ -13,7 +13,8 @@ public static class HostFeatures
     public static readonly RoleTypes[] ValidRoles = {
         RoleTypes.Crewmate, RoleTypes.Impostor, RoleTypes.Scientist,
         RoleTypes.Engineer, RoleTypes.GuardianAngel, RoleTypes.Shapeshifter,
-        RoleTypes.Tracker, RoleTypes.Noisemaker, RoleTypes.Phantom, RoleTypes.Detective
+        RoleTypes.Tracker, RoleTypes.Noisemaker, RoleTypes.Phantom, RoleTypes.Detective,
+        RoleTypes.Judge
     };
 
     public static int selectedRoleIndex = 0;

@@ -6,6 +6,9 @@ namespace SkidMenu.ui
         public string message;
         public readonly float ttl;
         public float lifetime;
+        public float slideProgress;
+        public bool dying;
+        public float deathProgress;
 
         public Notification(string title, string message, float ttl)
         {
@@ -13,6 +16,9 @@ namespace SkidMenu.ui
             this.message = message;
             this.ttl = ttl;
             this.lifetime = 0;
+            this.slideProgress = 0;
+            this.dying = false;
+            this.deathProgress = 0;
         }
 
         public bool HasExpired

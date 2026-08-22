@@ -20,6 +20,7 @@ public class ConfigTab : ITab
             { "17.2.2", 50653700 },
             { "17.3",   50655150 },
             { "17.4",   50656300 },
+            { "18.0",   50663350 },
         };
 
     private int versionSelection = 0;
@@ -44,14 +45,17 @@ public class ConfigTab : ITab
 
         Spoofer.shouldSpoofVersion = GUIStylePreset.CustomToggle(Spoofer.shouldSpoofVersion, "Enable Version Spoofing");
 
+        GUILayout.Space(6);
         GUILayout.Label($"Spoofed Version: {versions.ElementAt(versionSelection).Key} ({Spoofer.spoofedVersion})");
-        versionSelection = (int)GUILayout.HorizontalSlider(versionSelection, 0, versions.Count - 1);
+        versionSelection = (int)GUILayout.HorizontalSlider(versionSelection, 0, versions.Count - 1, GUILayout.Width(300));
         Spoofer.spoofedVersion = versions.ElementAt(versionSelection).Value;
 
+        GUILayout.Space(6);
         Spoofer.useModdedProtocol = GUIStylePreset.CustomToggle(Spoofer.useModdedProtocol, "Use Modded Protocol");
 
+        GUILayout.Space(6);
         GUILayout.Label($"Spoofed Platform: {Spoofer.spoofedPlatform}");
-        Platforms newSpoofedPlatform = (Platforms)GUILayout.HorizontalSlider((float)Spoofer.spoofedPlatform, 0, 10);
+        Platforms newSpoofedPlatform = (Platforms)GUILayout.HorizontalSlider((float)Spoofer.spoofedPlatform, 0, 10, GUILayout.Width(300));
         if (newSpoofedPlatform != Spoofer.spoofedPlatform)
         {
             Spoofer.spoofedPlatform = newSpoofedPlatform;
@@ -64,8 +68,11 @@ public class ConfigTab : ITab
     private void DrawGeneral()
     {
         if (GUILayout.Button("Open Config"))  CheatToggles.openConfig   = true;
+        GUILayout.Space(3);
         if (GUILayout.Button("Reload Config")) CheatToggles.reloadConfig = true;
+        GUILayout.Space(3);
         if (GUILayout.Button("Save to Profile"))   CheatToggles.saveProfile  = true;
+        GUILayout.Space(3);
         if (GUILayout.Button("Load from Profile")) CheatToggles.loadProfile  = true;
     }
 }

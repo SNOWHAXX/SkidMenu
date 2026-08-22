@@ -58,11 +58,12 @@ public class SpoofingTab : ITab
     private GUIStyle GetFullRandStyle()
     {
         if (_fullRandStyle != null) return _fullRandStyle;
-        var bg = GUIStylePreset.MakeTex1x1(new Color(0.45f, 0.45f, 0.45f, 1f));
-        _fullRandStyle = new GUIStyle(GUI.skin.button);
+        var bg = GUIStylePreset.WhiteButtonBg;
+        _fullRandStyle = new GUIStyle(GUI.skin.button) { border = new RectOffset { left = 6, right = 6, top = 6, bottom = 6 } };
         _fullRandStyle.normal.background = bg;
         _fullRandStyle.hover.background  = bg;
         _fullRandStyle.active.background = bg;
+        _fullRandStyle.normal.textColor = _fullRandStyle.hover.textColor = _fullRandStyle.active.textColor = new Color(0.10f, 0.10f, 0.12f, 1f);
         return _fullRandStyle;
     }
 
@@ -74,7 +75,7 @@ public class SpoofingTab : ITab
             _initialized = true;
         }
 
-        GUILayout.BeginVertical(GUILayout.Width(MenuUI.windowWidth * 0.425f));
+        GUILayout.BeginVertical(GUILayout.Width(MenuUI.windowWidth * 0.74f));
 
         DrawSpoofingSettings();
         GUILayout.Space(15);
@@ -253,6 +254,8 @@ public class SpoofingTab : ITab
     {
         GUILayout.Label("Spoofing Settings", GUIStylePreset.TabSubtitle);
 
+        string prevMin = _randomMinInput;
+        string prevMax = _randomMaxInput;
         GUILayout.BeginHorizontal();
         GUILayout.Label("Spoof Level (1-100001):", GUILayout.Width(150));
         HandleCustomTextField(ref _spoofLevelInput, "spoofLevel", 150);
@@ -263,17 +266,10 @@ public class SpoofingTab : ITab
             else
                 _spoofLevelInput = SkidMenu.spoofLevel;
         }
-
-        string prevMin = _randomMinInput;
-        string prevMax = _randomMaxInput;
+        GUILayout.Label("Random Min:", GUILayout.Width(75));
         HandleCustomTextField(ref _randomMinInput, "randomMin", 50);
+        GUILayout.Label("Max:", GUILayout.Width(35));
         HandleCustomTextField(ref _randomMaxInput, "randomMax", 50);
-
-        if (_randomMinInput != prevMin && int.TryParse(_randomMinInput, NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsedMin) && parsedMin >= 1 && parsedMin <= 100001)
-            SkidMenu.spoofLevelRandomMin = parsedMin;
-        if (_randomMaxInput != prevMax && int.TryParse(_randomMaxInput, NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsedMax) && parsedMax >= 1 && parsedMax <= 100001)
-            SkidMenu.spoofLevelRandomMax = parsedMax;
-
         if (GUILayout.Button("Random", GUILayout.Width(60)))
         {
             int mn = SkidMenu.spoofLevelRandomMin;
@@ -288,6 +284,11 @@ public class SpoofingTab : ITab
             _spoofLevelInput = "";
         }
         GUILayout.EndHorizontal();
+
+        if (_randomMinInput != prevMin && int.TryParse(_randomMinInput, NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsedMin) && parsedMin >= 1 && parsedMin <= 100001)
+            SkidMenu.spoofLevelRandomMin = parsedMin;
+        if (_randomMaxInput != prevMax && int.TryParse(_randomMaxInput, NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsedMax) && parsedMax >= 1 && parsedMax <= 100001)
+            SkidMenu.spoofLevelRandomMax = parsedMax;
 
         GUILayout.Space(5);
 
@@ -443,7 +444,7 @@ public class SpoofingTab : ITab
         GUILayout.Space(4);
         GUILayout.BeginHorizontal();
         GUILayout.Label($"Length: {_nameLength}", GUILayout.Width(80));
-        int newLength = (int)GUILayout.HorizontalSlider(_nameLength, 3, 10, GUILayout.Width(150));
+        int newLength = (int)GUILayout.HorizontalSlider(_nameLength, 3, 10, GUILayout.Width(180));
         if (newLength != _nameLength) { _nameLength = newLength; features.NameSpoofer.RandomLength = _nameLength; SkidMenu.nameSpoofLength = _nameLength; }
         if (GUILayout.Button("Generate & Apply", GUILayout.Width(130)))
         {

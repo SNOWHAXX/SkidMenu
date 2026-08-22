@@ -269,31 +269,31 @@ public static class Notif_Vote
     public static void Postfix(MeetingHud __instance)
     {
         if (!CheatToggles.notifVote) return;
-        if (__instance.state >= MeetingHud.VoteStates.Results) { _logged.Clear(); return; }
+        if (__instance.CurrentState >= MeetingHud.MeetingStates.Results) { _logged.Clear(); return; }
         try
         {
             foreach (var area in __instance.playerStates)
             {
                 if (area == null) continue;
-                if (area.VotedFor == PlayerVoteArea.HasNotVoted) continue;
-                if (area.VotedFor == PlayerVoteArea.MissedVote) continue;
-                if (area.VotedFor == PlayerVoteArea.DeadVote) continue;
-                if (_logged.Contains(area.TargetPlayerId)) continue;
-                _logged.Add(area.TargetPlayerId);
+                if (area.VotedForId == PlayerVoteArea.HasNotVoted) continue;
+                if (area.VotedForId == PlayerVoteArea.MissedVote) continue;
+                if (area.VotedForId == PlayerVoteArea.DeadVote) continue;
+                if (_logged.Contains(area.PlayerId)) continue;
+                _logged.Add(area.PlayerId);
                 PlayerControl voter = null;
                 foreach (var p in PlayerControl.AllPlayerControls)
-                    if (p.PlayerId == area.TargetPlayerId) { voter = p; break; }
+                    if (p.PlayerId == area.PlayerId) { voter = p; break; }
                 if (voter == null || NotifHelper.Skip(voter, 8)) continue;
                 string voterName = voter.AmOwner ? "<color=#00ff88>You</color>" : NotifHelper.Fmt(voter);
-                if (area.VotedFor == PlayerVoteArea.SkippedVote)
+                if (area.VotedForId == PlayerVoteArea.SkippedVote)
                 {
                     SkidMenu.notifications.Send("<color=#aaaaaa>◆ Vote</color>", $"{voterName} skipped", 2.5f);
                     continue;
                 }
                 PlayerControl suspect = null;
                 foreach (var p in PlayerControl.AllPlayerControls)
-                    if (p.PlayerId == area.VotedFor) { suspect = p; break; }
-                string suspectName = suspect != null ? NotifHelper.Fmt(suspect) : $"<color=#aaaaaa>#{area.VotedFor}</color>";
+                    if (p.PlayerId == area.VotedForId) { suspect = p; break; }
+                string suspectName = suspect != null ? NotifHelper.Fmt(suspect) : $"<color=#aaaaaa>#{(byte)area.VotedForId}</color>";
                 SkidMenu.notifications.Send("<color=#ff9900>◉ Vote</color>", $"{voterName} voted {suspectName}", 2.5f);
             }
         }
@@ -403,6 +403,34 @@ public static class Notif_Ejection
             : $"<color=#aaaaaa>{exiled.PlayerName} (disconnected)</color>";
         SkidMenu.notifications.Send("<color=#ff8888>💀 Ejected</color>",
             $"{name} was ejected{NotifHelper.Room(exiled.Object)}", 4f);
+    }
+}
+
+// Judge verdict
+[HarmonyPatch(typeof(MeetingHud), nameof(MeetingHud.VotingComplete))]
+public static class Notif_Verdict
+{
+    public static void Postfix(NetworkedPlayerInfo exiled, bool wasOverruled, int overruleNonce)
+    {
+        if (!CheatToggles.notifVerdict || !wasOverruled || exiled == null) return;
+        try
+        {
+            var judge = features.JudgeCheats.GetAttributedJudge(exiled.PlayerId);
+            if (exiled.Object != null && NotifHelper.Skip(exiled.Object, 22) && judge != null && judge.AmOwner) return;
+            string targetName = exiled.Object != null
+                ? (exiled.Object.AmOwner ? "<color=#ff4444>You</color>" : NotifHelper.Fmt(exiled.Object))
+                : $"<color=#aaaaaa>{exiled.PlayerName}</color>";
+            string judgeName = judge != null
+                ? (judge.AmOwner ? "<color=#00ff88>You</color>" : NotifHelper.Fmt(judge))
+                : "<color=#aaaaaa>unknown</color>";
+            bool hitUs = exiled.Object != null && exiled.Object.AmOwner;
+            string title = hitUs ? "<color=#ff4444>🔨 Gavelled</color>" : "<color=#5599ff>🔨 Verdict</color>";
+            string body = hitUs
+                ? $"Ejected by gavel ({judgeName}) <color=#888888>· nonce {overruleNonce}</color>"
+                : $"{targetName} ejected by gavel ({judgeName}) <color=#888888>· nonce {overruleNonce}{NotifHelper.Room(exiled.Object)}</color>";
+            SkidMenu.notifications.Send(title, body, 5f);
+        }
+        catch { }
     }
 }
 

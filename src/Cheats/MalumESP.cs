@@ -152,7 +152,7 @@ public static class MalumESP
             foreach (var playerState in meetingHud.playerStates)
             {
                 if (playerState == null || playerState.NameText == null) continue;
-                var data = GameData.Instance.GetPlayerById(playerState.TargetPlayerId);
+                var data = GameData.Instance.GetPlayerById(playerState.PlayerId);
                 if (data == null || data.IsNull() || data.Outfits[PlayerOutfitType.Default].IsNull()) continue;
 
                 playerState.NameText.text = Utils.GetNameTag(data, data.DefaultOutfit.PlayerName, false);

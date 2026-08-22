@@ -44,6 +44,7 @@ public class MovementTab : ITab
         GUILayout.Label($"Speed Multiplier: {mult:F2}x");
         mult = GUILayout.HorizontalSlider(mult, 0.01f, 10f, GUILayout.Width(400f));
 
+        GUILayout.Space(3);
         GUILayout.BeginHorizontal();
         if (GUILayout.Button("-1", GUILayout.Width(40))) mult -= 1f;
         if (GUILayout.Button("-0.1", GUILayout.Width(45))) mult -= 0.1f;
@@ -56,11 +57,12 @@ public class MovementTab : ITab
 
         features.Self.PlayerSpeedModifier.Multiplier = Mathf.Clamp(mult, 0.01f, 10f);
 
-        GUILayout.Space(8);
+        GUILayout.Space(10);
         features.Self.CurrentSpeedChanger.Enabled = GUIStylePreset.CustomToggle(features.Self.CurrentSpeedChanger.Enabled, " Current Speed Changer");
         GUILayout.Label($"Target Speed: {features.Self.CurrentSpeedChanger.Speed:F2}");
         features.Self.CurrentSpeedChanger.Speed = GUILayout.HorizontalSlider(features.Self.CurrentSpeedChanger.Speed, 0f, 10f, GUILayout.Width(550f));
 
+        GUILayout.Space(3);
         GUILayout.BeginHorizontal();
         if (GUILayout.Button("-1", GUILayout.Width(40)))    features.Self.CurrentSpeedChanger.Speed -= 1f;
         if (GUILayout.Button("-0.1", GUILayout.Width(45)))  features.Self.CurrentSpeedChanger.Speed -= 0.1f;

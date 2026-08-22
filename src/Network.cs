@@ -232,7 +232,7 @@ namespace SkidMenu
 
 			public void QueueVotingComplete(MeetingHud.VoterState[] voteStates, NetworkedPlayerInfo ejectedPlayer, bool isTie)
 			{
-				MeetingHud.Instance.VotingComplete(voteStates, ejectedPlayer, isTie);
+				MeetingHud.Instance.VotingComplete(voteStates, ejectedPlayer, isTie, false, 0);
 
 				writer.StartMessage((byte)GameDataTypes.RpcFlag);
 				writer.WritePacked(MeetingHud.Instance.NetId);

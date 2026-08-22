@@ -35,13 +35,13 @@ public static class SkipRoleReveal
         }
     }
 
-    [HarmonyPatch(typeof(MeetingHud), nameof(MeetingHud.UpdateButtons))]
+    [HarmonyPatch(typeof(MeetingHud), nameof(MeetingHud.Update))]
     static class UpdateButtonsFix
     {
         static bool Prefix(MeetingHud __instance)
         {
             if (!Enabled) return true;
-            try { return __instance.state < MeetingHud.VoteStates.Results; }
+            try { return __instance.CurrentState < MeetingHud.MeetingStates.Results; }
             catch { return false; }
         }
     }

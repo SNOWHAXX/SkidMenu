@@ -31,8 +31,6 @@ internal class AutoHostTab : ITab
         Toggle(ref SkidMenu.autoHostReturnAfterMatch,     "Return after match");
         Toggle(ref SkidMenu.autoHostForceLastMinute,      "Last-minute start");
 
-        GUILayout.Space(6);
-
         Slider(ref SkidMenu.autoHostMinPlayers,           1,   15,  "Min players",       v => $"{v}");
         Slider(ref SkidMenu.autoHostForceMinPlayers,      1,   15,  "Force min players", v => $"{v}");
         Slider(ref SkidMenu.autoHostWarmupSeconds,        0,  120,  "Lobby warmup",      v => v == 0 ? "Off" : $"{v}s");

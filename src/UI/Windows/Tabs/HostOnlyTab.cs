@@ -126,7 +126,8 @@ public class HostOnlyTab : ITab
         GUILayout.BeginVertical(GUIStylePreset.SectionBox);
         GUILayout.Label("Meetings");
         CheatToggles.skipMeeting = GUIStylePreset.CustomToggle(CheatToggles.skipMeeting, " Skip Meeting");
-        CheatToggles.voteImmune  = GUIStylePreset.CustomToggle(CheatToggles.voteImmune, " Vote Immune");
+                CheatToggles.voteImmune  = GUIStylePreset.CustomToggle(CheatToggles.voteImmune, " Vote Immune");
+        CheatToggles.judgeImmune = GUIStylePreset.CustomToggle(CheatToggles.judgeImmune, " Judge Immune");
         CheatToggles.ejectPlayer = GUIStylePreset.CustomToggle(CheatToggles.ejectPlayer, " Eject Player");
         GUILayout.EndVertical();
     }
@@ -316,6 +317,7 @@ public class HostOnlyTab : ITab
         RoleTypes.Tracker,
         RoleTypes.Detective,
         RoleTypes.Viper,
+        RoleTypes.Judge,
     };
 
     private void DrawRoleAssigner()

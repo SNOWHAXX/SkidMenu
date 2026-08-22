@@ -42,15 +42,15 @@ public static class MeetingHud_Update
     {
         try
         {
-        if (CheatToggles.revealVotes && __instance.state < MeetingHud.VoteStates.Results)
+        if (CheatToggles.revealVotes && __instance.CurrentState < MeetingHud.MeetingStates.Results)
         {
             foreach (var area in __instance.playerStates)
             {
                 if (area == null) continue;
-                if (area.VotedFor != PlayerVoteArea.HasNotVoted &&
-                    area.VotedFor != PlayerVoteArea.MissedVote &&
-                    area.VotedFor != PlayerVoteArea.DeadVote)
-                    _voteCache[area.TargetPlayerId] = (byte)area.VotedFor;
+                if (area.VotedForId != PlayerVoteArea.HasNotVoted &&
+                    area.VotedForId != PlayerVoteArea.MissedVote &&
+                    area.VotedForId != PlayerVoteArea.DeadVote)
+                    _voteCache[area.PlayerId] = (byte)area.VotedForId;
             }
 
             bool anyReset = false;
@@ -60,20 +60,20 @@ public static class MeetingHud_Update
             foreach (var area in __instance.playerStates)
             {
                 if (area == null) continue;
-                if (!connectedIds.Contains(area.TargetPlayerId) && votedPlayers.Contains(area.TargetPlayerId) && !_handledDisconnects.Contains(area.TargetPlayerId)) { _handledDisconnects.Add(area.TargetPlayerId); anyReset = true; break; }
+                if (!connectedIds.Contains(area.PlayerId) && votedPlayers.Contains(area.PlayerId) && !_handledDisconnects.Contains(area.PlayerId)) { _handledDisconnects.Add(area.PlayerId); anyReset = true; break; }
             }
             foreach (var area in __instance.playerStates)
             {
                 if (area == null) continue;
-                _lastVotes.TryGetValue(area.TargetPlayerId, out byte prev);
-                byte cur = (byte)area.VotedFor;
-                var voter = GameData.Instance?.GetPlayerById(area.TargetPlayerId);
+                _lastVotes.TryGetValue(area.PlayerId, out byte prev);
+                byte cur = (byte)area.VotedForId;
+                var voter = GameData.Instance?.GetPlayerById(area.PlayerId);
                 bool stillConnected = voter != null && !voter.Disconnected;
                 if (prev != 0 && cur != prev && stillConnected &&
-                    (area.VotedFor == PlayerVoteArea.HasNotVoted ||
-                     area.VotedFor == PlayerVoteArea.MissedVote  ||
-                     area.VotedFor == PlayerVoteArea.DeadVote)) anyReset = true;
-                _lastVotes[area.TargetPlayerId] = cur;
+                    (area.VotedForId == PlayerVoteArea.HasNotVoted ||
+                     area.VotedForId == PlayerVoteArea.MissedVote  ||
+                     area.VotedForId == PlayerVoteArea.DeadVote)) anyReset = true;
+                _lastVotes[area.PlayerId] = cur;
             }
             if (anyReset)
             {
@@ -116,7 +116,7 @@ public static class MeetingHud_Update
                             foreach (var area in __instance.playerStates)
                             {
                                 if (area == null || area.transform == null) continue;
-                                if (area.TargetPlayerId != targetId) continue;
+                                if (area.PlayerId != targetId) continue;
                                 var vs2 = area.transform.GetComponent<VoteSpreader>();
                                 int vi = vs2 != null ? vs2.Votes.Count : 0;
                                 __instance.BloopAVoteIcon(voterData, vi, area.transform);
@@ -130,22 +130,22 @@ public static class MeetingHud_Update
             foreach (var playerVoteArea in __instance.playerStates)
             {
                 if (!playerVoteArea) continue;
-                if (playerVoteArea.VotedFor == PlayerVoteArea.HasNotVoted) continue;
-                if (playerVoteArea.VotedFor == PlayerVoteArea.MissedVote)  continue;
-                if (playerVoteArea.VotedFor == PlayerVoteArea.DeadVote)    continue;
-                if (votedPlayers.Contains(playerVoteArea.TargetPlayerId))  continue;
+                if (playerVoteArea.VotedForId == PlayerVoteArea.HasNotVoted) continue;
+                if (playerVoteArea.VotedForId == PlayerVoteArea.MissedVote)  continue;
+                if (playerVoteArea.VotedForId == PlayerVoteArea.DeadVote)    continue;
+                if (votedPlayers.Contains(playerVoteArea.PlayerId))  continue;
 
                 if (GameData.Instance == null) continue;
-                var playerData = GameData.Instance.GetPlayerById(playerVoteArea.TargetPlayerId);
+                var playerData = GameData.Instance.GetPlayerById(playerVoteArea.PlayerId);
                 if (playerData == null) continue;
 
-                votedPlayers.Add(playerVoteArea.TargetPlayerId);
+                votedPlayers.Add(playerVoteArea.PlayerId);
 
-                if (playerVoteArea.VotedFor != PlayerVoteArea.SkippedVote)
+                if (playerVoteArea.VotedForId != PlayerVoteArea.SkippedVote)
                 {
                     foreach (var votedForArea in __instance.playerStates)
                     {
-                        if (votedForArea.TargetPlayerId != playerVoteArea.VotedFor) continue;
+                        if (votedForArea.PlayerId != (byte)playerVoteArea.VotedForId) continue;
                         var voteSpreader = votedForArea.transform.GetComponent<VoteSpreader>();
                         int voteIdx = voteSpreader != null ? voteSpreader.Votes.Count : 0;
                         __instance.BloopAVoteIcon(playerData, voteIdx, votedForArea.transform);
@@ -231,7 +231,7 @@ public static class MeetingHud_CheckForEndVoting
     {
         if (!CheatToggles.voteImmune) return true;
 
-        if (!__instance.playerStates.All(ps => { var pd = GameData.Instance.GetPlayerById(ps.TargetPlayerId); return ps.AmDead || ps.DidVote || (pd != null && pd.Disconnected); })) return true;
+        if (!__instance.playerStates.All(ps => { var pd = GameData.Instance.GetPlayerById(ps.PlayerId); return ps.AmDead || ps.DidVote || (pd != null && pd.Disconnected); })) return true;
 
         var max = __instance.CalculateVotes().MaxPair(out var tie);
         var exiled = GameData.Instance.AllPlayers.ToArray().FirstOrDefault(v => !tie && v.PlayerId == max.Key && !v.Disconnected);
@@ -246,12 +246,12 @@ public static class MeetingHud_CheckForEndVoting
             var playerState = __instance.playerStates[index];
             states[index] = new MeetingHud.VoterState
             {
-                VoterId = playerState.TargetPlayerId,
-                VotedForId = playerState.VotedFor
+                VoterId = playerState.PlayerId,
+                VotedForId = playerState.VotedForId
             };
         }
 
-        __instance.RpcVotingComplete(states, exiled, tie);
+        __instance.RpcVotingComplete(states, exiled, tie, false, 0);
         return false;
     }
 }

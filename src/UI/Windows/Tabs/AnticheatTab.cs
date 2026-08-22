@@ -90,10 +90,11 @@ namespace SkidMenu
             {
                 bool selected = (int)Anticheat.punishment == i;
                 var prev = GUI.backgroundColor;
-                var punBg = GUIStylePreset.MakeTex1x1(new Color(0.45f, 0.45f, 0.45f, 1f));
-                var punStyle = new GUIStyle(GUI.skin.button);
+                var punBg = GUIStylePreset.WhiteButtonBg;
+                var punStyle = new GUIStyle(GUI.skin.button) { border = new RectOffset { left = 6, right = 6, top = 6, bottom = 6 } };
                 punStyle.normal.background = punBg; punStyle.hover.background = punBg; punStyle.active.background = punBg;
-                GUI.backgroundColor = selected ? HostPunishColors[i] : new Color(0.25f, 0.25f, 0.25f);
+                punStyle.normal.textColor = punStyle.hover.textColor = punStyle.active.textColor = new Color(0.10f, 0.10f, 0.12f, 1f);
+                GUI.backgroundColor = selected ? HostPunishColors[i] : new Color(0.55f, 0.55f, 0.55f);
                 if (GUILayout.Button(HostPunishLabels[i], punStyle, GUILayout.Width(90), GUILayout.Height(28)))
                     Anticheat.punishment = (Anticheat.Punishments)i;
                 GUI.backgroundColor = prev;
@@ -126,10 +127,11 @@ namespace SkidMenu
             {
                 bool selected = (int)Anticheat.nonHostPunishment == i;
                 var prev = GUI.backgroundColor;
-                var punBg2 = GUIStylePreset.MakeTex1x1(new Color(0.45f, 0.45f, 0.45f, 1f));
-                var punStyle2 = new GUIStyle(GUI.skin.button);
+                var punBg2 = GUIStylePreset.WhiteButtonBg;
+                var punStyle2 = new GUIStyle(GUI.skin.button) { border = new RectOffset { left = 6, right = 6, top = 6, bottom = 6 } };
                 punStyle2.normal.background = punBg2; punStyle2.hover.background = punBg2; punStyle2.active.background = punBg2;
-                GUI.backgroundColor = selected ? NonHostPunishColors[i] : new Color(0.25f, 0.25f, 0.25f);
+                punStyle2.normal.textColor = punStyle2.hover.textColor = punStyle2.active.textColor = new Color(0.10f, 0.10f, 0.12f, 1f);
+                GUI.backgroundColor = selected ? NonHostPunishColors[i] : new Color(0.55f, 0.55f, 0.55f);
                 if (GUILayout.Button(NonHostPunishLabels[i], punStyle2, GUILayout.Width(100), GUILayout.Height(28)))
                     Anticheat.nonHostPunishment = (Anticheat.NonHostPunishments)i;
                 GUI.backgroundColor = prev;
@@ -263,9 +265,10 @@ namespace SkidMenu
 
             GUILayout.BeginHorizontal();
             var prevBg = GUI.backgroundColor;
-            var acBg = GUIStylePreset.MakeTex1x1(new Color(0.45f, 0.45f, 0.45f, 1f));
-            var acStyle = new GUIStyle(GUI.skin.button);
+            var acBg = GUIStylePreset.WhiteButtonBg;
+            var acStyle = new GUIStyle(GUI.skin.button) { border = new RectOffset { left = 6, right = 6, top = 6, bottom = 6 } };
             acStyle.normal.background = acBg; acStyle.hover.background = acBg; acStyle.active.background = acBg;
+            acStyle.normal.textColor = acStyle.hover.textColor = acStyle.active.textColor = new Color(0.10f, 0.10f, 0.12f, 1f);
             GUI.backgroundColor = new Color(0.6f, 0.1f, 0.1f);
             if (GUILayout.Button("Clear All", acStyle)) Blacklist.Clear();
             GUI.backgroundColor = prevBg;
@@ -281,10 +284,11 @@ namespace SkidMenu
                 {
                     if (p == null || p.AmOwner || p.Data == null) continue;
                     bool listed = Blacklist.Match(p) != null;
-                    var blBg = GUIStylePreset.MakeTex1x1(new Color(0.45f, 0.45f, 0.45f, 1f));
-                    var blStyle = new GUIStyle(GUI.skin.button);
+                    var blBg = GUIStylePreset.WhiteButtonBg;
+                    var blStyle = new GUIStyle(GUI.skin.button) { border = new RectOffset { left = 6, right = 6, top = 6, bottom = 6 } };
                     blStyle.normal.background = blBg; blStyle.hover.background = blBg; blStyle.active.background = blBg;
-                    GUI.backgroundColor = listed ? new Color(0.5f, 0.1f, 0.1f) : new Color(0.3f, 0.3f, 0.3f);
+                    blStyle.normal.textColor = blStyle.hover.textColor = blStyle.active.textColor = new Color(0.10f, 0.10f, 0.12f, 1f);
+                    GUI.backgroundColor = listed ? new Color(0.5f, 0.1f, 0.1f) : new Color(0.55f, 0.55f, 0.55f);
                     if (GUILayout.Button(listed ? $"✕ Remove {p.Data.PlayerName}" : $"+ Add {p.Data.PlayerName}", blStyle))
                     {
                         if (listed) { var idx = Blacklist.Entries.FindIndex(e => e.FriendCode == p.Data.FriendCode || e.Puid == p.Data.Puid); Blacklist.Remove(idx); }
