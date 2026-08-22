@@ -1,4 +1,4 @@
-﻿name: Fetch NuGet Dependencies
+name: Fetch NuGet Dependencies
 
 # This allows you to trigger the action manually from the GitHub UI
 on: [workflow_dispatch] 
@@ -21,7 +21,7 @@ jobs:
       run: dotnet restore src/NexusMenu.csproj --packages ./downloaded-packages
 
     - name: Upload Packages as Artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: Offline-NuGet-Packages
         path: ./downloaded-packages
