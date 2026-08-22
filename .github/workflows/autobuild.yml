@@ -1,4 +1,4 @@
-﻿name: Build and Release BepInEx Mod
+name: Build and Release BepInEx Mod
 
 on:
   workflow_dispatch:
@@ -51,7 +51,7 @@ jobs:
           fi
 
       - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           # Change this to match the SDK version you use to compile (e.g., '6.0.x', '8.0.x')
           dotnet-version: '6.0.x' 
