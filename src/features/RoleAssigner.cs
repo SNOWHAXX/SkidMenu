@@ -16,7 +16,7 @@ public static class RoleAssigner
     private static readonly RoleTypes[] _randomPool = new[] {
         RoleTypes.Impostor, RoleTypes.Shapeshifter, RoleTypes.Phantom,
         RoleTypes.Scientist, RoleTypes.Engineer, RoleTypes.Noisemaker,
-        RoleTypes.Tracker, RoleTypes.GuardianAngel
+        RoleTypes.Tracker, RoleTypes.GuardianAngel, RoleTypes.Judge
     };
 
     public static bool IsActive => Enabled && (AmongUsClient.Instance?.AmHost == true || CheatToggles.bypassHostOnly);

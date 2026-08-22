@@ -69,6 +69,7 @@ public class ConsoleTab : ITab
         CheatToggles.logEjections = GUIStylePreset.CustomToggle(CheatToggles.logEjections, " Log Ejections");
         CheatToggles.logVotes     = GUIStylePreset.CustomToggle(CheatToggles.logVotes, " Log Votes");
         CheatToggles.logVotekicks = GUIStylePreset.CustomToggle(CheatToggles.logVotekicks, " Log Votekicks");
+        CheatToggles.logVerdict   = GUIStylePreset.CustomToggle(CheatToggles.logVerdict, " Log Judge Verdicts");
 
         GUILayout.Space(5);
         GUILayout.Label("-- Game --");

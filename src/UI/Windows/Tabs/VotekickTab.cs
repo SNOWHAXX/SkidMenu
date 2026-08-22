@@ -81,11 +81,12 @@ public class VotekickTab : ITab
         GUILayout.Space(5);
 
         var prevBg = GUI.backgroundColor;
-        var actionBg = GUIStylePreset.MakeTex1x1(new Color(0.45f, 0.45f, 0.45f, 1f));
-        var actionStyle = new GUIStyle(GUI.skin.button);
+        var actionBg = GUIStylePreset.WhiteButtonBg;
+        var actionStyle = new GUIStyle(GUI.skin.button) { border = new RectOffset { left = 6, right = 6, top = 6, bottom = 6 } };
         actionStyle.normal.background = actionBg;
         actionStyle.hover.background  = actionBg;
         actionStyle.active.background = actionBg;
+        actionStyle.normal.textColor = actionStyle.hover.textColor = actionStyle.active.textColor = new Color(0.10f, 0.10f, 0.12f, 1f);
         GUI.backgroundColor = new Color(0.7f, 0.15f, 0.15f, 1f);
         if (GUILayout.Button("VOTEKICK ALL NOW", actionStyle, GUILayout.Height(32)))
         {
@@ -98,7 +99,7 @@ public class VotekickTab : ITab
     private void DrawPlayerList()
     {
         GUILayout.Label("Players", GUIStylePreset.TabSubtitle);
-        GUILayout.Space(3);
+        GUILayout.Space(5);
 
         bool hasPlayers = false;
         foreach (PlayerControl player in PlayerControl.AllPlayerControls.ToArray())
@@ -133,12 +134,13 @@ public class VotekickTab : ITab
                 ? (Color)Palette.PlayerColors[colorId]
                 : Color.white;
             Color.RGBToHSV(playerColor, out float h, out float s, out float v);
-            Color buttonBg = Color.HSVToRGB(h, Mathf.Min(1f, s * 1.2f), Mathf.Clamp(v * 1.3f, 0.5f, 1f));
-            var lightBg = GUIStylePreset.MakeTex1x1(new Color(0.45f, 0.45f, 0.45f, 1f));
+            Color buttonBg = s < 0.15f ? Color.HSVToRGB(0f, 0f, Mathf.Clamp(v * 2f, 0.5f, 1f)) : Color.HSVToRGB(h, Mathf.Min(1f, s), Mathf.Clamp(v * 1.3f, 0.5f, 1f));
+            var lightBg = GUIStylePreset.WhiteButtonBg;
             var coloredStyle = new GUIStyle(GUIStylePreset.NormalButton);
             coloredStyle.normal.background = lightBg;
             coloredStyle.hover.background  = lightBg;
             coloredStyle.active.background = lightBg;
+            coloredStyle.normal.textColor = coloredStyle.hover.textColor = coloredStyle.active.textColor = new Color(0.10f, 0.10f, 0.12f, 1f);
 
             string playerName = player.Data.DefaultOutfit.PlayerName ?? $"Client {clientId}";
             string hostTag  = isHost ? " <color=#ff4444>[HOST]</color>" : "";
@@ -183,12 +185,13 @@ public class VotekickTab : ITab
 
         GUI.enabled = VotekickHandler.SelectedTargetId != -1;
         var prevBg2 = GUI.backgroundColor;
-        var selectedBg = GUIStylePreset.MakeTex1x1(new Color(0.45f, 0.45f, 0.45f, 1f));
-        var selectedStyle = new GUIStyle(GUI.skin.button);
+        var selectedBg = GUIStylePreset.WhiteButtonBg;
+        var selectedStyle = new GUIStyle(GUI.skin.button) { border = new RectOffset { left = 6, right = 6, top = 6, bottom = 6 } };
         selectedStyle.normal.background = selectedBg;
         selectedStyle.hover.background  = selectedBg;
         selectedStyle.active.background = selectedBg;
-        GUI.backgroundColor = VotekickHandler.SelectedTargetId != -1 ? new Color(0.8f, 0.6f, 0.1f, 1f) : new Color(0.3f, 0.3f, 0.3f, 1f);
+        selectedStyle.normal.textColor = selectedStyle.hover.textColor = selectedStyle.active.textColor = new Color(0.10f, 0.10f, 0.12f, 1f);
+        GUI.backgroundColor = VotekickHandler.SelectedTargetId != -1 ? new Color(0.8f, 0.6f, 0.1f, 1f) : new Color(0.5f, 0.5f, 0.5f, 1f);
         if (GUILayout.Button("VOTEKICK SELECTED TARGET", selectedStyle, GUILayout.Height(32)))
             VotekickHandler.VotekickTarget();
         GUI.backgroundColor = prevBg2;

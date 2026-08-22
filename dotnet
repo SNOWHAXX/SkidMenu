@@ -1,0 +1,4 @@
+Możliwe przyczyny tego są następujące:
+  * Błędnie napisano wbudowane polecenie dotnet.
+  * Zamierzano wykonać program .NET, ale dotnet-C:\Users\PC\Desktop\NexusMenu nie istnieje.
+  * Zamierzano uruchomić narzędzie globalne, ale nie można odnaleźć pliku wykonywalnego z prefiksem dotnet o tej nazwie w ścieżce PATH.

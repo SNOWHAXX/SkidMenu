@@ -45,7 +45,7 @@ public class SabotageTab : ITab
         GUILayout.BeginHorizontal();
 
         // ── LEFT COLUMN ───────────────────────────────────────────────
-        GUILayout.BeginVertical(GUILayout.Width(MenuUI.windowWidth * 0.38f));
+        GUILayout.BeginVertical(GUILayout.Width(MenuUI.windowWidth * 0.28f));
 
         GUILayout.Label("General", GUIStylePreset.TabSubtitle);
         CheatToggles.fakeTasks           = GUIStylePreset.CustomToggle(CheatToggles.fakeTasks,           " Fake Tasks");
@@ -74,7 +74,7 @@ public class SabotageTab : ITab
         GUILayout.Space(8);
 
         // ── RIGHT COLUMN ──────────────────────────────────────────────
-        GUILayout.BeginVertical();
+        GUILayout.BeginVertical(GUILayout.Width(MenuUI.windowWidth * 0.34f));
 
         Sabotage.UpdateSystemsDirectly = GUIStylePreset.CustomToggle(Sabotage.UpdateSystemsDirectly, " Update Sabotage Systems Directly");
 

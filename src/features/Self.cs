@@ -104,7 +104,7 @@ namespace SkidMenu.features
 		public static class VoteAnywhere_CanHighlight
 		{
 			static System.Reflection.MethodBase TargetMethod() =>
-				AccessTools.Method(typeof(PlayerVoteArea), "canBeHighlighted");
+				AccessTools.Method(typeof(PlayerVoteArea), "CanBeHighlighted");
 
 			static void Postfix(ref bool __result)
 			{
@@ -126,7 +126,10 @@ namespace SkidMenu.features
 
 				int idx = -1;
 				for (int i = 0; i < meeting.playerStates.Length; i++)
-					if (meeting.playerStates[i]?.TargetPlayerId == __instance.TargetPlayerId) { idx = i; break; }
+				{
+					var ps = meeting.playerStates[i];
+					if (ps != null && ps.PlayerId == __instance.PlayerId) { idx = i; break; }
+				}
 
 				if (idx >= 0) meeting.Select(idx);
 				return false;
@@ -151,7 +154,7 @@ namespace SkidMenu.features
 				PlayerVoteArea voteArea = null;
 				foreach (var area in __instance.playerStates)
 				{
-					if (area != null && area.TargetPlayerId == targetId) { voteArea = area; break; }
+					if (area != null && area.PlayerId == targetId) { voteArea = area; break; }
 				}
 				if (voteArea == null) return true;
 
@@ -163,21 +166,15 @@ namespace SkidMenu.features
 
 				bool targetIsDead = targetPc?.Data?.IsDead ?? false;
 
-				bool duringDiscussion = __instance.state == MeetingHud.VoteStates.Discussion;
-				bool duringVoting     = __instance.state == MeetingHud.VoteStates.NotVoted
-				                     || __instance.state == MeetingHud.VoteStates.Voted;
+				bool duringDiscussion = __instance.CurrentState == MeetingHud.MeetingStates.Discussion;
+				bool duringVoting     = __instance.CurrentState == MeetingHud.MeetingStates.NotVoted
+				                     || __instance.CurrentState == MeetingHud.MeetingStates.Voted;
 
 				if (duringDiscussion && !VoteBeforeVotingStarts) return true;
 				if (duringVoting && !VoteAnyone && targetIsDead) return true;
 				if (duringDiscussion && !VoteAnyone && targetIsDead) return true;
 
-				if (duringDiscussion && VoteBeforeVotingStarts)
-					__instance.state = MeetingHud.VoteStates.NotVoted;
-
 				__instance.CmdCastVote(PlayerControl.LocalPlayer.PlayerId, targetId);
-
-				if (duringDiscussion && VoteBeforeVotingStarts)
-					__instance.state = MeetingHud.VoteStates.Discussion;
 
 				return false;
 			}
@@ -217,7 +214,7 @@ namespace SkidMenu.features
 				foreach (var area in __instance.playerStates)
 				{
 					if (area == null) continue;
-					var pc = GameData.Instance?.GetPlayerById(area.TargetPlayerId)?.Object;
+					var pc = GameData.Instance?.GetPlayerById(area.PlayerId)?.Object;
 					if (pc == null || pc.Data == null || !pc.Data.IsDead) continue;
 					if (!area.gameObject.activeSelf) area.gameObject.SetActive(true);
 					try { area.SetEnabled(); } catch { }

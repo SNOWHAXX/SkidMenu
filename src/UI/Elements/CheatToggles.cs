@@ -106,6 +106,7 @@ public struct CheatToggles
     public static bool notifGuardianProtect;
     public static bool notifKillAttempt;
     public static bool notifEjections;
+    public static bool notifVerdict;
     public static bool notifSabotageFix;
     public static bool notifGameOver;
     public static bool notifCameras;
@@ -113,9 +114,9 @@ public struct CheatToggles
     public static bool notifShowRoom;
     public static bool notifShowTaskCount;
     public static bool notifShowDistance;
-    // index: 0=Kill 1=Sab 2=Vent 3=ExitVent 4=Shift 5=Phantom 6=Meeting 7=BodyReport 8=Vote 9=Votekick 10=Chat 11=Disconnect 12=RoleAssign 13=Task 14=Join 15=ShiftRevert 16=PhantomReappear 17=GuardianProtect 18=KillAttempt 19=Ejection 20=SabFix 21=GameOver
-    public static bool[] notifExSelf = new bool[22];
-    public static bool[] notifExHost = new bool[22];
+    // index: 0=Kill 1=Sab 2=Vent 3=ExitVent 4=Shift 5=Phantom 6=Meeting 7=BodyReport 8=Vote 9=Votekick 10=Chat 11=Disconnect 12=RoleAssign 13=Task 14=Join 15=ShiftRevert 16=PhantomReappear 17=GuardianProtect 18=KillAttempt 19=Ejection 20=SabFix 21=GameOver 22=Verdict
+    public static bool[] notifExSelf = new bool[23];
+    public static bool[] notifExHost = new bool[23];
     public static bool espShowRole;
     public static bool espKillCooldown;
     public static bool espTasks;
@@ -218,6 +219,7 @@ public struct CheatToggles
     public static bool logMeetingCalled;
     public static bool logBodyReport;
     public static bool logEjections;
+    public static bool logVerdict;
     public static bool logVotes;
     public static bool logVotekicks;
     public static bool logChat;
@@ -241,6 +243,7 @@ public struct CheatToggles
 
     // Host-Only
     public static bool voteImmune;
+    public static bool judgeImmune;
     public static bool forceRole;
     public static RoleTypes? forcedRole;
     public static bool showRolesMenu;
@@ -526,6 +529,7 @@ public struct CheatToggles
         writer.WriteLine($"HO.FlippedSkeld = {Host.FlippedSkeld} = KeyCode.None");
         writer.WriteLine($"HO.SkipMeeting = {skipMeeting} = KeyCode.None");
         writer.WriteLine($"HO.VoteImmune = {voteImmune} = KeyCode.None");
+        writer.WriteLine($"HO.JudgeImmune = {judgeImmune} = KeyCode.None");
         writer.WriteLine($"HO.EjectPlayer = {ejectPlayer} = KeyCode.None");
         writer.WriteLine($"HO.ForceStartGame = {forceStartGame} = KeyCode.None");
         writer.WriteLine($"HO.NoGameEnd = {noGameEnd} = KeyCode.None");
@@ -584,6 +588,8 @@ public struct CheatToggles
         writer.WriteLine($"KillAura.IgnoreCooldownAsHost = {features.KillAura.IgnoreCooldownAsHost} = KeyCode.None");
         writer.WriteLine($"GA.InfiniteRange = {gaInfiniteRange} = KeyCode.None");
         writer.WriteLine($"GA.IgnoreImpostors = {gaIgnoreImpostors} = KeyCode.None");
+        writer.WriteLine($"Judge.InstantUnlock = {features.JudgeCheats.InstantUnlock} = KeyCode.None");
+        writer.WriteLine($"Judge.InfiniteGavels = {features.JudgeCheats.InfiniteGavels} = KeyCode.None");
         writer.WriteLine($"Crewmate.InstantPet = {instantPet} = KeyCode.None");
         writer.WriteLine($"Crewmate.SpamPet = {spamPet} = KeyCode.None");
         writer.WriteLine($"Crewmate.SpamPetDelay = {spamPetDelay.ToString(System.Globalization.CultureInfo.InvariantCulture)} = KeyCode.None");
@@ -677,6 +683,7 @@ public struct CheatToggles
         writer.WriteLine($"Console.LogMeetingCalled = {logMeetingCalled} = KeyCode.None");
         writer.WriteLine($"Console.LogBodyReport = {logBodyReport} = KeyCode.None");
         writer.WriteLine($"Console.LogEjections = {logEjections} = KeyCode.None");
+        writer.WriteLine($"Console.LogVerdict = {logVerdict} = KeyCode.None");
         writer.WriteLine($"Console.LogVotes = {logVotes} = KeyCode.None");
         writer.WriteLine($"Console.LogVotekicks = {logVotekicks} = KeyCode.None");
         writer.WriteLine($"Console.LogChat = {logChat} = KeyCode.None");
@@ -829,11 +836,11 @@ public struct CheatToggles
                     continue;
                 case "Notif.ExSelf":
                     var exs = valuePart.Split(',');
-                    for (int i = 0; i < exs.Length && i < 22; i++) if (bool.TryParse(exs[i].Trim(), out var b)) notifExSelf[i] = b;
+                    for (int i = 0; i < exs.Length && i < 23; i++) if (bool.TryParse(exs[i].Trim(), out var b)) notifExSelf[i] = b;
                     continue;
                 case "Notif.ExHost":
                     var exh = valuePart.Split(',');
-                    for (int i = 0; i < exh.Length && i < 22; i++) if (bool.TryParse(exh[i].Trim(), out var b2)) notifExHost[i] = b2;
+                    for (int i = 0; i < exh.Length && i < 23; i++) if (bool.TryParse(exh[i].Trim(), out var b2)) notifExHost[i] = b2;
                     continue;
                 case "Votekick.NotifyVotekickInfo":
                     if (bool.TryParse(valuePart, out var vnvi)) VotekickHandler.NotifyVotekickInfo = vnvi;
@@ -936,6 +943,12 @@ public struct CheatToggles
                     continue;
                 case "GA.IgnoreImpostors":
                     if (bool.TryParse(valuePart, out var gaii)) gaIgnoreImpostors = gaii;
+                    continue;
+                case "Judge.InstantUnlock":
+                    if (bool.TryParse(valuePart, out var jiu)) features.JudgeCheats.InstantUnlock = jiu;
+                    continue;
+                case "Judge.InfiniteGavels":
+                    if (bool.TryParse(valuePart, out var jig)) features.JudgeCheats.InfiniteGavels = jig;
                     continue;
                 case "Crewmate.InstantPet":
                     if (bool.TryParse(valuePart, out var cip)) instantPet = cip;
@@ -1200,6 +1213,9 @@ public struct CheatToggles
                     continue;
                 case "Console.LogEjections":
                     if (bool.TryParse(valuePart, out var cle)) logEjections = cle;
+                    continue;
+                case "Console.LogVerdict":
+                    if (bool.TryParse(valuePart, out var clvd)) logVerdict = clvd;
                     continue;
                 case "Console.LogVotes":
                     if (bool.TryParse(valuePart, out var clvo)) logVotes = clvo;
@@ -1690,6 +1706,9 @@ public struct CheatToggles
                     continue;
                 case "HO.VoteImmune":
                     if (bool.TryParse(valuePart, out var hovi)) voteImmune = hovi;
+                    continue;
+                case "HO.JudgeImmune":
+                    if (bool.TryParse(valuePart, out var hoji)) judgeImmune = hoji;
                     continue;
                 case "HO.EjectPlayer":
                     if (bool.TryParse(valuePart, out var hoep)) ejectPlayer = hoep;

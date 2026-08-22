@@ -169,6 +169,35 @@ public static class Console_LogEjection
     }
 }
 
+[HarmonyPatch(typeof(MeetingHud), nameof(MeetingHud.VotingComplete))]
+public static class Console_LogVerdict
+{
+    public static void Postfix(NetworkedPlayerInfo exiled, bool wasOverruled, int overruleNonce)
+    {
+        if (!CheatToggles.logVerdict || !wasOverruled || exiled == null) return;
+        try
+        {
+            var judge = features.JudgeCheats.GetAttributedJudge(exiled.PlayerId);
+            string judgeName = judge != null
+                ? (judge.AmOwner ? "<color=#00ff88>You (Judge)</color>" : ConsoleHelper.Fmt(judge))
+                : "<color=#aaaaaa>Unknown Judge</color>";
+            string targetName = exiled.Object != null && !exiled.Object.AmOwner
+                ? ConsoleHelper.Fmt(exiled.Object)
+                : $"<color=#00ff88>{exiled.PlayerName}</color>";
+            string taskInfo = "";
+            if (judge != null)
+            {
+                var jr = judge.Data?.Role?.TryCast<JudgeRole>();
+                if (jr != null) taskInfo = jr.HasAnOverruleUse
+                    ? " <color=#88ff88>[gavel ready]</color>"
+                    : " <color=#ffcc44>[gavel spent]</color>";
+            }
+            ConsoleUI.Log($"🔨 Vote overruled by {judgeName} → {targetName} ejected{taskInfo} <color=#888888>(nonce {overruleNonce})</color>", "5599FF");
+        }
+        catch { }
+    }
+}
+
 [HarmonyPatch(typeof(MeetingHud), nameof(MeetingHud.Update))]
 public static class Console_LogVote
 {
@@ -177,24 +206,24 @@ public static class Console_LogVote
     public static void Postfix(MeetingHud __instance)
     {
         if (!CheatToggles.logVotes) return;
-        if (__instance.state >= MeetingHud.VoteStates.Results) { _logged.Clear(); return; }
+        if (__instance.CurrentState >= MeetingHud.MeetingStates.Results) { _logged.Clear(); return; }
         try
         {
             foreach (var area in __instance.playerStates)
             {
                 if (area == null) continue;
-                if (area.VotedFor == PlayerVoteArea.HasNotVoted) continue;
-                if (area.VotedFor == PlayerVoteArea.MissedVote) continue;
-                if (area.VotedFor == PlayerVoteArea.DeadVote) continue;
-                if (_logged.Contains(area.TargetPlayerId)) continue;
-                _logged.Add(area.TargetPlayerId);
+                if (area.VotedForId == PlayerVoteArea.HasNotVoted) continue;
+                if (area.VotedForId == PlayerVoteArea.MissedVote) continue;
+                if (area.VotedForId == PlayerVoteArea.DeadVote) continue;
+                if (_logged.Contains(area.PlayerId)) continue;
+                _logged.Add(area.PlayerId);
 
                 PlayerControl voter = null;
                 foreach (var p in PlayerControl.AllPlayerControls)
-                    if (p.PlayerId == area.TargetPlayerId) { voter = p; break; }
+                    if (p.PlayerId == area.PlayerId) { voter = p; break; }
                 if (voter == null) continue;
 
-                if (area.VotedFor == PlayerVoteArea.SkippedVote)
+                if (area.VotedForId == PlayerVoteArea.SkippedVote)
                 {
                     ConsoleUI.Log($"{ConsoleHelper.Fmt(voter)} voted to skip", "AAAAFF");
                 }
@@ -202,7 +231,7 @@ public static class Console_LogVote
                 {
                     PlayerControl suspect = null;
                     foreach (var p in PlayerControl.AllPlayerControls)
-                        if (p.PlayerId == area.VotedFor) { suspect = p; break; }
+                        if (p.PlayerId == area.VotedForId) { suspect = p; break; }
                     ConsoleUI.Log($"{ConsoleHelper.Fmt(voter)} voted for {(suspect != null ? ConsoleHelper.Fmt(suspect) : "?")}", "AAAAFF");
                 }
             }

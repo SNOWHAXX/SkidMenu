@@ -67,6 +67,13 @@ public static class OutfitPreset
         SkinId = "skin_SuitW"
     };
 
+    public static NetworkedPlayerInfo.PlayerOutfit Judge = new()
+    {
+        ColorId = 10,
+        HatId = "hat_Patch",
+        SkinId = "skin_SuitW"
+    };
+
     public static NetworkedPlayerInfo.PlayerOutfit Crewmate = new()
     {
         ColorId = 10

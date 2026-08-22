@@ -204,10 +204,12 @@ namespace SkidMenu
 
             // ── Level ────────────────────────────────────────────────────
             GUILayout.Label("Level", GUIStylePreset.TabSubtitle);
+            GUILayout.Space(4);
             GUILayout.BeginHorizontal();
             GUILayout.Label($"Set to: {_level + 1}", GUILayout.Width(80));
             _level = (uint)GUILayout.HorizontalSlider(_level, 0, 199);
             GUILayout.EndHorizontal();
+            GUILayout.Space(3);
             if (GUILayout.Button("Send Level Update"))
             {
                 PlayerControl.LocalPlayer.RpcSetLevel(_level);

@@ -4,7 +4,7 @@ A host-side toolkit for running private Among Us lobbies. SkidMenu puts per-play
 
 **Created by SNOWHAXX**
 
-**Current version:** `1.2.4` (Stable)
+**Current version:** `1.3.0` (Stable)
 
 ![SkidMenu in lobby](image%20in%20lobby.png)
 
@@ -20,8 +20,8 @@ SkidMenu is not affiliated with, endorsed by, or sponsored by Innersloth in any 
 
 | Status | Versions |
 |---|---|
-| Supported | `2026.3.31`, `2026.6.5` |
-| Tolerated (some features may not work) | `2026.2.24`, `2026.3.17` |
+| Supported | `2026.6.5`, `2026.8.18` |
+| Tolerated (some features may not work) | `2026.2.24`, `2026.3.17`, `2026.3.31` |
 
 Running a different version than the ones above isn't recommended, you'll get a warning popup in the main menu.
 

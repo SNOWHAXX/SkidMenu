@@ -25,7 +25,8 @@ namespace SkidMenu.features
 				RoleTypes.Detective,
 				RoleTypes.Tracker,
 				RoleTypes.Scientist,
-				RoleTypes.Engineer
+				RoleTypes.Engineer,
+				RoleTypes.Judge
 			};
 
 			static void Prefix(PlayerControl __instance, PlayerControl target, MurderResultFlags resultFlags)

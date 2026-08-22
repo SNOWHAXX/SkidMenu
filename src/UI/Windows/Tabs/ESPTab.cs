@@ -79,6 +79,7 @@ public class ESPTab : ITab
         NotifRow(ref CheatToggles.notifGuardianProtect, " Guardian Protect",  17);
         NotifRow(ref CheatToggles.notifKillAttempt,     " Kill Attempt",      18);
         NotifRow(ref CheatToggles.notifEjections,       " Ejection",          19);
+        NotifRow(ref CheatToggles.notifVerdict,         " Judge Verdict",     22);
         NotifRow(ref CheatToggles.notifSabotageFix,     " Sabotage Fix",      20);
         NotifRow(ref CheatToggles.notifGameOver,        " Round Start / Over",21);
 

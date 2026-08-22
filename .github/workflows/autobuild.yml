@@ -1,0 +1,153 @@
+﻿name: Build and Release BepInEx Mod
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for build'
+        required: false
+        default: 'Manual trigger'
+      version_override:
+        description: 'Version override (e.g. 1.2.3). Leave empty to use vars.VERSION'
+        required: false
+        type: string
+      is_prerelease:
+        description: 'Mark release as a Pre-release'
+        required: true
+        type: boolean
+        default: false
+
+# Required to allow the GitHub Action to create a release and upload assets
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    
+    # Define environment variables to make customization easier
+    env:
+      # Change this if your project file is in a subfolder (e.g., src/MyMod/MyMod.csproj)
+      PROJECT_PATH: ./src 
+      # Release output zip name
+      RELEASE_ZIP_NAME: NexusMenu-Release.zip
+      # Debug output zip name
+      DEBUG_ZIP_NAME: NexusMenu-Debug.zip
+      # Express install output zip name
+      EXPRESS_ZIP_NAME: NexusMenu-Install.zip
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Determine Version
+        run: |
+          if [ -n "${{ github.event.inputs.version_override }}" ]; then
+            echo "MOD_VERSION=${{ github.event.inputs.version_override }}" >> $GITHUB_ENV
+            echo "Using manual version override: ${{ github.event.inputs.version_override }}"
+          else
+            echo "MOD_VERSION=${{ vars.VERSION }}" >> $GITHUB_ENV
+            echo "Using default repository variable version: ${{ vars.VERSION }}"
+          fi
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          # Change this to match the SDK version you use to compile (e.g., '6.0.x', '8.0.x')
+          dotnet-version: '6.0.x' 
+
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.PROJECT_PATH }}
+
+      - name: Build the project
+        # Builds the project and outputs the files into a temporary staging folder
+        run: dotnet build ${{ env.PROJECT_PATH }} --configuration Release --no-restore --output ./staging/BepInEx/plugins
+
+      - name: Build the debug project
+        # Builds the project in debug config and outputs the files into a temporary staging folder
+        run: dotnet build ${{ env.PROJECT_PATH }} --configuration Debug --no-restore --output ./staging_debug/BepInEx/plugins
+
+      - name: Prepare the express project
+        run: |
+          unzip -o bepinex1.zip -d staging_express/
+          unzip -o bepinex2.zip -d staging_express/
+          unzip -o bepinex3.zip -d staging_express/
+          unzip -o bepinex4.zip -d staging_express/
+
+      - name: Build the express project
+        run: dotnet build ${{env.PROJECT_PATH}} --configuration Release --no-restore --output ./staging_express/BepInEx/plugins
+
+      - name: Update mod file name
+        # Updates the name of the mod file
+        run: |
+          mv staging/BepInEx/plugins/NexusMenu.dll staging/BepInEx/plugins/NexusMenu.dll
+          mv staging_debug/BepInEx/plugins/NexusMenu.dll staging_debug/BepInEx/plugins/NexusMenu.dll
+          mv staging_express/BepInEx/plugins/NexusMenu.dll staging_debug/BepInEx/plugins/NexusMenu.dll
+          mv staging/BepInEx/plugins/NexusMenu.deps.json staging/BepInEx/plugins/NexusMenu.deps.json
+          mv staging_debug/BepInEx/plugins/NexusMenu.deps.json staging_debug/BepInEx/plugins/NexusMenu.deps.json
+          mv staging_express/BepInEx/plugins/NexusMenu.deps.json staging_debug/BepInEx/plugins/NexusMenu.deps.json
+
+
+      - name: Package Mod into Zip (01)
+        # Navigates to the staging directory and zips everything so it has the correct folder structure
+        run: |
+          cd staging
+          zip -r ../${{ env.RELEASE_ZIP_NAME }} .
+
+      - name: Package Mod into Zip (02)
+        # Navigates to the staging_debug directory and zips everything so it has the correct folder structure
+        run: |
+          cd staging_debug
+          zip -r ../${{ env.DEBUG_ZIP_NAME }} .
+
+      - name: Package Mod into Zip (03)
+        # Copies the release build, extracts split BepInEx base files into it, and zips it up
+        run: |
+          cd staging_express
+          zip -r ../${{ env.EXPRESS_ZIP_NAME }} .
+
+      - name: Force Update Tag (if exists)
+        run: |
+          if git ls-remote --tags origin refs/tags/v${{ env.MOD_VERSION }} | grep -q "refs/tags/v${{ env.MOD_VERSION }}"; then
+            echo "Tag v${{ env.MOD_VERSION }} already exists. Moving it to the latest commit."
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git tag -f v${{ env.MOD_VERSION }}
+            git push -f origin v${{ env.MOD_VERSION }}
+          else
+            echo "Tag v${{ env.MOD_VERSION }} does not exist yet. The release step will create it."
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          # Tags the release using the determined MOD_VERSION
+          tag_name: v${{ env.MOD_VERSION }}
+          name: Release v${{ env.MOD_VERSION }}
+          draft: false
+          prerelease: ${{ inputs.is_prerelease }}
+          files: |
+            ${{ env.RELEASE_ZIP_NAME }}
+            ${{ env.DEBUG_ZIP_NAME }}
+            ${{ env.EXPRESS_ZIP_NAME }}
+          append_body: false
+          body: |
+            # Downloads
+            * Download 'NexusMenu_Install' for quick install
+            * Download 'NexusMenu_Release' for quick update (NexusMenu needs to already be installed)
+            * Download 'NexusMenu_Debug' to debug NexusMenu (if you want to help out).
+              * First, you need to learn how to write C#.
+            
+            ---
+            # How to install
+            * Whatever .zip you download, the install process is the same.
+            * First, download the .zip file
+            * Next, extract the .zip file into your Among Us directory
+            * You're done.
+            
+            ---
+            # NOTICE:
+            * This menu is based on NexusMenu by scp222thj and astra1dev. All credit goes to scp222thj and astra1dev. See [here](https://github.com/scp222thj/NexusMenu) for more info.
+            
+            ---
+          generate_release_notes: true

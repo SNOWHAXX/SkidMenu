@@ -1,0 +1,29 @@
+﻿name: Fetch NuGet Dependencies
+
+# This allows you to trigger the action manually from the GitHub UI
+on: [workflow_dispatch] 
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '6.0.x' # Match this to your project's target framework
+
+    - name: Restore NuGet Packages
+      # This forces NuGet to download everything to a specific folder we can easily zip
+      run: dotnet restore src/NexusMenu.csproj --packages ./downloaded-packages
+
+    - name: Upload Packages as Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Offline-NuGet-Packages
+        path: ./downloaded-packages
+        # Artifacts automatically expire, but you can set a short retention
+        retention-days: 1

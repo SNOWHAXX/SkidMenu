@@ -5,6 +5,7 @@ using BepInEx.Unity.IL2CPP.Utils.Collections;
 using InnerNet;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace SkidMenu;
 
@@ -16,6 +17,7 @@ public class PlayersTab : ITab
     private Vector2 _subsectionScrollVector2 = Vector2.zero;
     private static CrewmateColor _selectedColor = CrewmateColor.Red;
     private static int _selectedVent = 0;
+    private static int _frameJudgeIdx = 0;
 
     // cached textures + styles (fix 1+2)
     private static Texture2D _playerButtonTex;
@@ -88,7 +90,7 @@ public class PlayersTab : ITab
         // Line 1: name + host + state
         string stateTag = isDead ? " <color=#ff6666>[?? Dead]</color>" : " <color=#88ff88>[Alive]</color>";
         string hostTag = isHost ? " <color=#ff4444>[HOST]</color>" : "";
-        string line1 = $"<color=#ffffff><b>{player.Data.PlayerName}</b></color>{hostTag}{stateTag}";
+        string line1 = $"<color=#14141a><b>{player.Data.PlayerName}</b></color>{hostTag}{stateTag}";
 
         // Line 2: role | level | platform
         string level = $"<color=#ffdd44>Lv:{player.Data.PlayerLevel + 1}</color>";
@@ -112,18 +114,19 @@ public class PlayersTab : ITab
         var oldContent = GUI.contentColor;
 
         Color.RGBToHSV(playerColor, out float h, out float s, out float v);
-        GUI.backgroundColor = Color.HSVToRGB(h, Mathf.Min(1f, s * 1.2f), Mathf.Clamp(v * 1.3f, 0.5f, 1f));
+        GUI.backgroundColor = s < 0.15f ? Color.HSVToRGB(0f, 0f, Mathf.Clamp(v * 2f, 0.5f, 1f)) : Color.HSVToRGB(h, Mathf.Min(1f, s), Mathf.Clamp(v * 1.3f, 0.5f, 1f));
         GUI.contentColor = Color.white;
 
         // fix 1+2: lazy-init once, reuse forever
         if (_playerButtonTex == null)
-            _playerButtonTex = GUIStylePreset.MakeTex1x1(new Color(0.45f, 0.45f, 0.45f, 1f));
+            _playerButtonTex = GUIStylePreset.WhiteButtonBg;
         if (_playerButtonStyle == null)
         {
             _playerButtonStyle = new GUIStyle(GUIStylePreset.NormalButton);
             _playerButtonStyle.normal.background = _playerButtonTex;
             _playerButtonStyle.hover.background  = _playerButtonTex;
             _playerButtonStyle.active.background = _playerButtonTex;
+            _playerButtonStyle.normal.textColor = _playerButtonStyle.hover.textColor = _playerButtonStyle.active.textColor = new Color(0.10f, 0.10f, 0.12f, 1f);
         }
 
         if (GUILayout.Button(label, _playerButtonStyle))
@@ -290,13 +293,14 @@ public class PlayersTab : ITab
         GUILayout.BeginHorizontal();
         bool isWhisperTarget = features.Whisper.IsArmed(target);
         if (_playerButtonTex == null)
-            _playerButtonTex = GUIStylePreset.MakeTex1x1(new Color(0.45f, 0.45f, 0.45f, 1f));
+            _playerButtonTex = GUIStylePreset.WhiteButtonBg;
         if (_watchButtonStyle == null)
         {
             _watchButtonStyle = new GUIStyle(GUI.skin.button);
             _watchButtonStyle.normal.background = _playerButtonTex;
             _watchButtonStyle.hover.background  = _playerButtonTex;
             _watchButtonStyle.active.background = _playerButtonTex;
+            _watchButtonStyle.normal.textColor = _watchButtonStyle.hover.textColor = _watchButtonStyle.active.textColor = new Color(0.10f, 0.10f, 0.12f, 1f);
         }
         var whisperPrevBg = GUI.backgroundColor;
         GUI.backgroundColor = isWhisperTarget ? new Color(0.6f, 0.1f, 0.1f) : new Color(0.95f, 0.8f, 0.1f);
@@ -318,13 +322,14 @@ public class PlayersTab : ITab
                           Camera.main.gameObject.GetComponent<FollowerCamera>().Target == target;
         // fix 1+2: lazy-init watch style, reuse _playerButtonTex (same color)
         if (_playerButtonTex == null)
-            _playerButtonTex = GUIStylePreset.MakeTex1x1(new Color(0.45f, 0.45f, 0.45f, 1f));
+            _playerButtonTex = GUIStylePreset.WhiteButtonBg;
         if (_watchButtonStyle == null)
         {
             _watchButtonStyle = new GUIStyle(GUI.skin.button);
             _watchButtonStyle.normal.background = _playerButtonTex;
             _watchButtonStyle.hover.background  = _playerButtonTex;
             _watchButtonStyle.active.background = _playerButtonTex;
+            _watchButtonStyle.normal.textColor = _watchButtonStyle.hover.textColor = _watchButtonStyle.active.textColor = new Color(0.10f, 0.10f, 0.12f, 1f);
         }
         GUI.backgroundColor = isWatching ? new Color(0.6f, 0.1f, 0.1f) : new Color(0.1f, 0.4f, 0.7f);
         if (GUILayout.Button(isWatching ? "Stop Watch" : "Watch", _watchButtonStyle))
@@ -433,6 +438,8 @@ public class PlayersTab : ITab
             VotekickHandler.VotekickPlayer(target);
         if (GUILayout.Button("Vent Kick"))
             VentKickTab.VentKick(target);
+        if (GUILayout.Button("Judge"))
+            features.JudgeCheats.Overrule(target);
         GUILayout.EndHorizontal();
 
 
@@ -494,7 +501,7 @@ public class PlayersTab : ITab
                 }
 
                 MeetingHud.VoterState[] votes = Array.Empty<MeetingHud.VoterState>();
-                MeetingHud.Instance.RpcVotingComplete(votes, target.Data, false);
+                MeetingHud.Instance.RpcVotingComplete(votes, target.Data, false, false, 0);
                 MeetingHud.Instance.RpcClose();
             }
         }
@@ -507,6 +514,40 @@ public class PlayersTab : ITab
             else
                 target.StartCoroutine(AttemptShapeshiftFrame(target).WrapToIl2Cpp());
         }
+
+        var frameCandidates = new List<PlayerControl>();
+        foreach (var p in PlayerControl.AllPlayerControls)
+            if (p != null && p != target && !p.Data.IsDead) frameCandidates.Add(p);
+        if (_frameJudgeIdx >= frameCandidates.Count) _frameJudgeIdx = 0;
+        string frameName = frameCandidates.Count > 0 ? frameCandidates[_frameJudgeIdx].Data.PlayerName : "nobody";
+
+        GUILayout.BeginHorizontal();
+        GUILayout.Label($"Blame:", GUILayout.Width(45));
+        if (GUILayout.Button(frameName, GUIStylePreset.NormalButton))
+        {
+            _frameJudgeIdx = (_frameJudgeIdx + 1) % System.Math.Max(frameCandidates.Count, 1);
+        }
+        if (GUILayout.Button("Frame Judge"))
+        {
+            if (!Utils.isHost)
+                SkidMenu.notifications.Send("Frame Judge", "This is a host-only cheat.");
+            else if (MeetingHud.Instance == null)
+                SkidMenu.notifications.Send("Frame Judge", "No active meeting.");
+            else if (frameCandidates.Count == 0)
+                SkidMenu.notifications.Send("Frame Judge", "No one to blame.");
+            else
+            {
+                var scapegoat = frameCandidates[_frameJudgeIdx];
+                ushort nonce = (ushort)UnityEngine.Random.Range(0, 65535);
+                features.JudgeCheats.MarkForgedVerdict(target.PlayerId, scapegoat.PlayerId);
+                try { MeetingHud.Instance.CmdQueueOverruleVotes(scapegoat.PlayerId, target.PlayerId, nonce); }
+                catch { }
+                MeetingHud.Instance.RpcVotingComplete(new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStructArray<MeetingHud.VoterState>(0L), target.Data, false, true, nonce);
+                SkidMenu.notifications.Send("Frame Judge",
+                    $"<color=#{ColorUtility.ToHtmlStringRGB(Palette.PlayerColors[scapegoat.Data.DefaultOutfit.ColorId])}>{scapegoat.Data.PlayerName}</color> takes the fall for {target.Data.PlayerName}");
+            }
+        }
+        GUILayout.EndHorizontal();
 
         if (GUILayout.Button("Frame for Killing All"))
         {

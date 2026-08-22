@@ -145,10 +145,11 @@ public class HostSettingsTab : ITab
             lines.Add($"NoisemakerImpostorAlert={Opts.GetBool(BoolOptionNames.NoisemakerImpostorAlert)}");
             lines.Add($"ViperDissolveTime={Opts.GetFloat(FloatOptionNames.ViperDissolveTime)}");
             lines.Add($"DetectiveSuspectLimit={Opts.GetFloat(FloatOptionNames.DetectiveSuspectLimit)}");
+            lines.Add($"JudgeTaskUnlockPct={Opts.GetFloat(FloatOptionNames.JudgeTaskRequirementPercentage)}");
             if (Roles != null)
                 foreach (RoleTypes role in new[] { RoleTypes.Scientist, RoleTypes.Engineer, RoleTypes.GuardianAngel,
                     RoleTypes.Shapeshifter, RoleTypes.Noisemaker, RoleTypes.Tracker,
-                    RoleTypes.Phantom, RoleTypes.Viper, RoleTypes.Detective })
+                    RoleTypes.Phantom, RoleTypes.Viper, RoleTypes.Detective, RoleTypes.Judge })
                 {
                     lines.Add($"Role_{role}_Chance={Roles.GetChancePerGame(role)}");
                     lines.Add($"Role_{role}_Count={Roles.GetNumPerGame(role)}");
@@ -208,6 +209,7 @@ public class HostSettingsTab : ITab
                     if (k == "NoisemakerImpostorAlert")   { Opts.SetBool(BoolOptionNames.NoisemakerImpostorAlert, bool.Parse(v)); continue; }
                     if (k == "ViperDissolveTime")         { Opts.SetFloat(FloatOptionNames.ViperDissolveTime, float.Parse(v)); continue; }
                     if (k == "DetectiveSuspectLimit")     { Opts.SetFloat(FloatOptionNames.DetectiveSuspectLimit, float.Parse(v)); continue; }
+                    if (k == "JudgeTaskUnlockPct")        { Opts.SetFloat(FloatOptionNames.JudgeTaskRequirementPercentage, float.Parse(v)); continue; }
                     if (k.StartsWith("Role_") && Roles != null)
                     {
                         var parts = k.Split('_');
@@ -242,7 +244,8 @@ public class HostSettingsTab : ITab
             FloatOptionNames.EngineerInVentMaxTime, FloatOptionNames.GuardianAngelCooldown, FloatOptionNames.ProtectionDurationSeconds,
             FloatOptionNames.PhantomCooldown, FloatOptionNames.PhantomDuration, FloatOptionNames.TrackerCooldown,
             FloatOptionNames.TrackerDuration, FloatOptionNames.TrackerDelay, FloatOptionNames.NoisemakerAlertDuration,
-            FloatOptionNames.ViperDissolveTime, FloatOptionNames.DetectiveSuspectLimit })
+            FloatOptionNames.ViperDissolveTime, FloatOptionNames.DetectiveSuspectLimit,
+            FloatOptionNames.JudgeTaskRequirementPercentage })
             try { _floats[n] = Opts.GetFloat(n); } catch { }
         foreach (var n in new[] { Int32OptionNames.NumImpostors, Int32OptionNames.KillDistance, Int32OptionNames.TaskBarMode,
             Int32OptionNames.DiscussionTime, Int32OptionNames.VotingTime, Int32OptionNames.NumEmergencyMeetings,
@@ -255,7 +258,7 @@ public class HostSettingsTab : ITab
         if (Roles != null)
             foreach (RoleTypes r in new[] { RoleTypes.Scientist, RoleTypes.Engineer, RoleTypes.GuardianAngel,
                 RoleTypes.Shapeshifter, RoleTypes.Noisemaker, RoleTypes.Tracker,
-                RoleTypes.Phantom, RoleTypes.Viper, RoleTypes.Detective })
+                RoleTypes.Phantom, RoleTypes.Viper, RoleTypes.Detective, RoleTypes.Judge })
                 try { _roles[r] = (Roles.GetChancePerGame(r), Roles.GetNumPerGame(r)); } catch { }
         _shadowInit = true;
     }
@@ -279,16 +282,33 @@ public class HostSettingsTab : ITab
     private static readonly Color    _mapSelected     = new Color(0.2f, 0.7f, 0.4f, 1f);
     private static readonly Color    _mapUnselected   = new Color(0.25f, 0.25f, 0.25f, 1f);
 
+    private static GUIStyle _stepBtn;
+    private static GUIStyle StepBtn
+    {
+        get
+        {
+            if (_stepBtn == null)
+                _stepBtn = new GUIStyle(GUI.skin.button)
+                {
+                    padding = new RectOffset { left = 2, right = 2, top = 5, bottom = 6 },
+                    alignment = UnityEngine.TextAnchor.MiddleCenter,
+                };
+            return _stepBtn;
+        }
+    }
+
     private static void FloatRow(string label, FloatOptionNames opt, float step, bool host)
     {
         _floats.TryGetValue(opt, out float val);
         GUILayout.BeginHorizontal();
-        GUILayout.Label($"{label}: {val:F1}", GUILayout.Width(220));
+        GUILayout.Label(label, GUILayout.Width(180));
         if (host)
         {
-            if (GUILayout.Button("-", GUILayout.Width(24))) _floats[opt] = Mathf.Round((val - step) * 10f) / 10f;
-            if (GUILayout.Button("+", GUILayout.Width(24))) _floats[opt] = Mathf.Round((val + step) * 10f) / 10f;
+            if (GUILayout.Button("-", StepBtn, GUILayout.Width(26))) _floats[opt] = Mathf.Round((val - step) * 10f) / 10f;
+            GUILayout.Label($"{val:F1}", GUILayout.Width(50));
+            if (GUILayout.Button("+", StepBtn, GUILayout.Width(26))) _floats[opt] = Mathf.Round((val + step) * 10f) / 10f;
         }
+        else GUILayout.Label($"{val:F1}", GUILayout.Width(50));
         GUILayout.EndHorizontal();
     }
 
@@ -296,12 +316,14 @@ public class HostSettingsTab : ITab
     {
         _ints.TryGetValue(opt, out int val);
         GUILayout.BeginHorizontal();
-        GUILayout.Label($"{label}: {val}", GUILayout.Width(220));
+        GUILayout.Label(label, GUILayout.Width(180));
         if (host)
         {
-            if (GUILayout.Button("-", GUILayout.Width(24))) _ints[opt] = System.Math.Clamp(val - 1, min, max);
-            if (GUILayout.Button("+", GUILayout.Width(24))) _ints[opt] = System.Math.Clamp(val + 1, min, max);
+            if (GUILayout.Button("-", StepBtn, GUILayout.Width(26))) _ints[opt] = System.Math.Clamp(val - 1, min, max);
+            GUILayout.Label($"{val}", GUILayout.Width(50));
+            if (GUILayout.Button("+", StepBtn, GUILayout.Width(26))) _ints[opt] = System.Math.Clamp(val + 1, min, max);
         }
+        else GUILayout.Label($"{val}", GUILayout.Width(50));
         GUILayout.EndHorizontal();
     }
 
@@ -310,12 +332,14 @@ public class HostSettingsTab : ITab
         _ints.TryGetValue(opt, out int val);
         string display = (val >= 0 && val < labels.Length) ? labels[val] : val.ToString();
         GUILayout.BeginHorizontal();
-        GUILayout.Label($"{label}: {display}", GUILayout.Width(220));
+        GUILayout.Label(label, GUILayout.Width(180));
         if (host)
         {
-            if (GUILayout.Button("-", GUILayout.Width(24))) _ints[opt] = System.Math.Clamp(val - 1, 0, labels.Length - 1);
-            if (GUILayout.Button("+", GUILayout.Width(24))) _ints[opt] = System.Math.Clamp(val + 1, 0, labels.Length - 1);
+            if (GUILayout.Button("-", StepBtn, GUILayout.Width(26))) _ints[opt] = System.Math.Clamp(val - 1, 0, labels.Length - 1);
+            GUILayout.Label(display, GUILayout.Width(60));
+            if (GUILayout.Button("+", StepBtn, GUILayout.Width(26))) _ints[opt] = System.Math.Clamp(val + 1, 0, labels.Length - 1);
         }
+        else GUILayout.Label(display, GUILayout.Width(60));
         GUILayout.EndHorizontal();
     }
 
@@ -336,14 +360,14 @@ public class HostSettingsTab : ITab
         GUILayout.BeginHorizontal();
         GUILayout.Label($"{label}:", GUILayout.Width(130));
         GUILayout.Label("Chance:", GUILayout.Width(55));
-        if (host && GUILayout.Button("-", GUILayout.Width(24))) _roles[role] = (System.Math.Clamp(chance - 1, 0, 100), count);
+        if (host && GUILayout.Button("-", StepBtn, GUILayout.Width(26))) _roles[role] = (System.Math.Clamp(chance - 1, 0, 100), count);
         GUILayout.Label($"{chance}%", GUILayout.Width(35));
-        if (host && GUILayout.Button("+", GUILayout.Width(24))) _roles[role] = (System.Math.Clamp(chance + 1, 0, 100), count);
+        if (host && GUILayout.Button("+", StepBtn, GUILayout.Width(26))) _roles[role] = (System.Math.Clamp(chance + 1, 0, 100), count);
         GUILayout.Space(10);
         GUILayout.Label("Count:", GUILayout.Width(45));
-        if (host && GUILayout.Button("-", GUILayout.Width(24))) _roles[role] = (chance, System.Math.Clamp(count - 1, 0, 9999));
+        if (host && GUILayout.Button("-", StepBtn, GUILayout.Width(26))) _roles[role] = (chance, System.Math.Clamp(count - 1, 0, 9999));
         GUILayout.Label($"{count}", GUILayout.Width(25));
-        if (host && GUILayout.Button("+", GUILayout.Width(24))) _roles[role] = (chance, System.Math.Clamp(count + 1, 0, 9999));
+        if (host && GUILayout.Button("+", StepBtn, GUILayout.Width(26))) _roles[role] = (chance, System.Math.Clamp(count + 1, 0, 9999));
         GUILayout.EndHorizontal();
     }
 
@@ -454,6 +478,7 @@ public class HostSettingsTab : ITab
         RoleRow("Phantom",      RoleTypes.Phantom, host);
         RoleRow("Viper",        RoleTypes.Viper, host);
         RoleRow("Detective",    RoleTypes.Detective, host);
+        RoleRow("Judge",        RoleTypes.Judge, host);
 
         GUILayout.Space(6);
         GUILayout.Label("Shapeshifter", GUIStylePreset.TabSubtitle);
@@ -500,6 +525,10 @@ public class HostSettingsTab : ITab
         GUILayout.Space(6);
         GUILayout.Label("Detective", GUIStylePreset.TabSubtitle);
         FloatRow("Suspects Per Case", FloatOptionNames.DetectiveSuspectLimit, 1f, host);
+
+        GUILayout.Space(6);
+        GUILayout.Label("Judge", GUIStylePreset.TabSubtitle);
+        FloatRow("Task Unlock %", FloatOptionNames.JudgeTaskRequirementPercentage, 1f, host);
 
         GUILayout.EndScrollView();
     }

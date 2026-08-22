@@ -17,11 +17,13 @@ public class VentKickTab : ITab
     private static void EnsureStyles()
     {
         if (_lightBg != null) return;
-        _lightBg    = GUIStylePreset.MakeTex1x1(new Color(0.45f, 0.45f, 0.45f, 1f));
-        _quickStyle = new GUIStyle(GUI.skin.button)  { richText = true };
+        _lightBg    = GUIStylePreset.WhiteButtonBg;
+        _quickStyle = new GUIStyle(GUI.skin.button)  { richText = true, border = new RectOffset { left = 6, right = 6, top = 6, bottom = 6 } };
         _quickStyle.normal.background = _quickStyle.hover.background = _quickStyle.active.background = _lightBg;
+        _quickStyle.normal.textColor = _quickStyle.hover.textColor = _quickStyle.active.textColor = new Color(0.10f, 0.10f, 0.12f, 1f);
         _cardStyle  = new GUIStyle(GUIStylePreset.NormalButton) { richText = true };
         _cardStyle.normal.background  = _cardStyle.hover.background  = _cardStyle.active.background  = _lightBg;
+        _cardStyle.normal.textColor = _cardStyle.hover.textColor = _cardStyle.active.textColor = new Color(0.10f, 0.10f, 0.12f, 1f);
     }
 
     public void Draw()
@@ -76,7 +78,7 @@ public class VentKickTab : ITab
             string roleColorHex = ColorCache.ToHex(roleColor);
             string stateTag = isDead ? " <color=#aaaaaa>[Dead]</color>" : " <color=#88ff88>[Alive]</color>";
             string hostTag = isHost ? " <color=#ff4444>[HOST]</color>" : "";
-            string line1 = $"<size=15><color=#ffffff><b>{p.Data.PlayerName}</b></color>{hostTag}{stateTag}</size>";
+            string line1 = $"<size=15><color=#14141a><b>{p.Data.PlayerName}</b></color>{hostTag}{stateTag}</size>";
             string level = $"<color=#ffdd44>Lv:{p.Data.PlayerLevel + 1}</color>";
             string platform = ""; string fc = "";
             var client = AmongUsClient.Instance.GetClientFromCharacter(p);
@@ -88,9 +90,9 @@ public class VentKickTab : ITab
             Color playerColor = Palette.PlayerColors[p.Data.DefaultOutfit.ColorId];
             var old = GUI.backgroundColor; var oldC = GUI.contentColor;
             Color.RGBToHSV(playerColor, out float h, out float s, out float v);
-            GUI.backgroundColor = Color.HSVToRGB(h, Mathf.Min(1f, s * 1.2f), Mathf.Clamp(v * 1.3f, 0.5f, 1f));
+            GUI.backgroundColor = s < 0.15f ? Color.HSVToRGB(0f, 0f, Mathf.Clamp(v * 2f, 0.5f, 1f)) : Color.HSVToRGB(h, Mathf.Min(1f, s), Mathf.Clamp(v * 1.3f, 0.5f, 1f));
             GUI.contentColor = Color.white;
-            if (GUILayout.Button(label, _cardStyle, GUILayout.Height(44))) VentKick(p);
+            if (GUILayout.Button(label, _cardStyle, GUILayout.Width(520), GUILayout.Height(44))) VentKick(p);
             GUI.backgroundColor = old; GUI.contentColor = oldC;
             GUILayout.Space(2);
         }

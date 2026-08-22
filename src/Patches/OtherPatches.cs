@@ -50,8 +50,8 @@ public static class GameData_HandleDisconnect
             foreach (var area in MeetingHud.Instance.playerStates)
             {
                 if (area == null) continue;
-                if (area.TargetPlayerId != player.Data.PlayerId) continue;
-                var pd = GameData.Instance?.GetPlayerById(area.TargetPlayerId); if (pd != null) pd.Disconnected = true;
+                if (area.PlayerId != player.Data.PlayerId) continue;
+                var pd = GameData.Instance?.GetPlayerById(area.PlayerId); if (pd != null) pd.Disconnected = true;
                 break;
             }
 
@@ -603,8 +603,13 @@ public static class ControllerHeldButtonBehaviour_Update_InstantPet
     public static void Prefix(ControllerHeldButtonBehaviour __instance)
     {
         if (!CheatToggles.instantPet) return;
-        if (__instance.TargetActionButton?.TryCast<PetButton>() == null) return;
-        __instance.holdTimer = __instance.holdDuration;
+        try
+        {
+            var tab = __instance.TargetActionButton;
+            if (tab == null || tab.GetIl2CppType().Name != "PetButton") return;
+            __instance.holdTimer = __instance.holdDuration;
+        }
+        catch { }
     }
 }
 
@@ -619,17 +624,6 @@ public static class PetButton_SetTarget_InstantPet
             pb.HoldToUse = false;
             pb.RepeatDuration = 0.01f;
         }
-    }
-}
-
-[HarmonyPatch(typeof(PassiveButton), nameof(PassiveButton.Start))]
-public static class PassiveButton_Start_InstantPet
-{
-    public static void Postfix(PassiveButton __instance)
-    {
-        if (!CheatToggles.instantPet) return;
-        if (__instance.TargetActionButton?.TryCast<PetButton>() == null) return;
-        __instance.RepeatDuration = 0f;
     }
 }
 

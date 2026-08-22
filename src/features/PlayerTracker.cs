@@ -25,6 +25,7 @@ public static class PlayerTracker
     {
         History.Clear();
         LastRoom.Clear();
+        TrackVote.ClearTracked();
     }
 
     [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.FixedUpdate))]
@@ -114,17 +115,37 @@ public static class PlayerTracker
         }
     }
 
-    [HarmonyPatch(typeof(MeetingHud), nameof(MeetingHud.CastVote))]
+    [HarmonyPatch(typeof(MeetingHud), nameof(MeetingHud.Update))]
     static class TrackVote
     {
-        static void Postfix(byte srcPlayerId, byte suspectPlayerId)
+        private static readonly HashSet<byte> _trackedVotes = new HashSet<byte>();
+
+        internal static void ClearTracked() => _trackedVotes.Clear();
+
+        static void Postfix(MeetingHud __instance)
         {
-            var voter = GameData.Instance?.GetPlayerById(srcPlayerId)?.Object;
-            if (voter?.Data == null) return;
-            if (suspectPlayerId == 255) { Log(voter.PlayerId, "<color=#aaaaaa>◌ Voted skip</color>"); return; }
-            var suspect = GameData.Instance?.GetPlayerById(suspectPlayerId)?.Object;
-            string c = suspect?.Data != null ? ColorUtility.ToHtmlStringRGB(Palette.PlayerColors[suspect.Data.DefaultOutfit.ColorId]) : "ffffff";
-            Log(voter.PlayerId, $"<color=#ff9900>◉ Voted <color=#{c}>{suspect?.Data?.PlayerName ?? "?"}</color></color>");
+            try
+            {
+                if (__instance.CurrentState >= MeetingHud.MeetingStates.Results) { _trackedVotes.Clear(); return; }
+                foreach (var area in __instance.playerStates)
+                {
+                    if (area == null) continue;
+                    if (area.VotedForId == PlayerVoteArea.HasNotVoted) continue;
+                    if (area.VotedForId == PlayerVoteArea.MissedVote) continue;
+                    if (area.VotedForId == PlayerVoteArea.DeadVote) continue;
+                    if (_trackedVotes.Contains(area.PlayerId)) continue;
+                    _trackedVotes.Add(area.PlayerId);
+
+                    var voter = GameData.Instance?.GetPlayerById(area.PlayerId)?.Object;
+                    if (voter?.Data == null) continue;
+                    byte suspectPlayerId = (byte)area.VotedForId;
+                    if (suspectPlayerId == 255) { Log(voter.PlayerId, "<color=#aaaaaa>◌ Voted skip</color>"); continue; }
+                    var suspect = GameData.Instance?.GetPlayerById(suspectPlayerId)?.Object;
+                    string c = suspect?.Data != null ? ColorUtility.ToHtmlStringRGB(Palette.PlayerColors[suspect.Data.DefaultOutfit.ColorId]) : "ffffff";
+                    Log(voter.PlayerId, $"<color=#ff9900>◉ Voted <color=#{c}>{suspect?.Data?.PlayerName ?? "?"}</color></color>");
+                }
+            }
+            catch { }
         }
     }
 
@@ -203,6 +224,38 @@ public static class PlayerTracker
                 Log(__instance.Player.PlayerId, "<color=#8B0000>👻 Vanished</color>");
             else if (_wasInvisible && !__instance.isInvisible)
                 Log(__instance.Player.PlayerId, "<color=#cc88ff>👻 Reappeared</color>");
+        }
+    }
+
+    [HarmonyPatch(typeof(MeetingHud), nameof(MeetingHud.VotingComplete))]
+    static class TrackVerdict
+    {
+        static void Postfix(NetworkedPlayerInfo exiled, bool wasOverruled, int overruleNonce)
+        {
+            if (!wasOverruled || exiled == null) return;
+            try
+            {
+                var judge = features.JudgeCheats.GetAttributedJudge(exiled.PlayerId);
+                string vc = exiled.Object?.Data != null
+                    ? ColorUtility.ToHtmlStringRGB(Palette.PlayerColors[exiled.Object.Data.DefaultOutfit.ColorId])
+                    : "ffffff";
+                string nonceStr = $" <color=#888888>(nonce {overruleNonce})</color>";
+
+                if (judge?.Data != null)
+                    Log(judge.PlayerId, $"<color=#5599ff>🔨 Gavelled <color=#{vc}>{exiled.Object?.Data?.PlayerName ?? exiled.PlayerName}</color>{nonceStr}</color>");
+
+                if (exiled.Object != null)
+                {
+                    string jc = judge?.Data != null
+                        ? ColorUtility.ToHtmlStringRGB(Palette.PlayerColors[judge.Data.DefaultOutfit.ColorId])
+                        : "aaaaaa";
+                    string jname = judge == null
+                        ? "<color=#aaaaaa>unknown</color>"
+                        : judge.AmOwner ? "<color=#00ff88>You</color>" : $"<color=#{jc}>{judge.Data.PlayerName}</color>";
+                    Log(exiled.PlayerId, $"<color=#5599ff>🔨 Ejected by gavel ({jname}){nonceStr}</color>");
+                }
+            }
+            catch { }
         }
     }
 
