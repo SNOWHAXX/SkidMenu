@@ -1,4 +1,4 @@
-﻿name: Fetch NuGet Dependencies
+name: Fetch NuGet Dependencies
 
 # This allows you to trigger the action manually from the GitHub UI
 on: [workflow_dispatch] 
@@ -9,7 +9,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v4

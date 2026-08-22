@@ -1,4 +1,4 @@
-﻿name: Build and Release BepInEx Mod
+name: Build and Release BepInEx Mod
 
 on:
   workflow_dispatch:
@@ -38,7 +38,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Determine Version
         run: |
