@@ -8,7 +8,7 @@ Host-side toolkit for running private Among Us lobbies. SkidMenu puts per-player
 
 ![SkidMenu in lobby](image%20in%20lobby.png)
 
-> This build is labeled Stable. That tho doesnt mean that nothing will break. It just means that no errors occured while playing for long time. Some functions may break mid-game, cause disconnects, or behave like shit. This is normal given how many features are packed in.
+> This build is labeled Stable. That tho doesnt mean that nothing will break. It just means that no errors occured while playing for long time. Some functions may break mid-game or behave like shit. This is normal given how many features are packed in.
 
 ## For Hosts and Private Lobbies
 
