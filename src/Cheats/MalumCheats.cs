@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using AmongUs.GameOptions;
 using AmongUs.InnerNet.GameDataMessages;
 using UnityEngine;
+using BepInEx.Unity.IL2CPP.Utils.Collections;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 
 namespace SkidMenu;
@@ -95,6 +96,7 @@ public static class MalumCheats
     {
         if (!CheatToggles.completeMyTasks) return;
         CheatToggles.completeMyTasks = false;
+        PlayerControl.LocalPlayer.StartCoroutine(CompleteMyTasksCoroutine().WrapToIl2Cpp());
     }
 
     public static System.Collections.IEnumerator CompleteMyTasksCoroutine()

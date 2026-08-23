@@ -59,7 +59,8 @@ public static class TracersHandler
                 return;
             }
 
-            if (deadBody is ViperDeadBody viperBody)
+            var viperBody = deadBody.TryCast<ViperDeadBody>();
+            if (viperBody != null)
             {
                 try
                 {

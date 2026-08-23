@@ -212,19 +212,16 @@ public static class PlayerTracker
         }
     }
 
-    [HarmonyPatch(typeof(PhantomRole), nameof(PhantomRole.UseAbility))]
-    static class TrackPhantom
+    public static void PhantomVanished(PlayerControl pc)
     {
-        private static bool _wasInvisible;
-        static void Prefix(PhantomRole __instance) => _wasInvisible = __instance?.isInvisible ?? false;
-        static void Postfix(PhantomRole __instance)
-        {
-            if (__instance?.Player?.Data == null || __instance.Player.AmOwner) return;
-            if (!_wasInvisible && __instance.isInvisible)
-                Log(__instance.Player.PlayerId, "<color=#8B0000>👻 Vanished</color>");
-            else if (_wasInvisible && !__instance.isInvisible)
-                Log(__instance.Player.PlayerId, "<color=#cc88ff>👻 Reappeared</color>");
-        }
+        if (pc?.Data == null || pc.AmOwner) return;
+        Log(pc.PlayerId, "<color=#8B0000>👻 Vanished</color>");
+    }
+
+    public static void PhantomReappeared(PlayerControl pc)
+    {
+        if (pc?.Data == null || pc.AmOwner) return;
+        Log(pc.PlayerId, "<color=#cc88ff>👻 Reappeared</color>");
     }
 
     [HarmonyPatch(typeof(MeetingHud), nameof(MeetingHud.VotingComplete))]

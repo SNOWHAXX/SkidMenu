@@ -263,7 +263,7 @@ public static class ForceCompleteAnyTask
             if (task.Id != idx || task.IsComplete) continue;
             try { task.Complete(); } catch { }
             try { GameManager.Instance.CheckTaskCompletion(); } catch { }
-            return false;
+            break;
         }
 
         return true;

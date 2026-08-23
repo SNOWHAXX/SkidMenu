@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using UnityEngine;
 using InnerNet;
 using AmongUs.GameOptions;
@@ -14,9 +15,87 @@ public static class SeePlayersInVents
     private const float VentHideDelay = 0.8f;
     private const float VentRestoreWindow = 2f;
     private const float PhantomAlpha = 0.3f;
-    private static readonly Dictionary<byte, float>            _ventEnterTime = new();
-    private static readonly Dictionary<byte, SpriteRenderer[]> _rendererCache = new();
-    private static readonly Dictionary<byte, float>            LastVentSeen = new();
+
+    // CosmeticsLayer layout (v18, x64): bool "layers visible" lives at object offset 0x81.
+    // The vanish path writes this byte DIRECTLY, bypassing SetBodyCosmeticsVisible -
+    // confirmed by disassembling CosmeticsLayer.UpdateVisibility in GameAssembly.dll.
+    private const int LayersVisibleOffset = 0x81;
+
+    private static readonly Dictionary<byte, float> _ventEnterTime = new();
+    private static readonly Dictionary<byte, float> LastVentSeen = new();
+    private static readonly Dictionary<byte, bool>  _phantomVanished = new();
+    private static bool _forcingLayers;
+
+    // ── phantom layer forcing ─────────────────────────────────────────────────
+
+    private static bool IsRemoteLivingPhantom(CosmeticsLayer cosmetics)
+    {
+        try
+        {
+            foreach (var p in PlayerControl.AllPlayerControls)
+            {
+                if (p == null || p.AmOwner || p.cosmetics != cosmetics) continue;
+                if (p.Data == null || p.Data.IsDead) return false;
+                return p.Data.RoleType == RoleTypes.Phantom;
+            }
+        }
+        catch { }
+        return false;
+    }
+
+    private static bool IsPhantomHidden(CosmeticsLayer cosmetics)
+    {
+        try
+        {
+            var pc = FindOwner(cosmetics);
+            if (pc?.Data?.Role == null) return false;
+            var pr = pc.Data.Role.TryCast<PhantomRole>();
+            return pr != null && (pr.IsInvisible || pr.IsFading);
+        }
+        catch { }
+        return false;
+    }
+
+    private static PlayerControl FindOwner(CosmeticsLayer cosmetics)
+    {
+        try
+        {
+            foreach (var p in PlayerControl.AllPlayerControls)
+                if (p != null && p.cosmetics == cosmetics) return p;
+        }
+        catch { }
+        return null;
+    }
+
+    // Flip the layer-visible byte back to true and re-run the game's own
+    // layer applier, so every skin/hat/pet layer renders again.
+    private static void ForceLayersVisible(CosmeticsLayer cosmetics)
+    {
+        if (_forcingLayers || cosmetics == null) return;
+        try
+        {
+            _forcingLayers = true;
+            Marshal.WriteByte(cosmetics.Pointer + LayersVisibleOffset, 1);
+            cosmetics.UpdateVisibility();
+            cosmetics.SetPhantomRoleAlpha(PhantomAlpha);
+        }
+        catch { }
+        finally { _forcingLayers = false; }
+    }
+
+    // Runs right after the game's own visibility application - if it just hid a
+    // phantom we care about, undo it inside the same call, no timing race.
+    [HarmonyPatch(typeof(CosmeticsLayer), nameof(CosmeticsLayer.UpdateVisibility))]
+    static class PhantomUpdateVisibilityPatch
+    {
+        static void Postfix(CosmeticsLayer __instance)
+        {
+            if (!SeePhantoms || _forcingLayers) return;
+            if (!IsRemoteLivingPhantom(__instance)) return;
+            if (!IsPhantomHidden(__instance)) return;
+            ForceLayersVisible(__instance);
+        }
+    }
 
     // ── vent players ──────────────────────────────────────────────────────────
 
@@ -25,7 +104,6 @@ public static class SeePlayersInVents
     {
         static void Postfix(PlayerPhysics __instance)
         {
-            // fix 5: bail immediately when both features off
             if (!Enabled && !SeePhantoms) return;
 
             var pc = __instance?.myPlayer;
@@ -50,7 +128,7 @@ public static class SeePlayersInVents
                 if (Enabled || (SeePhantoms && isPhantom))
                 {
                     pc.Visible = true;
-                    SetBodyAlpha(pc, 0.3f);
+                    pc.cosmetics?.SetPhantomRoleAlpha(PhantomAlpha);
                 }
                 else if (animPlaying)
                 {
@@ -62,10 +140,7 @@ public static class SeePlayersInVents
                 if (_ventEnterTime.Remove(pc.PlayerId))
                 {
                     pc.Visible = true;
-                    if (SeePhantoms && pc.Data.RoleType == RoleTypes.Phantom && pc.shouldAppearInvisible)
-                        SetPhantomAlpha(pc, PhantomAlpha);
-                    else
-                        SetBodyAlpha(pc, 1f);
+                    pc.cosmetics?.SetPhantomRoleAlpha(1f);
                 }
 
                 if (LastVentSeen.TryGetValue(pc.PlayerId, out float lastSeen) && Time.time - lastSeen > VentRestoreWindow)
@@ -83,69 +158,110 @@ public static class SeePlayersInVents
             if (pc == null) return;
             _ventEnterTime.Remove(pc.PlayerId);
             LastVentSeen.Remove(pc.PlayerId);
-            if (SeePhantoms && pc.Data?.RoleType == RoleTypes.Phantom && pc.shouldAppearInvisible)
-            {
-                pc.Visible = true;
-                SetPhantomAlpha(pc, PhantomAlpha);
-                return;
-            }
-            pc.Visible = true;
-            SetBodyAlpha(pc, 1f);
-        }
-    }
-
-    // fix 6: cleanup on death
-    [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.Die))]
-    static class PlayerDiePatch
-    {
-        static void Postfix(PlayerControl __instance)
-        {
-            if (__instance == null || __instance.AmOwner) return;
-            if (!_ventEnterTime.Remove(__instance.PlayerId)) return;
-            _rendererCache.Remove(__instance.PlayerId);
-            LastVentSeen.Remove(__instance.PlayerId);
-            SetBodyAlpha(__instance, 1f);
-        }
-    }
-
-    // fix 6: cleanup on voted out / disconnect
-    [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.Exiled))]
-    static class PlayerExiledPatch
-    {
-        static void Postfix(PlayerControl __instance)
-        {
-            if (__instance == null) return;
-            _ventEnterTime.Remove(__instance.PlayerId);
-            _rendererCache.Remove(__instance.PlayerId);
-            LastVentSeen.Remove(__instance.PlayerId);
+            pc.cosmetics?.SetPhantomRoleAlpha(1f);
         }
     }
 
     // ── phantoms ─────────────────────────────────────────────────────────────
 
-    // fix 2+3: merged into one patch with Priority.Last so we run after AU sets its own state
+    // Endless vanish support: keep the duration timer pinned while invisible.
     [HarmonyPatch(typeof(PhantomRole), nameof(PhantomRole.FixedUpdate))]
     [HarmonyPriority(Priority.Last)]
     static class PhantomFixedUpdatePatch
     {
         static void Postfix(PhantomRole __instance)
         {
-            // fix 3: endless vanish handled first, before we read isInvisible
             if (CheatToggles.endlessVanishDuration && __instance.isInvisible)
                 __instance.durationSecondsRemaining = float.MaxValue;
         }
     }
 
-    // LateUpdate-phase enforcement, called from VentVisibilityKeeper. Runs after the game's own
-    // animators and vent coroutines (CoEnterVent/CoExitVent, vanish/appear poofs) so our visibility
-    // writes win the render race instead of being overwritten after FixedUpdate each frame.
+    // See Phantoms: the vanish animation runs untouched, but when the game tries to
+    // apply the FINAL hide to a remote living phantom, we flip the argument back -
+    // nothing gets disabled, so the 0.3 alpha pin in EnforceVisibility sticks.
+    [HarmonyPatch(typeof(CosmeticsLayer), nameof(CosmeticsLayer.SetBodyCosmeticsVisible))]
+    static class PhantomHideBlockPatch
+    {
+        static void Prefix(CosmeticsLayer __instance, ref bool b)
+        {
+            if (!SeePhantoms || b) return;
+            try
+            {
+                foreach (var p in PlayerControl.AllPlayerControls)
+                {
+                    if (p == null || p.AmOwner || p.cosmetics != __instance) continue;
+                    if (p.Data?.RoleType != RoleTypes.Phantom) return;
+                    if (!p.Data.IsDead) b = true;
+                    return;
+                }
+            }
+            catch { }
+        }
+    }
+
+    [HarmonyPatch(typeof(CosmeticsLayer), nameof(CosmeticsLayer.SetForcedVisible))]
+    static class PhantomForcedVisiblePatch
+    {
+        static void Prefix(CosmeticsLayer __instance, ref bool isVisible)
+        {
+            if (!SeePhantoms || isVisible) return;
+            try
+            {
+                foreach (var p in PlayerControl.AllPlayerControls)
+                {
+                    if (p == null || p.AmOwner || p.cosmetics != __instance) continue;
+                    if (p.Data?.RoleType != RoleTypes.Phantom) return;
+                    if (!p.Data.IsDead) isVisible = true;
+                    return;
+                }
+            }
+            catch { }
+        }
+    }
+
+    private static void FireVanish(PlayerControl pc)
+    {
+        try
+        {
+            if (CheatToggles.notifPhantom && !NotifHelper.Skip(pc, 5))
+                SkidMenu.notifications.Send("<color=#8B0000>👻 Phantom</color>",
+                    $"{(pc.AmOwner ? "<color=#00ff88>You</color>" : NotifHelper.Fmt(pc))} vanished{NotifHelper.Room(pc)}{NotifHelper.Dist(pc)}", 3f);
+
+            if (CheatToggles.logPhantomVanish)
+                ConsoleUI.Log($"{ConsoleHelper.Fmt(pc)} <color=#cc66ff>vanished (Phantom)</color>{ConsoleHelper.Room(pc)}", "CC66FF");
+
+            PlayerTracker.PhantomVanished(pc);
+        }
+        catch { }
+    }
+
+    private static void FireReappear(PlayerControl pc)
+    {
+        try
+        {
+            if (CheatToggles.notifPhantomReappear && !NotifHelper.Skip(pc, 16))
+                SkidMenu.notifications.Send("<color=#cc88ff>👻 Reappear</color>",
+                    $"{(pc.AmOwner ? "<color=#00ff88>You</color>" : NotifHelper.Fmt(pc))} reappeared{NotifHelper.Room(pc)}{NotifHelper.Dist(pc)}", 3f);
+
+            if (CheatToggles.logPhantomReappear)
+                ConsoleUI.Log($"{ConsoleHelper.Fmt(pc)} <color=#dd99ff>reappeared (Phantom)</color>{ConsoleHelper.Room(pc)}", "DD99FF");
+
+            PlayerTracker.PhantomReappeared(pc);
+        }
+        catch { }
+    }
+
+    // ── late-phase vent enforcement ───────────────────────────────────────────
+
+    // Called from VentVisibilityKeeper each LateUpdate so vent visibility writes win
+    // over the game's own vent coroutines before rendering.
     public static void EnforceVisibility()
     {
         if (!Enabled && !SeePhantoms) return;
         if (AmongUsClient.Instance?.GameState != InnerNetClient.GameStates.Started) return;
         if (MeetingHud.Instance != null) return;
 
-        if (Enabled || SeePhantoms)
+        if (Enabled)
         {
             foreach (var kvp in LastVentSeen)
             {
@@ -155,62 +271,55 @@ public static class SeePlayersInVents
                 if (pc.AmOwner || pc.Data == null || pc.Data.IsDead) continue;
                 if (Time.time - kvp.Value > VentRestoreWindow) continue;
 
-                bool isPhantom = pc.Data.RoleType == RoleTypes.Phantom;
-                if (!Enabled && !(SeePhantoms && isPhantom)) continue;
-
                 pc.Visible = true;
-                SetBodyAlpha(pc, pc.inVent ? 0.3f : 1f);
+                pc.cosmetics?.SetPhantomRoleAlpha(pc.inVent ? PhantomAlpha : 1f);
             }
         }
 
-        if (SeePhantoms)
+        foreach (PlayerControl pc in PlayerControl.AllPlayerControls)
         {
-            foreach (PlayerControl pc in PlayerControl.AllPlayerControls)
+            if (pc == null || pc.AmOwner || pc.Data?.Role == null) continue;
+            if (pc.Data.RoleType != RoleTypes.Phantom) continue;
+
+            try
             {
-                if (pc == null || pc.AmOwner) continue;
-                if (pc.Data?.RoleType != RoleTypes.Phantom) continue;
-                PhantomRole pr = pc.Data.Role as PhantomRole;
-                if (!pc.shouldAppearInvisible && (pr == null || pr.durationSecondsRemaining <= 0f)) continue;
-                SetPhantomAlpha(pc, PhantomAlpha);
-            }
-        }
-    }
+                var pr = pc.Data.Role.TryCast<PhantomRole>();
+                if (pr == null) continue;
 
-    [HarmonyPatch(typeof(PhantomRole), nameof(PhantomRole.MakePlayerVisible))]
-    static class MakePlayerVisiblePatch
-    {
-        static void Postfix(PhantomRole __instance)
-        {
-            if (!SeePhantoms) return;
-            PlayerControl pc = __instance.Player;
-            if (pc == null) return;
-            SetPhantomAlpha(pc, 1f);
-        }
-    }
+                byte id = pc.PlayerId;
+                _phantomVanished.TryGetValue(id, out bool wasVanished);
+                bool nowVanished = pr.IsInvisible;
 
-    // fix 2: restore phantom alpha correctly when meeting ends
-    [HarmonyPatch(typeof(MeetingHud), nameof(MeetingHud.Close))]
-    static class MeetingClosePatch
-    {
-        static void Postfix()
-        {
-            if (!SeePhantoms) return;
-            foreach (PlayerControl pc in PlayerControl.AllPlayerControls)
-            {
-                if (pc == null || pc.AmOwner) continue;
-                if (pc.Data?.RoleType != RoleTypes.Phantom) continue;
-                PhantomRole pr = pc.Data.Role as PhantomRole;
-                bool stillInvisible = pr != null && pr.durationSecondsRemaining > 0f;
-                if (stillInvisible)
+                if (nowVanished && !wasVanished)
                 {
-                    pc.shouldAppearInvisible = true;
-                    SetPhantomAlpha(pc, PhantomAlpha);
+                    _phantomVanished[id] = true;
+                    FireVanish(pc);
                 }
-                else
+                else if (!nowVanished && wasVanished)
                 {
-                    SetPhantomAlpha(pc, 1f);
+                    _phantomVanished.Remove(id);
+                    FireReappear(pc);
                 }
+
+                if (!SeePhantoms) continue;
+
+                float target = (nowVanished || pr.IsFading) ? PhantomAlpha : 1f;
+                pc.Visible = true;
+
+                try
+                {
+                    if (target < 1f)
+                    {
+                        ForceLayersVisible(pc.cosmetics);
+                    }
+                    else
+                    {
+                        pc.cosmetics?.SetPhantomRoleAlpha(1f);
+                    }
+                }
+                catch { }
             }
+            catch { }
         }
     }
 
@@ -227,20 +336,12 @@ public static class SeePlayersInVents
                 if (pd?.Object != null)
                 {
                     pd.Object.Visible = true;
-                    SetBodyAlpha(pd.Object, 1f);
+                    pd.Object.cosmetics?.SetPhantomRoleAlpha(1f);
                 }
             }
             _ventEnterTime.Clear();
             LastVentSeen.Clear();
-            if (SeePhantoms)
-            {
-                foreach (PlayerControl pc in PlayerControl.AllPlayerControls)
-                {
-                    if (pc == null || pc.AmOwner) continue;
-                    if (pc.Data?.RoleType != RoleTypes.Phantom) continue;
-                    SetPhantomAlpha(pc, 1f);
-                }
-            }
+            _phantomVanished.Clear();
         }
     }
 
@@ -251,8 +352,8 @@ public static class SeePlayersInVents
         {
             if (player == null) return;
             _ventEnterTime.Remove(player.PlayerId);
-            _rendererCache.Remove(player.PlayerId);
             LastVentSeen.Remove(player.PlayerId);
+            _phantomVanished.Remove(player.PlayerId);
         }
     }
 
@@ -264,62 +365,12 @@ public static class SeePlayersInVents
             foreach (var id in _ventEnterTime.Keys)
             {
                 var pd = GameData.Instance?.GetPlayerById(id);
-                if (pd?.Object != null) SetBodyAlpha(pd.Object, 1f);
+                if (pd?.Object != null) pd.Object.cosmetics?.SetPhantomRoleAlpha(1f);
             }
             _ventEnterTime.Clear();
-            _rendererCache.Clear();
             LastVentSeen.Clear();
+            _phantomVanished.Clear();
         }
-    }
-
-    // ── helpers ───────────────────────────────────────────────────────────────
-
-    private static void SetPhantomAlpha(PlayerControl pc, float alpha)
-    {
-        try
-        {
-            pc.shouldAppearInvisible = false;
-            pc.invisibilityAlpha = 1f;
-            pc.Visible = alpha > 0f;
-            pc.cosmetics.SetPhantomRoleAlpha(alpha);
-            pc.cosmetics.SetForcedVisible(alpha < 1f);
-            pc.cosmetics.isNameVisible = alpha > 0f;
-            if (alpha > 0f && pc.cosmetics.nameText != null)
-            {
-                var nc = pc.cosmetics.nameText.color;
-                nc.a = 1f;
-                pc.cosmetics.nameText.color = nc;
-            }
-        }
-        catch { }
-    }
-
-    // fix 4: direct SpriteRenderer iteration with per-player caching
-    // no longer calls SetPhantomRoleAlpha on non-phantom players
-    private static void SetBodyAlpha(PlayerControl pc, float alpha)
-    {
-        try
-        {
-            if (!_rendererCache.TryGetValue(pc.PlayerId, out var renderers) || renderers == null || renderers.Length == 0)
-            {
-                renderers = pc.GetComponentsInChildren<SpriteRenderer>(true);
-                _rendererCache[pc.PlayerId] = renderers;
-            }
-            foreach (var sr in renderers)
-            {
-                if (sr == null) continue;
-                var c = sr.color;
-                c.a = alpha;
-                sr.color = c;
-            }
-            if (pc.cosmetics.nameText != null)
-            {
-                var nc = pc.cosmetics.nameText.color;
-                nc.a = alpha;
-                pc.cosmetics.nameText.color = nc;
-            }
-        }
-        catch { }
     }
 }
 

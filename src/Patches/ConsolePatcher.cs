@@ -71,9 +71,10 @@ public static class Console_LogKill
 [HarmonyPatch(typeof(ViperRole), nameof(ViperRole.KillAnimSpecialSetup))]
 public static class ViperKillSeed
 {
-    public static void Postfix(DeadBody deadBody, PlayerControl killer, PlayerControl victim)
+    public static void Postfix(ViperRole __instance, DeadBody deadBody, PlayerControl killer, PlayerControl victim)
     {
-        if (victim == null || victim.PlayerId == byte.MaxValue) return;
+        if (killer == null || victim == null || victim.PlayerId == byte.MaxValue) return;
+        if (__instance?.Player == null || __instance.Player.PlayerId != killer.PlayerId) return;
         try
         {
             float maxTime = 0f;
@@ -417,32 +418,6 @@ public static class Console_LogLobbyJoin
     }
 }
 
-[HarmonyPatch(typeof(PhantomRole), nameof(PhantomRole.UseAbility))]
-public static class Console_LogPhantomVanish
-{
-    private static readonly System.Collections.Generic.Dictionary<byte, bool> _phantomState = new();
-
-    public static void Prefix(PhantomRole __instance)
-    {
-        if (__instance?.Player == null) return;
-        try
-        {
-            byte id = __instance.Player.PlayerId;
-            _phantomState.TryGetValue(id, out bool currentlyInvisible);
-            if (currentlyInvisible)
-            {
-                _phantomState[id] = false;
-                if (!CheatToggles.logPhantomReappear) return;
-                ConsoleUI.Log($"{ConsoleHelper.Fmt(__instance.Player)} <color=#dd99ff>reappeared (Phantom)</color>{ConsoleHelper.Room(__instance.Player)}", "DD99FF");
-            }
-            else
-            {
-                _phantomState[id] = true;
-                if (!CheatToggles.logPhantomVanish) return;
-                ConsoleUI.Log($"{ConsoleHelper.Fmt(__instance.Player)} <color=#cc66ff>vanished (Phantom)</color>{ConsoleHelper.Room(__instance.Player)}", "CC66FF");
-            }
-        }
-        catch { }
-    }
-}
+// Phantom vanish/reappear logs now fired from SeePlayersInVents.PhantomAlphaPatch (SetPhantomRoleAlpha hook),
+// which catches remote phantoms too - UseAbility only fires for the local ability button.
 

@@ -192,12 +192,14 @@ public static class Utils
 
     public static void CompleteTask(PlayerControl player, PlayerTask task)
     {
-        if (task.IsComplete) return;
-        while (!task.IsComplete)
+        if (player == null || task == null || task.IsComplete) return;
+        try
         {
-            if (task is NormalPlayerTask npt) npt.taskStep++;
-            player.RpcCompleteTask(task.Id);
+            if (task is NormalPlayerTask npt && npt.taskStep < npt.MaxStep)
+                npt.taskStep = npt.MaxStep;
         }
+        catch { }
+        player.RpcCompleteTask(task.Id);
     }
 
     // Opens Chat UI

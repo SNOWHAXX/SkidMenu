@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using AmongUs.GameOptions;
+using HarmonyLib;
 using UnityEngine;
 
 namespace SkidMenu;
@@ -55,7 +57,8 @@ public static class ViperBodies
         if (body == null) return -1f;
         float reg = Remaining(body.ParentId);
         if (reg >= 0f) return reg;
-        if (body is not ViperDeadBody viper) return -1f;
+        var viper = body.TryCast<ViperDeadBody>();
+        if (viper == null) return -1f;
         try { return Mathf.Max(0f, viper.maxDissolveTime - viper.dissolveCurrentTime); }
         catch { return -1f; }
     }
@@ -66,7 +69,8 @@ public static class ViperBodies
         byte pid = body.ParentId;
         if (_states.TryGetValue(pid, out var st) && st.maxTime > 0f)
             return Time.time - st.seededAt >= st.maxTime;
-        if (body is not ViperDeadBody viper) return false;
+        var viper = body.TryCast<ViperDeadBody>();
+        if (viper == null) return false;
         try { return viper.maxDissolveTime > 0f && viper.dissolveCurrentTime >= viper.maxDissolveTime; }
         catch { return false; }
     }
@@ -82,7 +86,8 @@ public static class ViperBodies
                 if (body == null || body.gameObject == null) continue;
                 byte pid = body.ParentId;
                 int bid = body.gameObject.GetInstanceID();
-                if (body is not ViperDeadBody viper)
+                var viper = body.TryCast<ViperDeadBody>();
+                if (viper == null)
                     continue;
                 float maxT = viper.maxDissolveTime;
                 if (maxT <= 0f && _states.TryGetValue(pid, out var prev) && prev.maxTime > 0f)
@@ -145,7 +150,8 @@ public static class ViperBodies
         byte pid = body.ParentId;
         if (_states.TryGetValue(pid, out var st) && st.maxTime > 0f)
             return CanReport(pid);
-        if (body is ViperDeadBody viper)
+        var viper = body.TryCast<ViperDeadBody>();
+        if (viper != null)
         {
             try { return viper.maxDissolveTime - viper.dissolveCurrentTime > 0f; }
             catch { }
@@ -165,7 +171,7 @@ public static class ViperBodies
 
     public static bool LogDissolvedOnce(DeadBody body)
     {
-        if (body == null || body is not ViperDeadBody) return false;
+        if (body == null || body.TryCast<ViperDeadBody>() == null) return false;
         return LogDissolvedOnce(body.ParentId);
     }
 
@@ -193,8 +199,19 @@ public static class ViperBodies
 
     public static string AcidTag(DeadBody body, bool includeRemaining = true)
     {
-        if (body is not ViperDeadBody) return "";
+        if (body == null || body.TryCast<ViperDeadBody>() == null) return "";
         return AcidTag(body.ParentId, includeRemaining);
+    }
+
+    public static void ResetAll()
+    {
+        _states.Clear();
+    }
+
+    [HarmonyPatch(typeof(LobbyBehaviour), nameof(LobbyBehaviour.Start))]
+    static class ViperStatesClearOnLobby
+    {
+        static void Postfix() => _states.Clear();
     }
 
     private static void Cleanup()

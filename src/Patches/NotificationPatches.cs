@@ -133,36 +133,8 @@ public static class Notif_ExitVent
     }
 }
 
-// Phantom vanish
-[HarmonyPatch(typeof(PhantomRole), nameof(PhantomRole.UseAbility))]
-public static class Notif_PhantomVanish
-{
-    public static void Postfix(PhantomRole __instance)
-    {
-        if (!CheatToggles.notifPhantom || __instance?.Player == null) return;
-        if (NotifHelper.Skip(__instance.Player, 5)) return;
-        if (__instance.isInvisible) return; // already invisible = this was a reappear, not vanish
-        string name = __instance.Player.AmOwner ? "<color=#00ff88>You</color>" : NotifHelper.Fmt(__instance.Player);
-        SkidMenu.notifications.Send("<color=#8B0000>👻 Phantom</color>",
-            $"{name} vanished{NotifHelper.Room(__instance.Player)}{NotifHelper.Dist(__instance.Player)}", 3f);
-    }
-}
-
-// Phantom reappear
-[HarmonyPatch(typeof(PhantomRole), nameof(PhantomRole.UseAbility))]
-public static class Notif_PhantomReappear
-{
-    private static bool _wasInvisible;
-    public static void Prefix(PhantomRole __instance) => _wasInvisible = __instance?.isInvisible ?? false;
-    public static void Postfix(PhantomRole __instance)
-    {
-        if (!CheatToggles.notifPhantomReappear || !_wasInvisible || __instance?.Player == null) return;
-        if (NotifHelper.Skip(__instance.Player, 16)) return;
-        string name = __instance.Player.AmOwner ? "<color=#00ff88>You</color>" : NotifHelper.Fmt(__instance.Player);
-        SkidMenu.notifications.Send("<color=#cc88ff>👻 Reappear</color>",
-            $"{name} reappeared{NotifHelper.Room(__instance.Player)}{NotifHelper.Dist(__instance.Player)}", 3f);
-    }
-}
+// Phantom vanish/reappear now fired from SeePlayersInVents.PhantomAlphaPatch (SetPhantomRoleAlpha hook),
+// which catches remote phantoms too - UseAbility only fires for the local ability button.
 
 // Shapeshift revert
 [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.Shapeshift))]
@@ -233,7 +205,7 @@ public static class Notif_Meeting
                 string reporter = __instance.AmOwner ? "<color=#00ff88>You</color>" : NotifHelper.Fmt(__instance);
                 string baseMsg = $"{reporter} reported {victimName}{bodyRoom}{NotifHelper.Dist(__instance)}";
                 DeadBody body = ViperBodies.FindBody(target.PlayerId);
-                if (body is ViperDeadBody)
+                if (body != null && body.TryCast<ViperDeadBody>() != null)
                     SkidMenu.notifications.SendLive("<color=#ff6666>💀 Body Report</color>", baseMsg, 4f, body);
                 else if (ViperBodies.IsViper(target.PlayerId))
                     SkidMenu.notifications.SendLive("<color=#ff6666>💀 Body Report</color>", baseMsg, 4f, target.PlayerId);

@@ -4,7 +4,7 @@ Host-side toolkit for running private Among Us lobbies. SkidMenu puts per-player
 
 **Created by SNOWHAXX**
 
-**Current version:** `1.3.0` (Stable)
+**Current version:** `1.3.1` (Stable)
 
 ![SkidMenu in lobby](image%20in%20lobby.png)
 
@@ -39,8 +39,8 @@ The menu is split into the following tabs and features (this isn't a full list o
 - Movement: NoClip, Invert controls, Lag Compensation, Speed modifier, Current Speed Changer, Teleport (to cursor, to player, to map locations)
 - Self: Set color, Snipe Color, Rainbow, Body Type, Immortality, Invisibility, Load Info, Task animations, Ladder cooldown, Unlimited meetings, Chat theme/Font customization
 - ESP: See Roles, Ghosts, Phantoms, Player info, Notifications, Votes, Lobby Info, No Shadows, Zoom, Freecam
-- Roles: Fake Roles, Fake Alive, Kill Aura/Reach, Tracking, Engineer, Sabotage, Instant Pet, Spam Pet, Break Pet Infinite Protect Range, Shapeshifter
-- Players: Player targeted actions and Info, Teleport, Murder, Watch, Shapeshift, Copy Info, Protect, Save Info, Copy Player, Ban, Kick, Teleport to Vent, Frame
+- Roles: Fake Roles, Fake Alive, Kill Aura/Reach, Tracking, Engineer, Sabotage, Instant Pet, Spam Pet, Break Pet Infinite Protect Range, Shapeshifter, Judge stuff
+- Players: Player targeted actions and Info, Teleport, Murder, Watch, Shapeshift, Copy Info, Protect, Save Info, Copy Player, Ban, Kick, Judge, Teleport to Vent, Frame
 - Ship: Doors Menu, Meetings, Body Reports, Fake Tasks, Unlock Vents, Sabotages
 - Chat: Chat unlocks, Extended Chat, Chat History, Chat Windows, Copy Message, Chat sender (Manual Spam and Trigger based Messages on Join, Death, Meeting, Kill, and Ejection)
 - Animations: Task animations, Skip Shhh Animation, Skip Roles Reveal
