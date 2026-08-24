@@ -26,20 +26,27 @@ public static class TracersHandler
                     bool isImp = data.Role.IsImpostor;
                     bool shouldDraw = (CheatToggles.tracersImps && isImp) || (CheatToggles.tracersCrew && !isImp);
                     if (shouldDraw)
-                        color = CheatToggles.distanceBasedTracers
-                            ? GetDistanceColor(playerPhysics.myPlayer.transform.position)
-                            : CheatToggles.colorBasedTracers
-                                ? WithAlpha(Palette.PlayerColors[data.DefaultOutfit.ColorId], 1f)
-                                : WithAlpha(Utils.GetCustomRoleColor(data), 1f);
+                    {
+                        if (CheatToggles.simpleRoleBasedTracers)
+                            color = WithAlpha(isImp ? new Color(1f, 0.5f, 0.5f) : new Color(0.6f, 0.8f, 1f), 1f);
+                        else
+                            color = CheatToggles.distanceBasedTracers
+                                ? GetDistanceColor(playerPhysics.myPlayer.transform.position)
+                                : CheatToggles.colorBasedTracers
+                                    ? WithAlpha(Palette.PlayerColors[data.DefaultOutfit.ColorId], 1f)
+                                    : WithAlpha(Utils.GetCustomRoleColor(data), 1f);
+                    }
                 }
             }
             else if (CheatToggles.tracersGhosts)
             {
-                color = CheatToggles.distanceBasedTracers
-                    ? GetDistanceColor(playerPhysics.myPlayer.transform.position)
-                    : CheatToggles.colorBasedTracers
-                        ? WithAlpha(Palette.PlayerColors[data.DefaultOutfit.ColorId], 1f)
-                        : Palette.White;
+                color = CheatToggles.simpleRoleBasedTracers
+                    ? Palette.White
+                    : CheatToggles.distanceBasedTracers
+                        ? GetDistanceColor(playerPhysics.myPlayer.transform.position)
+                        : CheatToggles.colorBasedTracers
+                            ? WithAlpha(Palette.PlayerColors[data.DefaultOutfit.ColorId], 1f)
+                            : Palette.White;
             }
 
             Utils.DrawTracer(playerPhysics.myPlayer.gameObject, PlayerControl.LocalPlayer.gameObject, color);
@@ -81,12 +88,17 @@ public static class TracersHandler
 
             if (CheatToggles.tracersBodies)
             {
-                var info = GameData.Instance.GetPlayerById(deadBody.ParentId);
-                color = CheatToggles.distanceBasedTracers
-                    ? GetDistanceColor(deadBody.transform.position)
-                    : CheatToggles.colorBasedTracers && info != null
-                        ? WithAlpha(Palette.PlayerColors[info.DefaultOutfit.ColorId], 1f)
-                        : Color.white;
+                if (CheatToggles.simpleRoleBasedTracers)
+                    color = new Color(1f, 1f, 0.6f);
+                else
+                {
+                    var info = GameData.Instance.GetPlayerById(deadBody.ParentId);
+                    color = CheatToggles.distanceBasedTracers
+                        ? GetDistanceColor(deadBody.transform.position)
+                        : CheatToggles.colorBasedTracers && info != null
+                            ? WithAlpha(Palette.PlayerColors[info.DefaultOutfit.ColorId], 1f)
+                            : Color.white;
+                }
             }
 
             Utils.DrawTracer(deadBody.gameObject, PlayerControl.LocalPlayer.gameObject, color, 0.07f);

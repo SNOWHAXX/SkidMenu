@@ -301,7 +301,7 @@ public class HostOnlyTab : ITab
 
     private static readonly string[] _roleNames = {        "Random", "Crewmate", "Impostor", "Scientist", "Engineer",
         "Guardian Angel", "Shapeshifter", "Noisemaker", "Phantom",
-        "Tracker", "Detective", "Viper"
+        "Tracker", "Detective", "Viper", "Judge"
     };
 
     private static readonly RoleTypes[] _roleTypes = {

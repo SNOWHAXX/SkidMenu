@@ -11,6 +11,7 @@ namespace SkidMenu.routines
 		public ReportBodySpam reportBodySpam = new ReportBodySpam();
 		public FullyRandomizeRoutine fullyRandomize = new FullyRandomizeRoutine();
 		public TeleportFlooderRoutine teleportFlooder = new TeleportFlooderRoutine();
+		public PetPlayerRoutine petPlayer = new PetPlayerRoutine();
 
 		public void Update()
 		{
@@ -21,6 +22,7 @@ namespace SkidMenu.routines
 			if(reportBodySpam.Enabled) reportBodySpam.Run();
 			if(fullyRandomize.Enabled) fullyRandomize.Run();
 			if(teleportFlooder.Enabled) teleportFlooder.Run();
+			if(petPlayer._enabled) petPlayer.Run();
 		}
 	}
 }

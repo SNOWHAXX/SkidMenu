@@ -27,11 +27,14 @@ public static class MinimapHandler
                 if (!herePoint.player.Data.IsDead)
                 {
                     herePoint.sprite.gameObject.SetActive(true);
-                    herePointColor = CheatToggles.distanceBasedTracers
-                        ? TracersHandler.GetDistanceColor(herePoint.player.transform.position)
-                        : CheatToggles.colorBasedTracers
-                            ? Palette.PlayerColors[herePoint.player.Data.DefaultOutfit.ColorId]
-                            : Utils.GetCustomRoleColor(herePoint.player.Data);
+                    if (CheatToggles.simpleRoleBasedMap)
+                        herePointColor = new Color(0.6f, 0.8f, 1f);
+                    else
+                        herePointColor = CheatToggles.distanceBasedMap
+                            ? TracersHandler.GetDistanceColor(herePoint.player.transform.position)
+                            : CheatToggles.colorBasedMap
+                                ? Palette.PlayerColors[herePoint.player.Data.DefaultOutfit.ColorId]
+                                : Utils.GetCustomRoleColor(herePoint.player.Data);
                 }
             }
             // Impostor, alive
@@ -40,25 +43,28 @@ public static class MinimapHandler
                 if (!herePoint.player.Data.IsDead)
                 {
                     herePoint.sprite.gameObject.SetActive(true);
-                    herePointColor = CheatToggles.distanceBasedTracers
-                        ? TracersHandler.GetDistanceColor(herePoint.player.transform.position)
-                        : CheatToggles.colorBasedTracers
-                            ? Palette.PlayerColors[herePoint.player.Data.DefaultOutfit.ColorId]
-                            : Utils.GetCustomRoleColor(herePoint.player.Data);
+                    if (CheatToggles.simpleRoleBasedMap)
+                        herePointColor = new Color(1f, 0.5f, 0.5f);
+                    else
+                        herePointColor = CheatToggles.distanceBasedMap
+                            ? TracersHandler.GetDistanceColor(herePoint.player.transform.position)
+                            : CheatToggles.colorBasedMap
+                                ? Palette.PlayerColors[herePoint.player.Data.DefaultOutfit.ColorId]
+                                : Utils.GetCustomRoleColor(herePoint.player.Data);
                 }
             }
             // Any Role, dead
             if (CheatToggles.mapGhosts && herePoint.player.Data.IsDead)
             {
                 herePoint.sprite.gameObject.SetActive(true);
-                if (CheatToggles.colorBasedTracers)
-                {
-                    herePointColor = herePoint.player.Data.Color;
-                }
-                else
-                {
+                if (CheatToggles.simpleRoleBasedMap)
                     herePointColor = Palette.White;
-                }
+                else if (CheatToggles.colorBasedMap)
+                    herePointColor = herePoint.player.Data.Color;
+                else if (CheatToggles.distanceBasedMap)
+                    herePointColor = TracersHandler.GetDistanceColor(herePoint.player.transform.position);
+                else
+                    herePointColor = Palette.White;
             }
 
             if (herePoint.sprite.gameObject.active)

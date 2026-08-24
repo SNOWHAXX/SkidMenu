@@ -12,13 +12,13 @@ public static class Invisibility
 
     // Far off the map so the server and every client place us in the void.
     // Randomized each reinforce so it's never the exact same spot, max 100 off.
-    private const float VoidCenter = 25000f;
+    private const float VoidCenter = 3000f;
     private const float VoidSpread = 100f;
 
     // The server keeps authority and teleports us on kills, vents, meetings
-    // and corrections, so re-assert the off-map position every 800ms. One RPC
+    // and corrections, so re-assert the off-map position every 1.2s. One RPC
     // per interval, far below any RPC-flood threshold.
-    private const float ReinforceInterval = 0.8f;
+    private const float ReinforceInterval = 1.2f;
     private static float _lastReinforceTime = 0f;
 
     private static bool ShouldRun()
@@ -75,7 +75,8 @@ public static class Invisibility
             if (!ShouldRun()) return true;
             if (__instance.myPlayer == null || __instance.myPlayer != PlayerControl.LocalPlayer) return true;
 
-            if (Time.time - _lastReinforceTime >= ReinforceInterval)
+            // Do not send RPC while a meeting is going on — only on start/end (handled by OnMeetingStart/OnMeetingEnd)
+            if (MeetingHud.Instance == null && Time.time - _lastReinforceTime >= ReinforceInterval)
             {
                 _lastReinforceTime = Time.time;
                 ReinforceOffMap(__instance);

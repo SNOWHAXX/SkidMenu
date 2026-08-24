@@ -584,6 +584,20 @@ public static class IGameOptionsExtensions_GetAdjustedNumImpostors
     }
 }
 
+[HarmonyPatch(typeof(MatchInfoHudButton), nameof(MatchInfoHudButton.Update))]
+public static class MatchInfoHudButton_Update
+{
+    public static bool Prefix(MatchInfoHudButton __instance)
+    {
+        if (CheatToggles.enableChat)
+        {
+            __instance.aspectPosition.DistanceFromEdge = MatchInfoHudButton.adjustedDistanceFromEdge;
+            return false;
+        }
+        return true;
+    }
+}
+
 [HarmonyPatch(typeof(PlayerPurchasesData), nameof(PlayerPurchasesData.GetPurchase))]
 public static class PlayerPurchasesData_GetPurchase
 {

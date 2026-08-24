@@ -345,6 +345,15 @@ public class PlayersTab : ITab
             Teleporter.TeleportTo(target.transform.position);
         GUILayout.EndHorizontal();
 
+        {
+            bool isPetting = SkidMenu.routines.petPlayer.AmPetting(target);
+            var bg = GUI.backgroundColor;
+            GUI.backgroundColor = isPetting ? new Color(0.6f, 0.1f, 0.1f) : new Color(0.1f, 0.6f, 0.3f);
+            if (GUILayout.Button(isPetting ? "Stop Pet Player" : "Pet Player"))
+                SkidMenu.routines.petPlayer.Enabled = !isPetting;
+            GUI.backgroundColor = bg;
+        }
+
         if (GUILayout.Button("Murder"))
         {
             if (AmongUsClient.Instance.AmHost)

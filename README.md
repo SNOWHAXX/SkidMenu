@@ -4,7 +4,7 @@ Host-side toolkit for running private Among Us lobbies. SkidMenu puts per-player
 
 **Created by SNOWHAXX**
 
-**Current version:** `1.3.1` (Stable)
+**Current version:** `1.3.2` (Stable)
 
 ![SkidMenu in lobby](image%20in%20lobby.png)
 

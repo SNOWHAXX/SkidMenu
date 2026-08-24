@@ -148,6 +148,8 @@ public struct CheatToggles
     public static bool mapImps;
     public static bool mapGhosts;
     public static bool colorBasedMap;
+    public static bool distanceBasedMap;
+    public static bool simpleRoleBasedMap;
 
     // Tracers
     public static bool tracersImps;
@@ -156,6 +158,7 @@ public struct CheatToggles
     public static bool tracersBodies;
     public static bool colorBasedTracers;
     public static bool distanceBasedTracers;
+    public static bool simpleRoleBasedTracers;
 
     // Chat
     public static bool enableChat;

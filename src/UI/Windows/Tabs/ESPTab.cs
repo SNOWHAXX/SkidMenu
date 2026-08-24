@@ -173,22 +173,31 @@ public class ESPTab : ITab
         GUILayout.Space(4);
         GUILayout.Label("Color Mode", GUIStylePreset.TabSubtitle);
 
-        if (CheatToggles.colorBasedTracers && CheatToggles.distanceBasedTracers)
+        if ((CheatToggles.colorBasedTracers ? 1 : 0) + (CheatToggles.distanceBasedTracers ? 1 : 0) + (CheatToggles.simpleRoleBasedTracers ? 1 : 0) > 1)
+        {
+            CheatToggles.colorBasedTracers = false;
             CheatToggles.distanceBasedTracers = false;
+            CheatToggles.simpleRoleBasedTracers = false;
+        }
 
-        int mode = CheatToggles.colorBasedTracers ? 1 : CheatToggles.distanceBasedTracers ? 2 : 0;
+        int mode = CheatToggles.colorBasedTracers ? 1 : CheatToggles.distanceBasedTracers ? 2 : CheatToggles.simpleRoleBasedTracers ? 3 : 0;
+        bool r0 = GUIStylePreset.CustomToggle(mode == 0, " Role Color");
         bool r1 = GUIStylePreset.CustomToggle(mode == 1, " Player Color");
         bool r2 = GUIStylePreset.CustomToggle(mode == 2, " Distance-based");
-        bool r0 = GUIStylePreset.CustomToggle(mode == 0, " Role Color");
+        bool r3 = GUIStylePreset.CustomToggle(mode == 3, " Simple Role");
         int newMode = mode;
-        if      (r1 && mode != 1) newMode = 1;
+        if      (r0 && mode != 0) newMode = 0;
+        else if (r1 && mode != 1) newMode = 1;
         else if (r2 && mode != 2) newMode = 2;
-        else if (r0 && mode != 0) newMode = 0;
+        else if (r3 && mode != 3) newMode = 3;
         if (newMode != mode)
         {
             CheatToggles.colorBasedTracers    = newMode == 1;
             CheatToggles.distanceBasedTracers = newMode == 2;
+            CheatToggles.simpleRoleBasedTracers = newMode == 3;
         }
+        if (CheatToggles.simpleRoleBasedTracers)
+            GUILayout.Label("  light blue = crew, light red = imp, light yellow = body, white = ghost", GUIStylePreset.ModernLabel);
     }
     private void DrawMinimap()
     {
@@ -196,5 +205,34 @@ public class ESPTab : ITab
         CheatToggles.mapCrew   = GUIStylePreset.CustomToggle(CheatToggles.mapCrew,   " Crewmates");
         CheatToggles.mapImps   = GUIStylePreset.CustomToggle(CheatToggles.mapImps,   " Impostors");
         CheatToggles.mapGhosts = GUIStylePreset.CustomToggle(CheatToggles.mapGhosts, " Ghosts");
+
+        GUILayout.Space(4);
+        GUILayout.Label("Color Mode", GUIStylePreset.TabSubtitle);
+
+        if ((CheatToggles.colorBasedMap ? 1 : 0) + (CheatToggles.distanceBasedMap ? 1 : 0) + (CheatToggles.simpleRoleBasedMap ? 1 : 0) > 1)
+        {
+            CheatToggles.colorBasedMap = false;
+            CheatToggles.distanceBasedMap = false;
+            CheatToggles.simpleRoleBasedMap = false;
+        }
+
+        int mode = CheatToggles.colorBasedMap ? 1 : CheatToggles.distanceBasedMap ? 2 : CheatToggles.simpleRoleBasedMap ? 3 : 0;
+        bool r0 = GUIStylePreset.CustomToggle(mode == 0, " Role Color");
+        bool r1 = GUIStylePreset.CustomToggle(mode == 1, " Player Color");
+        bool r2 = GUIStylePreset.CustomToggle(mode == 2, " Distance-based");
+        bool r3 = GUIStylePreset.CustomToggle(mode == 3, " Simple Role");
+        int newMode = mode;
+        if      (r0 && mode != 0) newMode = 0;
+        else if (r1 && mode != 1) newMode = 1;
+        else if (r2 && mode != 2) newMode = 2;
+        else if (r3 && mode != 3) newMode = 3;
+        if (newMode != mode)
+        {
+            CheatToggles.colorBasedMap    = newMode == 1;
+            CheatToggles.distanceBasedMap = newMode == 2;
+            CheatToggles.simpleRoleBasedMap = newMode == 3;
+        }
+        if (CheatToggles.simpleRoleBasedMap)
+            GUILayout.Label("  light blue = crew, light red = imp, white = ghost", GUIStylePreset.ModernLabel);
     }
 }
