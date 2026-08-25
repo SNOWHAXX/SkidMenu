@@ -12,10 +12,11 @@ Host-side toolkit for running private Among Us lobbies. SkidMenu puts per-player
 
 # Credits
 
-**SkidMenu is a fork of [HyperMenu](https://github.com/The-HyperMenu-Team/HyperMenu/). Full credits to its official owner [ADHyperActive](https://github.com/ADHyperActive).**
+**SkidMenu is a fork of [HyperMenu](https://github.com/The-HyperMenu-Team/HyperMenu/) ([GitLab mirror](https://gitlab.com/the-hypermenu-team1/hypermenu)). Full credits to its official owner [ADHyperActive](https://github.com/ADHyperActive).**
 
 <p align="center">
-  <a href="https://github.com/The-HyperMenu-Team/HyperMenu/"><img src="https://img.shields.io/badge/Based%20on-HyperMenu-blue?style=for-the-badge" alt="HyperMenu"></a>
+  <a href="https://github.com/The-HyperMenu-Team/HyperMenu/"><img src="https://img.shields.io/badge/Based%20on-HyperMenu%20(GitHub)-blue?style=for-the-badge" alt="HyperMenu"></a>
+  <a href="https://gitlab.com/the-hypermenu-team1/hypermenu"><img src="https://img.shields.io/badge/Based%20on-HyperMenu%20(GitLab)-blue?style=for-the-badge" alt="HyperMenu GitLab"></a>
   <a href="https://github.com/ADHyperActive"><img src="https://img.shields.io/badge/Owner-ADHyperActive-green?style=for-the-badge" alt="ADHyperActive"></a>
 </p>
 
