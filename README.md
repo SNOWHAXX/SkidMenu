@@ -10,12 +10,10 @@ Host-side toolkit for running private Among Us lobbies. SkidMenu puts per-player
 
 > This build is labeled Stable. That tho doesnt mean that nothing will break. It just means that no errors occured while playing for long time. Some functions may break mid-game or behave like shit. This is normal given how many features are packed in.
 
-## Credits
+# Credits
 
-SkidMenu is a fork of HyperMenu. Full credits to its official owner.
-
-- Owner: [ADHyperActive](https://github.com/ADHyperActive)
-- HyperMenu: [The-HyperMenu-Team/HyperMenu](https://github.com/The-HyperMenu-Team/HyperMenu/)
+> [!IMPORTANT]
+> SkidMenu is a fork of **[HyperMenu](...)**. Full credits to its official owner **[ADHyperActive](...)**.
 
 ## For Hosts and Private Lobbies
 
