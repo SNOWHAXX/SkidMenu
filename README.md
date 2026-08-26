@@ -1,6 +1,6 @@
 # SkidMenu
 
-Host-side toolkit for running private Among Us lobbies. SkidMenu puts per-player host controls, lobby management, and game-state monitoring in one panel, so a host can run clean, organized custom games. It also bundles a large set of convenience features for private play: notifications, kill aura, votekick, lag compensation, instant vote, save/load player info, spoofing, a full randomizer, chat tooling, and more.
+Host-side toolkit for running private Among Us lobbies. SkidMenu puts per-player host controls, lobby management, and game-state monitoring in one panel, so a host can run clean, organized custom games. It also bundles a large set of convenience features for private play: notifications, kill aura, votekick, lag compensation, instant vote, save/load player skin, spoofing, a full randomizer, chat tooling, and more.
 
 **Created by SNOWHAXX**
 
