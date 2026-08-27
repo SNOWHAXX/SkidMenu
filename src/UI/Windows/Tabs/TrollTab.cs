@@ -20,6 +20,7 @@ public class TrollTab : ITab
         DrawAutoReport();
         DrawAutoSpores();
         DrawBlockToggles();
+        DrawHnSTimer();
         DrawActionButtons();
         DrawDoorTroller();
         DrawVentTp();
@@ -47,6 +48,11 @@ public class TrollTab : ITab
     {
         Troll.BlockSabotages.Enabled = GUIStylePreset.CustomToggle(Troll.BlockSabotages.Enabled, "Block Sabotages");
         Troll.BlockVenting.Enabled = GUIStylePreset.CustomToggle(Troll.BlockVenting.Enabled, "Disable Vents");
+    }
+
+    private void DrawHnSTimer()
+    {
+        SkidMenu.routines.hnsTimerDeplete.Enabled = GUIStylePreset.CustomToggle(SkidMenu.routines.hnsTimerDeplete.Enabled, "Deplete HnS Timer");
     }
 
     private void DrawActionButtons()

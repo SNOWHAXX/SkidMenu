@@ -384,6 +384,16 @@ public class PlayersTab : ITab
             PlayerControl.LocalPlayer.RpcProtectPlayer(target, PlayerControl.LocalPlayer.cosmetics.ColorId);
         GUI.enabled = true;
 
+        bool isImmortal = features.PlayerImmortality.IsImmortal(target.PlayerId);
+        var prevImmBg = GUI.backgroundColor;
+        GUI.backgroundColor = isImmortal ? new Color(0.6f, 0.1f, 0.1f) : new Color(0.9f, 0.7f, 0.0f);
+        if (GUILayout.Button(isImmortal ? "Stop Immortal" : "Immortal"))
+        {
+            string result = features.PlayerImmortality.Toggle(target);
+            SkidMenu.notifications.Send("Immortal", result);
+        }
+        GUI.backgroundColor = prevImmBg;
+
         if (GUILayout.Button("Reveal Role in Chat"))
         {
             string msg = $"{target.Data.PlayerName} is a {target.Data.RoleType}";

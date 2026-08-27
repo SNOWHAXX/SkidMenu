@@ -12,6 +12,7 @@ namespace SkidMenu.routines
 		public FullyRandomizeRoutine fullyRandomize = new FullyRandomizeRoutine();
 		public TeleportFlooderRoutine teleportFlooder = new TeleportFlooderRoutine();
 		public PetPlayerRoutine petPlayer = new PetPlayerRoutine();
+		public HnSTimerDepleteRoutine hnsTimerDeplete = new HnSTimerDepleteRoutine();
 
 		public void Update()
 		{
@@ -23,6 +24,7 @@ namespace SkidMenu.routines
 			if(fullyRandomize.Enabled) fullyRandomize.Run();
 			if(teleportFlooder.Enabled) teleportFlooder.Run();
 			if(petPlayer._enabled) petPlayer.Run();
+			if(hnsTimerDeplete.Enabled) hnsTimerDeplete.Run();
 		}
 	}
 }

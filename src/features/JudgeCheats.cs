@@ -68,9 +68,15 @@ public static class JudgeCheats
         {
             var role = PlayerControl.LocalPlayer?.Data?.Role;
             var jr = role != null && role.GetIl2CppType().Name == "JudgeRole" ? role.TryCast<JudgeRole>() : null;
+
+            // First gavel as real Judge: legit path. Any gavel after that (or
+            // when not Judge at all): forge via CmdQueueOverruleVotes so the
+            // server never sees a double-gavel signature.
+            bool alreadyOverruled = false;
             if (jr != null)
             {
-                if (jr.TryOverrule(target.PlayerId))
+                try { alreadyOverruled = jr.HasAlreadyOverruledThisMeeting || !jr.HasAnOverruleUse; } catch { }
+                if (!alreadyOverruled && jr.TryOverrule(target.PlayerId))
                 {
                     SkidMenu.notifications.Send("Judge", $"Gavel dropped on {target.Data.PlayerName}");
                     return;
@@ -85,11 +91,57 @@ public static class JudgeCheats
                 return;
             }
 
-            SkidMenu.notifications.Send("Judge", "You are not the Judge (host-only fallback).");
+            // Forge: attribute the gavel to a different alive player each time.
+            if (ForgeOverrule(target))
+                return;
+
+            SkidMenu.notifications.Send("Judge", "No one to blame.");
         }
         catch (System.Exception e)
         {
             SkidMenu.notifications.Send("Judge", $"Overrule failed: {e.Message}");
+        }
+    }
+
+    private static int _lastScapegoatId = -1;
+
+    private static bool ForgeOverrule(PlayerControl target)
+    {
+        try
+        {
+            PlayerControl scapegoat = null;
+            foreach (var p in PlayerControl.AllPlayerControls)
+            {
+                if (p == null || p.AmOwner || p.Data == null || p.Data.Disconnected || p.Data.IsDead) continue;
+                if (p.PlayerId == target.PlayerId) continue;
+                if ((int)p.PlayerId == _lastScapegoatId) continue;
+                scapegoat = p;
+                break;
+            }
+            if (scapegoat == null)
+            {
+                foreach (var p in PlayerControl.AllPlayerControls)
+                {
+                    if (p == null || p.AmOwner || p.Data == null || p.Data.Disconnected || p.Data.IsDead) continue;
+                    if (p.PlayerId == target.PlayerId) continue;
+                    scapegoat = p;
+                    break;
+                }
+            }
+            if (scapegoat == null) return false;
+
+            _lastScapegoatId = scapegoat.PlayerId;
+            MarkForgedVerdict(target.PlayerId, scapegoat.PlayerId);
+            ushort nonce = (ushort)UnityEngine.Random.Range(0, 65535);
+            MeetingHud.Instance.CmdQueueOverruleVotes(scapegoat.PlayerId, target.PlayerId, nonce);
+            SkidMenu.notifications.Send("Judge",
+                $"<color=#{ColorUtility.ToHtmlStringRGB(Palette.PlayerColors[scapegoat.Data.DefaultOutfit.ColorId])}>{scapegoat.Data.PlayerName}</color> takes the fall: {target.Data.PlayerName} ejected");
+            return true;
+        }
+        catch (System.Exception e)
+        {
+            SkidMenu.Log.LogWarning($"ForgeOverrule failed: {e.Message}");
+            return false;
         }
     }
 
