@@ -1,6 +1,7 @@
 using HarmonyLib;
 using Hazel;
 using InnerNet;
+using UnityEngine;
 
 namespace SkidMenu.features
 {
@@ -12,6 +13,8 @@ namespace SkidMenu.features
 		public static bool BlockInvalidGameDataMessages { get; set; } = true;
 		public static bool BlockUnauthorizedSystemUpdates { get; set; } = true;
 		public static bool ProtectAgainstNonHostKickExploit { get; set; } = true;
+		public static bool BlockZiplineForce { get; set; } = true;
+		public static bool BlockVentTpForce { get; set; } = true;
 
 		[HarmonyPatch(typeof(InnerNetClient), nameof(InnerNetClient.SetEndpoint))]
 		public static class ForceDTLS
@@ -218,6 +221,116 @@ namespace SkidMenu.features
 
 				reader.Position = oldReadPosition;
 				return true;
+			}
+		}
+
+		public class ZiplineProtect
+		{
+			private static float _okUntil;
+			private static float _lastToast;
+			public static bool IsForced(PlayerControl pc)
+			{
+				if (!BlockZiplineForce) return false;
+				if (pc == null || pc != PlayerControl.LocalPlayer) return false;
+				if (Time.unscaledTime < _okUntil) return false;
+				if (Time.unscaledTime - _lastToast >= 2f)
+				{
+					_lastToast = Time.unscaledTime;
+					SkidMenu.notifications.Send("Protection", "Forced zipline blocked", 2.5f);
+				}
+				return true;
+			}
+			public static void MarkOk() { _okUntil = Time.unscaledTime + 1.5f; }
+		}
+
+		[HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.CmdCheckUseZipline))]
+		public static class OnCmdZipline
+		{
+			static void Prefix(PlayerControl __instance)
+			{
+				if (__instance == PlayerControl.LocalPlayer) ZiplineProtect.MarkOk();
+			}
+		}
+
+		[HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.RpcUseZipline))]
+		public static class OnRpcZipline
+		{
+			static void Prefix(PlayerControl __instance)
+			{
+				if (__instance == PlayerControl.LocalPlayer) ZiplineProtect.MarkOk();
+			}
+		}
+
+		[HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.HandleRpc))]
+		public static class OnZiplineHandleRpc
+		{
+			static bool Prefix(PlayerControl __instance, byte callId)
+			{
+				try
+				{
+					if (!Protections.BlockZiplineForce || callId != (byte)RpcCalls.UseZipline) return true;
+					return !ZiplineProtect.IsForced(__instance);
+				}
+				catch { return true; }
+			}
+		}
+
+		public class VentTpProtect
+		{
+			private static float _lastToast;
+			public static void Notify(string who)
+			{
+				if (!BlockVentTpForce) return;
+				if (Time.unscaledTime - _lastToast < 2f) return;
+				_lastToast = Time.unscaledTime;
+				SkidMenu.notifications.Send("Protection", "Vent TP blocked: " + who, 2.5f);
+			}
+		}
+
+		[HarmonyPatch(typeof(PlayerPhysics), nameof(PlayerPhysics.HandleRpc))]
+		public static class OnVentBootProtect
+		{
+			static bool Prefix(PlayerPhysics __instance, byte callId)
+			{
+				try
+				{
+					if (__instance == null || callId != (byte)RpcCalls.BootFromVent) return true;
+					if (!Protections.BlockVentTpForce || AmongUsClient.Instance == null) return true;
+					VentTpProtect.Notify("vent boot");
+					return false;
+				}
+				catch { return true; }
+			}
+		}
+
+		[HarmonyPatch(typeof(ShipStatus), nameof(ShipStatus.HandleRpc))]
+		public static class OnVentUpdateSystemProtect
+		{
+			static bool Prefix(byte callId, MessageReader reader)
+			{
+				try
+				{
+					if (callId != (byte)RpcCalls.UpdateSystem || reader == null) return true;
+					if (!Protections.BlockVentTpForce || AmongUsClient.Instance == null) return true;
+					int pos = reader.Position;
+					PlayerControl actor = null;
+					bool block = false;
+					try
+					{
+						int sys = reader.ReadByte();
+						if (sys != (int)SystemTypes.Ventilation) return true;
+						actor = reader.ReadNetObject<PlayerControl>();
+						reader.ReadUInt16();
+						int op = reader.Position < reader.Length ? reader.ReadByte() : -1;
+						if (op == 1 || op == 2) block = true;
+					}
+					finally { try { reader.Position = pos; } catch { } }
+					if (!block) return true;
+					string name = (actor != null && actor.Data != null && actor.Data.PlayerName != null) ? actor.Data.PlayerName : "?";
+					VentTpProtect.Notify(name);
+					return false;
+				}
+				catch { return true; }
 			}
 		}
 	}

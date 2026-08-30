@@ -83,6 +83,9 @@ public static class JudgeCheats
                 }
             }
 
+            if (ForgeOverrule(target))
+                return;
+
             if (AmongUsClient.Instance.AmHost)
             {
                 MarkForgedVerdict(target.PlayerId);
@@ -90,10 +93,6 @@ public static class JudgeCheats
                 SkidMenu.notifications.Send("Judge", $"Overruled vote: {target.Data.PlayerName} ejected");
                 return;
             }
-
-            // Forge: attribute the gavel to a different alive player each time.
-            if (ForgeOverrule(target))
-                return;
 
             SkidMenu.notifications.Send("Judge", "No one to blame.");
         }

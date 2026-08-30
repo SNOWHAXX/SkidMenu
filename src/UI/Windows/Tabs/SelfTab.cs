@@ -99,6 +99,7 @@ namespace SkidMenu
         GUILayout.EndHorizontal();
             Self.AlwaysShowTaskAnimations     = GUIStylePreset.CustomToggle(Self.AlwaysShowTaskAnimations, " Always Show Task Animations");
             Self.NoLadderCooldown.Enabled     = GUIStylePreset.CustomToggle(Self.NoLadderCooldown.Enabled, " No Ladder Cooldown");
+            Self.NoZiplineCooldown.Enabled    = GUIStylePreset.CustomToggle(Self.NoZiplineCooldown.Enabled, " No Zipline Cooldown");
             Self.VoteAnywhere.InstantVote            = GUIStylePreset.CustomToggle(Self.VoteAnywhere.InstantVote, " Instant Vote");
             if (Self.VoteAnywhere.InstantVote)
             {

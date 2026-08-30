@@ -8,7 +8,8 @@ public static class ESPContexts
     public const byte InLobby   = 2;
     public const byte InMeeting = 4;
     public const byte InChat    = 8;
-    public const byte All       = 15;
+    public const byte InGuide   = 16;
+    public const byte All       = 31;
 
     public static byte KillCooldown = All;
     public static byte Tasks        = All;

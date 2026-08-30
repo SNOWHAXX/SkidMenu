@@ -26,6 +26,8 @@ public class ProtectionsTab : ITab
         Protections.BlockInvalidGameDataMessages = GUIStylePreset.CustomToggle(Protections.BlockInvalidGameDataMessages, "Block invalid game data message types");
         Protections.BlockUnauthorizedSystemUpdates = GUIStylePreset.CustomToggle(Protections.BlockUnauthorizedSystemUpdates, "Block unauthorized system updates");
         Protections.ProtectAgainstNonHostKickExploit = GUIStylePreset.CustomToggle(Protections.ProtectAgainstNonHostKickExploit, "Protect against non-host kick exploit");
+        Protections.BlockZiplineForce = GUIStylePreset.CustomToggle(Protections.BlockZiplineForce, "Block forced ziplines");
+        Protections.BlockVentTpForce = GUIStylePreset.CustomToggle(Protections.BlockVentTpForce, "Block forced vent teleports");
 
         Protections.Votekicks.Enabled = GUIStylePreset.CustomToggle(Protections.Votekicks.Enabled, "Prevent being votekicked as host");
         Protections.MemoryAllocationOverload.Enabled = GUIStylePreset.CustomToggle(Protections.MemoryAllocationOverload.Enabled, "Protect against VotingComplete overloads");

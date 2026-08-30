@@ -35,7 +35,7 @@ public partial class SkidMenu : BasePlugin
     public static StreamerUI streamerUI;
     public static KeybindListener keybindListener;
 
-    public static string hyperVersion = "1.3.3";
+    public static string hyperVersion = "1.3.4";
     public static string hyperBuild = "Stable";
     public static List<string> supportedAU = new List<string> { "2026.6.5", "2026.8.18" };
     public static List<string> toleratedAU = new List<string> { "2026.2.24", "2026.3.17", "2026.3.31" };
@@ -144,6 +144,7 @@ public partial class SkidMenu : BasePlugin
         AddComponent<features.AutoReturnAfterMatch>();
         AddComponent<ProtectionKeeper>();
         AddComponent<VentVisibilityKeeper>();
+        features.MatchInfoEnhancer.Init();
 
         DarkMode.Enabled         = darkGameTheme;
         CustomGameTheme.Enabled  = customGameTheme;

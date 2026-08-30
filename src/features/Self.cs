@@ -191,6 +191,32 @@ namespace SkidMenu.features
 					__instance.CoolDown = 0.0f;
 					__instance.Destination.CoolDown = 0.0f;
 				}
+		}
+	}
+
+		[HarmonyPatch(typeof(ZiplineConsole), nameof(ZiplineConsole.SetDestinationCooldown))]
+		public static class NoZiplineCooldown
+		{
+			public static bool Enabled { get; set; } = true;
+			static void Postfix(ZiplineConsole __instance)
+			{
+				if(Enabled)
+				{
+					__instance.CoolDown = 0.0f;
+					__instance.destination.CoolDown = 0.0f;
+				}
+			}
+		}
+
+		[HarmonyPatch(typeof(ZiplineConsole), nameof(ZiplineConsole.Update))]
+		public static class NoZiplineCooldownUpdate
+		{
+			static void Postfix(ZiplineConsole __instance)
+			{
+				if(NoZiplineCooldown.Enabled)
+				{
+					__instance.CoolDown = 0.0f;
+				}
 			}
 		}
 

@@ -104,6 +104,7 @@ public class ESPTab : ITab
     private static readonly GUILayoutOption _w55  = GUILayout.Width(55);
     private static readonly GUILayoutOption _w60  = GUILayout.Width(60);
     private static readonly GUILayoutOption _w72  = GUILayout.Width(72);
+    private static readonly GUILayoutOption _w45  = GUILayout.Width(45);
     private static readonly GUILayoutOption _w180 = GUILayout.Width(180);
     private static readonly GUILayoutOption _w35  = GUILayout.Width(35);
     private static readonly GUILayoutOption _w40  = GUILayout.Width(40);
@@ -116,14 +117,17 @@ public class ESPTab : ITab
         bool l = (ctx & ESPContexts.InLobby)   != 0;
         bool m = (ctx & ESPContexts.InMeeting) != 0;
         bool c = (ctx & ESPContexts.InChat)    != 0;
+        bool d = (ctx & ESPContexts.InGuide)   != 0;
         bool ng = GUIStylePreset.CustomToggle(g, "Game",    _w55);
         bool nl = GUIStylePreset.CustomToggle(l, "Lobby",   _w60);
         bool nm = GUIStylePreset.CustomToggle(m, "Meeting", _w72);
         bool nc = GUIStylePreset.CustomToggle(c, "Chat",    _w55);
+        bool nd = GUIStylePreset.CustomToggle(d, "Guide",   _w45);
         if (ng != g) ctx = (byte)(ng ? ctx | ESPContexts.InGame    : ctx & ~ESPContexts.InGame);
         if (nl != l) ctx = (byte)(nl ? ctx | ESPContexts.InLobby   : ctx & ~ESPContexts.InLobby);
         if (nm != m) ctx = (byte)(nm ? ctx | ESPContexts.InMeeting : ctx & ~ESPContexts.InMeeting);
         if (nc != c) ctx = (byte)(nc ? ctx | ESPContexts.InChat    : ctx & ~ESPContexts.InChat);
+        if (nd != d) ctx = (byte)(nd ? ctx | ESPContexts.InGuide   : ctx & ~ESPContexts.InGuide);
         GUILayout.EndHorizontal();
     }
 

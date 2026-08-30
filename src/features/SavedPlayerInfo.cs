@@ -116,7 +116,11 @@ public static class SavedPlayerInfo
             lp.RpcSetPet(PetId);
             if (!string.IsNullOrEmpty(NameplateId)) lp.RpcSetNamePlate(NameplateId);
             OutfitBypass.SetName(Name);
-            if (Level > 0) SkidMenu.spoofLevel = Level.ToString();
+            if (Level > 0)
+            {
+                SkidMenu.spoofLevel = Level.ToString();
+                lp.RpcSetLevel((uint)(Level - 1));
+            }
             if (!string.IsNullOrEmpty(Platform)) SkidMenu.spoofPlatform = Platform;
         }
         catch { }

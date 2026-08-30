@@ -352,6 +352,7 @@ public struct CheatToggles
 
         writer.WriteLine($"Self.AlwaysShowTaskAnimations = {Self.AlwaysShowTaskAnimations} = KeyCode.None");
         writer.WriteLine($"Self.NoLadderCooldown = {Self.NoLadderCooldown.Enabled} = KeyCode.None");
+        writer.WriteLine($"Self.NoZiplineCooldown = {Self.NoZiplineCooldown.Enabled} = KeyCode.None");
         writer.WriteLine($"Self.VoteAnyone = {Self.VoteAnywhere.VoteAnyone} = KeyCode.None");
         writer.WriteLine($"Self.VoteBeforeVotingStarts = {Self.VoteAnywhere.VoteBeforeVotingStarts} = KeyCode.None");
         writer.WriteLine($"Self.InstantVote = {Self.VoteAnywhere.InstantVote} = KeyCode.None");
@@ -616,6 +617,8 @@ public struct CheatToggles
         writer.WriteLine($"Protections.BlockInvalidGameDataMessages = {features.Protections.BlockInvalidGameDataMessages} = KeyCode.None");
         writer.WriteLine($"Protections.BlockUnauthorizedSystemUpdates = {features.Protections.BlockUnauthorizedSystemUpdates} = KeyCode.None");
         writer.WriteLine($"Protections.ProtectAgainstNonHostKickExploit = {features.Protections.ProtectAgainstNonHostKickExploit} = KeyCode.None");
+        writer.WriteLine($"Protections.BlockZiplineForce = {features.Protections.BlockZiplineForce} = KeyCode.None");
+        writer.WriteLine($"Protections.BlockVentTpForce = {features.Protections.BlockVentTpForce} = KeyCode.None");
         writer.WriteLine($"Protections.Votekicks = {features.Protections.Votekicks.Enabled} = KeyCode.None");
         writer.WriteLine($"Protections.MemoryAllocationOverload = {features.Protections.MemoryAllocationOverload.Enabled} = KeyCode.None");
         writer.WriteLine($"Protections.BypassShapeshiftRatelimits = {features.Protections.BypassShapeshiftRatelimits.Enabled} = KeyCode.None");
@@ -765,6 +768,9 @@ public struct CheatToggles
                     continue;
                 case "Self.NoLadderCooldown":
                     if (bool.TryParse(valuePart, out var v2)) Self.NoLadderCooldown.Enabled = v2;
+                    continue;
+                case "Self.NoZiplineCooldown":
+                    if (bool.TryParse(valuePart, out var vz)) Self.NoZiplineCooldown.Enabled = vz;
                     continue;
                 case "Self.VoteAnyone":
                     if (bool.TryParse(valuePart, out var va)) Self.VoteAnywhere.VoteAnyone = va;
@@ -1024,6 +1030,12 @@ public struct CheatToggles
                     continue;
                 case "Protections.ProtectAgainstNonHostKickExploit":
                     if (bool.TryParse(valuePart, out var ppanhke)) features.Protections.ProtectAgainstNonHostKickExploit = ppanhke;
+                    continue;
+                case "Protections.BlockZiplineForce":
+                    if (bool.TryParse(valuePart, out var pbzf)) features.Protections.BlockZiplineForce = pbzf;
+                    continue;
+                case "Protections.BlockVentTpForce":
+                    if (bool.TryParse(valuePart, out var pbvtf)) features.Protections.BlockVentTpForce = pbvtf;
                     continue;
                 case "Protections.Votekicks":
                     if (bool.TryParse(valuePart, out var pvk)) features.Protections.Votekicks.Enabled = pvk;

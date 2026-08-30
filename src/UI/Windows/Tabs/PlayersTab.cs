@@ -354,6 +354,13 @@ public class PlayersTab : ITab
             GUI.backgroundColor = bg;
         }
 
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Zip Down"))
+            features.ZiplineTools.Ride(target, true);
+        if (GUILayout.Button("Zip Up"))
+            features.ZiplineTools.Ride(target, false);
+        GUILayout.EndHorizontal();
+
         if (GUILayout.Button("Murder"))
         {
             if (AmongUsClient.Instance.AmHost)

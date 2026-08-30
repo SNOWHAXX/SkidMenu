@@ -1,8 +1,8 @@
 using AmongUs.GameOptions;
 using BepInEx.Unity.IL2CPP.Utils.Collections;
 using SkidMenu.features;
+using SkidMenu.routines;
 using UnityEngine;
-
 namespace SkidMenu;
 
 public class TrollTab : ITab
@@ -24,6 +24,7 @@ public class TrollTab : ITab
         DrawActionButtons();
         DrawDoorTroller();
         DrawVentTp();
+        DrawZipline();
 
         GUILayout.EndVertical();
     }
@@ -54,6 +55,8 @@ public class TrollTab : ITab
     {
         SkidMenu.routines.hnsTimerDeplete.Enabled = GUIStylePreset.CustomToggle(SkidMenu.routines.hnsTimerDeplete.Enabled, "Deplete HnS Timer");
     }
+
+
 
     private void DrawActionButtons()
     {
@@ -128,4 +131,57 @@ public class TrollTab : ITab
             Troll.TeleportToVent(player, rnd.Next(0, ShipStatus.Instance != null ? ShipStatus.Instance.AllVents.Count : 1));
         }
     }
+
+    private static void DrawZipline()
+    {
+        GUILayout.Space(8);
+        GUILayout.Label("Zipline (Fungle)");
+
+        GUILayout.BeginHorizontal();
+        GUILayout.Space(2);
+        if (GUILayout.Button("Select All", GUILayout.Width(110), GUILayout.Height(28))) { foreach (var p in PlayerControl.AllPlayerControls) if (p != null && p != PlayerControl.LocalPlayer) ZiplineSpamRoutine.Marked.Add(p.PlayerId); }
+        GUILayout.Space(4);
+        if (GUILayout.Button("Clear All", GUILayout.Width(90), GUILayout.Height(28))) ZiplineSpamRoutine.Marked.Clear();
+        GUILayout.Space(4);
+        if (GUILayout.Button("Down All", GUILayout.Width(90), GUILayout.Height(28))) features.ZiplineTools.RideAll(ZiplineSpamRoutine.Marked, true);
+        GUILayout.Space(4);
+        if (GUILayout.Button("Up All", GUILayout.Width(80), GUILayout.Height(28))) features.ZiplineTools.RideAll(ZiplineSpamRoutine.Marked, false);
+        GUILayout.EndHorizontal();
+
+        GUILayout.Space(6);
+        foreach (var p in PlayerControl.AllPlayerControls)
+        {
+            if (p == null || p == PlayerControl.LocalPlayer || p.Data == null) continue;
+            bool mark = ZiplineSpamRoutine.Marked.Contains(p.PlayerId);
+            string skinHex = ColorCache.ToHex(Palette.PlayerColors[p.Data.DefaultOutfit.ColorId]);
+            string roleHex = ColorCache.ToHex(Utils.GetCustomRoleColor(p.Data));
+            string roleName = p.Data.RoleType.ToString();
+            string label = $"<color=#{skinHex}><b>{p.Data.PlayerName}</b></color>  <color=#{roleHex}>{roleName}</color>";
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(2);
+            var prev = GUI.backgroundColor;
+            GUI.backgroundColor = mark ? new Color(0.0f, 0.45f, 0.0f) : prev;
+            if (GUILayout.Button(label, GUILayout.Height(26)))
+            {
+                if (!ZiplineSpamRoutine.Marked.Remove(p.PlayerId)) ZiplineSpamRoutine.Marked.Add(p.PlayerId);
+            }
+            GUI.backgroundColor = prev;
+            GUILayout.Space(4);
+            if (GUILayout.Button("Down", GUILayout.Width(70), GUILayout.Height(26))) features.ZiplineTools.Ride(p, true);
+            GUILayout.Space(4);
+            if (GUILayout.Button("Up", GUILayout.Width(60), GUILayout.Height(26))) features.ZiplineTools.Ride(p, false);
+            GUILayout.Space(2);
+            GUILayout.EndHorizontal();
+            GUILayout.Space(2);
+        }
+
+
+    }
+
+    private static void DrawSpam()
+    {
+    }
 }
+
+
