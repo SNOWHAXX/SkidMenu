@@ -1,16 +1,23 @@
 using HarmonyLib;
 using InnerNet;
+using System.Collections.Generic;
 
 namespace SkidMenu.anticheat
 {
 	internal class PlatformSpoofer
 	{
+		// Starlight (All Of Us) is a mod loader that reports itself as platform 112.
+		// Because it is a mod loader and not a real client platform, any player carrying
+		// it is by definition a mod user. Hook it into both the anticheat flagger and the
+		// mod-detection tagger so ESP's "mod user" readout shows "Starlight".
+		public static Platforms StarlightPlatform => (Platforms)112;
+
 		[HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.Start))]
 		class PlatformSpoof
 		{
 			static void Postfix(PlayerControl __instance)
 			{
-				if(!Anticheat.Enabled || !Anticheat.CheckSpoofedPlatforms) return;
+				if(!Anticheat.Enabled && !ModDetection.Enabled) return;
 				if(__instance.AmOwner) return;
 
 				ClientData clientData = AmongUsClient.Instance.GetClientFromCharacter(__instance);
@@ -18,11 +25,37 @@ namespace SkidMenu.anticheat
 
 				PlatformSpecificData platformData = clientData.PlatformData;
 
-				if(!IsValidPlatform(platformData))
+				if(platformData.Platform == StarlightPlatform)
+				{
+					DetectStarlight(__instance, clientData);
+					return;
+				}
+
+				if(Anticheat.Enabled && Anticheat.CheckSpoofedPlatforms && !IsValidPlatform(platformData))
 				{
 					Anticheat.Flag(__instance, $"{clientData.PlayerName} was detected with spoofed platform information. Platform: {platformData.Platform}, Platform name: {platformData.PlatformName}, XUID: {platformData.XboxPlatformId}, PSID: {platformData.PsnPlatformId}.");
 				}
 			}
+		}
+
+		static void DetectStarlight(PlayerControl player, ClientData clientData)
+		{
+			// Respect the per-mod toggle from the Anticheat tab / config, just like RPC mods.
+			ModEntry entry = ModDetection.KnownMods.Find(m => m.Name == "Starlight");
+			if (entry != null && !entry.Enabled) return;
+			if (!Anticheat.Enabled && !ModDetection.Enabled) return;
+
+			if(!ModDetection.DetectedMods.TryGetValue(player.PlayerId, out var mods))
+				ModDetection.DetectedMods[player.PlayerId] = mods = new HashSet<string>();
+			mods.Add("Starlight");
+
+			string playerName = clientData.PlayerName ?? "Unknown";
+			if(Anticheat.Enabled)
+			{
+				Blacklist.OnModDetected(player, "Starlight");
+				Anticheat.Flag(player, $"{playerName} is using Starlight mod loader (platform 112)", shouldPunish: entry == null || entry.ShouldPunish);
+			}
+			SkidMenu.Log.LogMessage($"[Anticheat] {playerName} detected on Starlight mod loader.");
 		}
 
 		public static bool IsValidPlatform(PlatformSpecificData platform)
@@ -66,6 +99,10 @@ namespace SkidMenu.anticheat
 				case (Platforms)255:
 					if(AmongUsClient.Instance.NetworkMode == NetworkModes.LocalGame) return true;
 					break;
+
+				// Starlight is always a mod loader, so it is never a valid/clean platform.
+				case (Platforms)112:
+					return false;
 			}
 
 			// If the Platform ID is invalid, or the platform specific data for each platform is invalid, then we know that the player's device is spoofed

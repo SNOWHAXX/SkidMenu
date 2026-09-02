@@ -75,9 +75,9 @@ public static class ChatEnhancements
                 if (!colorStr.StartsWith("#")) colorStr = "#" + colorStr;
                 if (ColorUtility.TryParseHtmlString(colorStr, out Color c))
                 {
-                    CustomGameTheme.TextColor = c;
-                    SelfTab.TextHex = ColorUtility.ToHtmlStringRGB(c);
-                    CustomGameTheme.Enabled = true;
+                    ChatTheme.TextColor = c;
+                    ChatTheme.TextHex = ColorUtility.ToHtmlStringRGB(c);
+                    ChatTheme.CustomEnabled = true;
                     __instance.freeChatField.textArea.SetText(string.Empty, string.Empty);
                     return false;
                 }

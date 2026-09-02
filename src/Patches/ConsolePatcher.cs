@@ -110,7 +110,7 @@ public static class Console_LogSabotage
     }
 }
 
-[HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.ReportDeadBody))]
+[HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.StartMeeting))]
 public static class Console_LogMeetingOrReport
 {
     public static void Prefix(PlayerControl __instance, NetworkedPlayerInfo target, out string __state)

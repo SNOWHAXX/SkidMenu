@@ -185,6 +185,10 @@ public static class Utils
         }
     }
 
+    // Minimum spacing between task-completion RPCs. BetterAmongUs flags a second task completed
+    // less than 1.25s after a different one, so we buffer above that to stay under the radar.
+    public const float TaskCompleteSpacing = 1.4f;
+
     public static void CompleteTask(PlayerTask task)
     {
         CompleteTask(PlayerControl.LocalPlayer, task);
@@ -228,12 +232,15 @@ public static class Utils
     private static int _tracerFrameCounter = 0;
 
     // Draws a tracer line between two GameObjects
-    public static void DrawTracer(GameObject sourceObject, GameObject targetObject, Color color, float width = 0.02f)
+    public static void DrawTracer(GameObject sourceObject, GameObject targetObject, Color color, float width = 0.007f)
     {
         int id = sourceObject.GetInstanceID();
 
         if (!_lineRendererCache.TryGetValue(id, out var lineRenderer) || !lineRenderer)
         {
+            // Do not create LineRenderers when the tracer is invisible — avoids
+            // attaching a component to every player while tracers are disabled.
+            if (color.a <= 0f) return;
             lineRenderer = sourceObject.GetComponent<LineRenderer>() ?? sourceObject.AddComponent<LineRenderer>();
             lineRenderer.SetVertexCount(2);
             lineRenderer.SetWidth(width, width);
@@ -475,8 +482,17 @@ public static class Utils
     // Gets the PlainShipRoom of room that overlaps specified position
     public static PlainShipRoom GetRoomFromPosition(Vector2 position)
     {
-        return ShipStatus.Instance == null ? null : ShipStatus.Instance.AllRooms.FirstOrDefault(
-            room => room != null && room.roomArea != null && room.roomArea.OverlapPoint(position));
+        var ship = ShipStatus.Instance;
+        if (ship == null || ship.AllRooms == null) return null;
+
+        int count = ship.AllRooms.Count;
+        for (int i = 0; i < count; i++)
+        {
+            var room = ship.AllRooms[i];
+            if (room == null || room.roomArea == null) continue;
+            if (room.roomArea.OverlapPoint(position)) return room;
+        }
+        return null;
     }
 
     // Returns colored ping text with smooth lerped color transitions
@@ -543,6 +559,11 @@ public static class Utils
     {
         if (!string.IsNullOrEmpty(platformStr)) // Empty strings are automatically invalid
         {
+            if (platformStr.Equals("Starlight", System.StringComparison.OrdinalIgnoreCase))
+            {
+                platform = (Platforms)112;
+                return true;
+            }
             try
             {
                 // Case-insensitive parse of Platforms from string (if it valid)
@@ -607,6 +628,16 @@ public static class Utils
         }
     }
 
+    public static Color GetRoleDisplayColor(NetworkedPlayerInfo playerInfo)
+    {
+        if (CheatToggles.espShowRoleSimple)
+        {
+            bool imp = playerInfo?.Role != null && playerInfo.Role.IsImpostor;
+            return imp ? new Color(1f, 0.5f, 0.5f) : new Color(0.6f, 0.8f, 1f);
+        }
+        return GetCustomRoleColor(playerInfo);
+    }
+
     public static string GetNameTag(NetworkedPlayerInfo playerInfo, string playerName, bool isChat = false)
     {
         var nameTag = playerName;
@@ -621,7 +652,6 @@ public static class Utils
 
         // Role colouring requires a valid role; skip role-specific work if role is null
         bool roleValid = !playerInfo.Role.IsNull();
-        string roleColorHex = roleValid ? ColorUtility.ToHtmlStringRGB(GetCustomRoleColor(playerInfo)) : "ffffff";
 
         if (!anyOn)
         {
@@ -635,8 +665,12 @@ public static class Utils
         var player = GetCachedClient(playerInfo);
         var host   = _cachedHost ?? AmongUsClient.Instance?.GetHost();
 
+        // Lazy role-colour hex, only paid when showRole is on and a role exists
+        string roleColorHex = null;
+
         if (showRole && roleValid && ESPContexts.Allow(ESPContexts.ShowRole, isChat))
         {
+            roleColorHex = ColorUtility.ToHtmlStringRGB(GetRoleDisplayColor(playerInfo));
             var (_, _, isDisguised) = GetPlayerIdentity(playerInfo.Object);
             if (isDisguised && !isChat)
             {
@@ -681,8 +715,10 @@ public static class Utils
 
             if (CheatToggles.espIsHost     && ESPContexts.Allow(ESPContexts.IsHost,    isChat) && player == host)
                 { if (id.Length > 0) id.Append(sep); id.Append("<color=#ff4444>HOST</color>"); }
-            if (CheatToggles.espModUser    && ESPContexts.Allow(ESPContexts.ModUser,   isChat) && anticheat.ModDetection.IsModUser(playerInfo.PlayerId))
-                { if (id.Length > 0) id.Append(sep); id.Append("<color=#00ff88>MOD USER</color>"); }
+            string modUser = CheatToggles.espModUser && ESPContexts.Allow(ESPContexts.ModUser, isChat)
+                ? anticheat.ModDetection.GetModNames(playerInfo.PlayerId) : null;
+            if (!string.IsNullOrEmpty(modUser))
+                { if (id.Length > 0) id.Append(sep); id.Append($"<color=#00ff88>{modUser}</color>"); }
             if (CheatToggles.espLevel      && ESPContexts.Allow(ESPContexts.Level,     isChat))
                 { if (id.Length > 0) id.Append(sep); id.Append($"<color=#fb0>Lv:{playerInfo.PlayerLevel + 1}</color>"); }
             if (CheatToggles.espPlatform   && ESPContexts.Allow(ESPContexts.Platform,  isChat) && !localGame)

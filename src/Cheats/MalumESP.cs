@@ -16,10 +16,10 @@ public static class MalumESP
     public static float FreecamSpeed      = 10f;
     public static float FreecamSmoothness = 0f;
 
-    // Nametag cache — keyed by PlayerId, invalidated every 0.1s
+    // Nametag cache — keyed by PlayerId, invalidated every 0.3s
     private static readonly System.Collections.Generic.Dictionary<byte, string> _nametagCache = new();
     private static float _nametagTimer = 0f;
-    private const float NametagRefreshInterval = 0.1f;
+    private const float NametagRefreshInterval = 0.3f;
     private static int _cachedLineCount = 0;
     private static FollowerCamera _followerCamera;
 

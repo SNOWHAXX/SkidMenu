@@ -68,7 +68,7 @@ public class MatchInfoEnhancer : MonoBehaviour
 
                 if (roleGuide && pi.Role != null)
                 {
-                    var rc = ColorCache.ToHex(Utils.GetCustomRoleColor(pi));
+                    var rc = ColorCache.ToHex(Utils.GetRoleDisplayColor(pi));
                     lines.Add($"<color=#{rc}>{pi.RoleType}</color>");
                 }
 
@@ -105,7 +105,7 @@ public class MatchInfoEnhancer : MonoBehaviour
 
                 if (infoGuide && CheatToggles.espModUser && (ESPContexts.ModUser & ESPContexts.InGuide) != 0)
                 {
-                    try { if (anticheat.ModDetection.IsModUser(pi.PlayerId)) lines.Add("<color=#00ff88>MOD</color>"); } catch { }
+                    try { var mods = anticheat.ModDetection.GetModNames(pi.PlayerId); if (!string.IsNullOrEmpty(mods)) lines.Add($"<color=#00ff88>{mods}</color>"); } catch { }
                 }
 
                 if (infoGuide && CheatToggles.espLevel && (ESPContexts.Level & ESPContexts.InGuide) != 0)

@@ -2,6 +2,7 @@ using HarmonyLib;
 using UnityEngine;
 using AmongUs.GameOptions;
 using BepInEx.Unity.IL2CPP.Utils.Collections;
+using InnerNet;
 
 namespace SkidMenu;
 
@@ -182,7 +183,7 @@ public static class Notif_TaskComplete
 }
 
 // Emergency meeting / body report
-[HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.ReportDeadBody))]
+[HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.StartMeeting))]
 public static class Notif_Meeting
 {
     public static void Postfix(PlayerControl __instance, NetworkedPlayerInfo target)
@@ -401,6 +402,50 @@ public static class Notif_Verdict
                 ? $"Ejected by gavel ({judgeName}) <color=#888888>· nonce {overruleNonce}</color>"
                 : $"{targetName} ejected by gavel ({judgeName}) <color=#888888>· nonce {overruleNonce}{NotifHelper.Room(exiled.Object)}</color>";
             SkidMenu.notifications.Send(title, body, 5f);
+        }
+        catch { }
+    }
+}
+
+// Judge gavel dropped (live, before voting ends)
+[HarmonyPatch(typeof(MeetingHud), nameof(MeetingHud.SetJudgeOverrule))]
+public static class Notif_VerdictLive
+{
+    public static void Postfix(PlayerId judgePlayerId, PlayerId targetPlayerId, ushort overruleNonce)
+    {
+        if (!CheatToggles.notifVerdictLive && !CheatToggles.logVerdictLive) return;
+        try
+        {
+            if (MeetingHud.Instance == null) return;
+            var judge = GameData.Instance?.GetPlayerById(judgePlayerId.Value)?.Object;
+            var target = GameData.Instance?.GetPlayerById(targetPlayerId.Value)?.Object;
+            if (judge == null && target == null) return;
+
+            if (CheatToggles.logVerdictLive)
+            {
+                string clJudge = judge != null
+                    ? (judge.AmOwner ? "<color=#00ff88>You (Judge)</color>" : ConsoleHelper.Fmt(judge))
+                    : "<color=#aaaaaa>Unknown Judge</color>";
+                string clTarget = target != null
+                    ? (target.AmOwner ? "<color=#00ff88>You</color>" : ConsoleHelper.Fmt(target))
+                    : $"<color=#aaaaaa>#{targetPlayerId.Value}</color>";
+                ConsoleUI.LogLiveKill($"🔨 {clJudge} dropped the gavel on {clTarget} <color=#888888>(nonce {overruleNonce})</color>", targetPlayerId.Value, "FFAA55");
+            }
+
+            if (!CheatToggles.notifVerdictLive) return;
+            if (target != null && NotifHelper.Skip(target, 26)) return;
+            if (judge != null && judge.AmOwner) return;
+
+            string judgeName = judge != null
+                ? (judge.AmOwner ? "<color=#00ff88>You</color>" : NotifHelper.Fmt(judge))
+                : "<color=#aaaaaa>unknown</color>";
+            string targetName = target != null
+                ? (target.AmOwner ? "<color=#ff4444>You</color>" : NotifHelper.Fmt(target))
+                : $"<color=#aaaaaa>#{targetPlayerId.Value}</color>";
+            bool hitUs = target != null && target.AmOwner;
+            string title = hitUs ? "<color=#ff4444>🔨 Gavel</color>" : "<color=#ffaa55>🔨 Gavel</color>";
+            string body = $"{judgeName} overruling {targetName}<color=#888888> · nonce {overruleNonce}{NotifHelper.Room(target)}</color>";
+            SkidMenu.notifications.Send(title, body, 4f);
         }
         catch { }
     }

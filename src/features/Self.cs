@@ -220,6 +220,32 @@ namespace SkidMenu.features
 			}
 		}
 
+		[HarmonyPatch(typeof(Ladder), nameof(Ladder.SetDestinationCooldown))]
+		public static class NoMapCooldown_Ladder
+		{
+			static bool Prefix(Ladder __instance)
+			{
+				if(!CheatToggles.noMapCooldowns) return true;
+				try
+				{
+					__instance.CoolDown = 0.0f;
+					if(__instance.Destination != null) __instance.Destination.CoolDown = 0.0f;
+					return false;
+				}
+				catch { return true; }
+			}
+		}
+
+		[HarmonyPatch(typeof(ZiplineConsole), nameof(ZiplineConsole.Update))]
+		public static class NoMapCooldown_Zipline
+		{
+			static void Postfix(ZiplineConsole __instance)
+			{
+				if(!CheatToggles.noMapCooldowns) return;
+				__instance.CoolDown = 0.0f;
+			}
+		}
+
 		[HarmonyPatch(typeof(EmergencyMinigame), nameof(EmergencyMinigame.Begin))]
 		public static class UnlimitedMeetings
 		{

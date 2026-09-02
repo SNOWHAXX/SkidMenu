@@ -48,6 +48,8 @@ public class HostOnlyTab : ITab
 
         DrawGeneral();
         GUILayout.Space(6);
+        DrawProtections();
+        GUILayout.Space(6);
         DrawMurder();
         GUILayout.Space(6);
         DrawGameState();
@@ -75,10 +77,34 @@ public class HostOnlyTab : ITab
         GUILayout.Label("General");
         CheatToggles.bypassHostOnly  = GUIStylePreset.CustomToggle(CheatToggles.bypassHostOnly, " Bypass Host-Only Checks");
         CheatToggles.killVanished    = GUIStylePreset.CustomToggle(CheatToggles.killVanished, " Kill While Vanished");
-        CheatToggles.killAnyone      = GUIStylePreset.CustomToggle(CheatToggles.killAnyone, " Kill Anyone");
+CheatToggles.killAnyone = GUIStylePreset.CustomToggle(CheatToggles.killAnyone, " Kill Anyone");
+CheatToggles.killGhosts = GUIStylePreset.CustomToggle(CheatToggles.killGhosts, " Kill Ghosts");
         CheatToggles.noKillCd        = GUIStylePreset.CustomToggle(CheatToggles.noKillCd, " No Kill Cooldown");
-        CheatToggles.showProtectMenu = GUIStylePreset.CustomToggle(CheatToggles.showProtectMenu, " Show Protect Menu");
+        CheatToggles.noTaskMode      = GUIStylePreset.CustomToggle(CheatToggles.noTaskMode, " No Task Mode");
+        CheatToggles.noSettingLimit  = GUIStylePreset.CustomToggle(CheatToggles.noSettingLimit, " No Setting Limit");
+        Host.BanMidGame.Enabled      = GUIStylePreset.CustomToggle(Host.BanMidGame.Enabled, " Ban Players Mid-Game");
+        Host.FlippedSkeld            = GUIStylePreset.CustomToggle(Host.FlippedSkeld, " Use Flipped Skeld Map");
+        bool newColor = GUIStylePreset.CustomToggle(ChatEnhancements.EnableColorCommand, " Enable /c Command");
+        if (newColor != ChatEnhancements.EnableColorCommand) ChatEnhancements.EnableColorCommand = newColor;
+        GUILayout.EndVertical();
+    }
+
+    private void DrawProtections()
+    {
+        GUILayout.BeginVertical(GUIStylePreset.SectionBox);
+        GUILayout.Label("Protection");
+        CheatToggles.bypassShield = GUIStylePreset.CustomToggle(CheatToggles.bypassShield, " Bypass Angel Shield");
+        CheatToggles.godMode      = GUIStylePreset.CustomToggle(CheatToggles.godMode, " God Mode");
+        CheatToggles.godModeAll   = GUIStylePreset.CustomToggle(CheatToggles.godModeAll, " God Mode: Everyone");
+        CheatToggles.autoAngel    = GUIStylePreset.CustomToggle(CheatToggles.autoAngel, " Auto Angel");
+        GUILayout.BeginHorizontal();
+        GUILayout.Label($"Auto Angel Delay: {CheatToggles.autoAngelInterval:F2}s", GUILayout.Width(150));
+        CheatToggles.autoAngelInterval = GUILayout.HorizontalSlider(CheatToggles.autoAngelInterval, 0.1f, 2.0f);
+        GUILayout.EndHorizontal();
+        if (GUILayout.Button("Protect Everyone", GUIStylePreset.NormalButton))
+            HostProtection.ProtectEveryone(true);
         GUILayout.Space(4);
+        CheatToggles.showProtectMenu = GUIStylePreset.CustomToggle(CheatToggles.showProtectMenu, " Show Protect Menu");
         GUILayout.BeginHorizontal();
         GUILayout.Label("Scale Horizontal:", GUILayout.Width(150));
         HandleCustomTextField(ref _protScaleHInput, "protScaleH");
@@ -87,12 +113,6 @@ public class HostOnlyTab : ITab
         GUILayout.Label("%", GUILayout.Width(20));
         if (GUILayout.Button("Apply", GUILayout.Width(60))) { if (float.TryParse(_protScaleHInput, out var h)) CheatToggles.protectScaleH = System.Math.Clamp(h, 50f, 300f); if (float.TryParse(_protScaleVInput, out var v)) CheatToggles.protectScaleV = System.Math.Clamp(v, 50f, 300f); }
         GUILayout.EndHorizontal();
-        CheatToggles.noTaskMode      = GUIStylePreset.CustomToggle(CheatToggles.noTaskMode, " No Task Mode");
-        CheatToggles.noSettingLimit  = GUIStylePreset.CustomToggle(CheatToggles.noSettingLimit, " No Setting Limit");
-        Host.BanMidGame.Enabled      = GUIStylePreset.CustomToggle(Host.BanMidGame.Enabled, " Ban Players Mid-Game");
-        Host.FlippedSkeld            = GUIStylePreset.CustomToggle(Host.FlippedSkeld, " Use Flipped Skeld Map");
-        bool newColor = GUIStylePreset.CustomToggle(ChatEnhancements.EnableColorCommand, " Enable /c Command");
-        if (newColor != ChatEnhancements.EnableColorCommand) ChatEnhancements.EnableColorCommand = newColor;
         GUILayout.EndVertical();
     }
 

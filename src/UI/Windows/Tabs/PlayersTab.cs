@@ -3,6 +3,7 @@ using AmongUs.Data;
 using AmongUs.GameOptions;
 using BepInEx.Unity.IL2CPP.Utils.Collections;
 using InnerNet;
+using SkidMenu.features;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -16,6 +17,9 @@ public class PlayersTab : ITab
     private Vector2 _subsectionScrollVector = Vector2.zero;
     private Vector2 _subsectionScrollVector2 = Vector2.zero;
     private static CrewmateColor _selectedColor = CrewmateColor.Red;
+    private static bool  _rainbowColor = false;
+    private static float _rainbowDelay = 0.2f;
+    private static PlayerControl _rainbowTargetPlayer;
     private static int _selectedVent = 0;
     private static int _frameJudgeIdx = 0;
 
@@ -478,6 +482,14 @@ public class PlayersTab : ITab
         GUILayout.Space(5);
         GUILayout.Label("Host Only Features:" + (AmongUsClient.Instance.AmHost ? "" : "\n(Using these will get you kicked!)"));
 
+        if (GUILayout.Button("Revive"))
+        {
+            if (!Utils.isHost)
+                SkidMenu.notifications.Send("Revive", "This is a host-only cheat.");
+            else
+                RevivePlayer(target);
+        }
+
         if (GUILayout.Button("Force Meeting As"))
         {
             if (Utils.isHost)
@@ -685,13 +697,43 @@ public class PlayersTab : ITab
         }
 
         GUILayout.Space(5);
-        GUILayout.Label($"Change color to: {_selectedColor}");
-        _selectedColor = (CrewmateColor)GUILayout.HorizontalSlider((float)_selectedColor, 0, 17);
+        GUILayout.Label("Change color to: " + (_rainbowColor ? "Rainbow" : _selectedColor.ToString()));
 
-        if (GUILayout.Button("Set Color"))
+        bool newRainbow = GUIStylePreset.CustomToggle(_rainbowColor, " Rainbow Color");
+        if (newRainbow != _rainbowColor)
         {
-            target.RpcSetColor((byte)_selectedColor);
+            _rainbowColor = newRainbow;
+            if (_rainbowColor) _rainbowTargetPlayer = target;
+            else ClearRainbow();
         }
+        if (_rainbowColor && _rainbowTargetPlayer != target)
+            _rainbowTargetPlayer = target;
+
+        if (_rainbowColor)
+        {
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Rainbow delay:", GUILayout.Width(100));
+            _rainbowDelay = GUILayout.HorizontalSlider(_rainbowDelay, 0.01f, 2f);
+            GUILayout.Label($"{_rainbowDelay:0.00}s", GUILayout.Width(50));
+            GUILayout.EndHorizontal();
+
+            if (GUILayout.Button("Stop Rainbow"))
+            {
+                _rainbowColor = false;
+                ClearRainbow();
+            }
+        }
+        else
+        {
+            _selectedColor = (CrewmateColor)GUILayout.HorizontalSlider((float)_selectedColor, 0, 17);
+
+            if (GUILayout.Button("Set Color"))
+            {
+                target.RpcSetColor((byte)_selectedColor);
+            }
+        }
+
+        UpdateRainbowTarget();
 
         GUILayout.Space(10);
         GUILayout.Label("Player History", GUIStylePreset.TabSubtitle);
@@ -715,6 +757,27 @@ public class PlayersTab : ITab
             GUILayout.Label(_cachedHistoryString, GUIStylePreset.ModernLabel);
         else
             GUILayout.Label("<color=#666666>No activity recorded yet.</color>", GUIStylePreset.ModernLabel);
+    }
+
+    private static void UpdateRainbowTarget()
+    {
+        if (RainbowTarget.Instance == null) return;
+
+        bool want = _rainbowColor && _rainbowTargetPlayer != null && !_rainbowTargetPlayer.Data.Disconnected;
+        RainbowTarget.Instance.Enabled = want;
+        RainbowTarget.Instance.Target = want ? _rainbowTargetPlayer : null;
+        RainbowTarget.Instance.Delay = _rainbowDelay;
+    }
+
+    private static void ClearRainbow()
+    {
+        _rainbowColor = false;
+        _rainbowTargetPlayer = null;
+        if (RainbowTarget.Instance != null)
+        {
+            RainbowTarget.Instance.Enabled = false;
+            RainbowTarget.Instance.Target = null;
+        }
     }
 
     private static void AttemptReportBody(PlayerControl target)
@@ -782,7 +845,7 @@ public class PlayersTab : ITab
         else
             PlayerControl.LocalPlayer.CmdCheckMurder(target);
         float elapsed = 0f;
-        float duration = Mathf.Max((AmongUsClient.Instance.Ping + 26) / 1000f, 0.252f);
+        float duration = Mathf.Max((AmongUsClient.Instance.Ping + 26) / 1000f, 0.320f);
         while (elapsed < duration)
         {
             PlayerControl.LocalPlayer.NetTransform.RpcSnapTo(savedPos);
@@ -854,6 +917,72 @@ public class PlayersTab : ITab
         yield return Effects.Wait(3.0f);
         features.Host.DisableGameEnd.Enabled = false;
         SkidMenu.notifications.Send("Framer", $"Framed {target.Data.PlayerName} for killing all players!");
+    }
+
+    private static void RevivePlayer(PlayerControl target)
+    {
+        if (target == null || target.Data == null)
+        {
+            SkidMenu.notifications.Send("Revive", "Target not found.");
+            return;
+        }
+        if (!Utils.isHost)
+        {
+            SkidMenu.notifications.Send("Revive", "This is a host-only cheat.");
+            return;
+        }
+        if (!target.Data.IsDead)
+        {
+            SkidMenu.notifications.Send("Revive", $"{target.Data.PlayerName} is already alive.");
+            return;
+        }
+
+        try
+        {
+            target.Data.IsDead = false;
+
+            if (target.Collider != null) target.Collider.enabled = true;
+
+            if (target.MyPhysics != null)
+                target.MyPhysics.gameObject.layer = LayerMask.NameToLayer("Players");
+
+            try
+            {
+                foreach (var db in UnityEngine.Object.FindObjectsOfType<DeadBody>())
+                {
+                    if (db != null && db.ParentId == target.PlayerId)
+                        db.gameObject.SetActive(false);
+                }
+            }
+            catch { }
+
+            bool wasImpTeam = false;
+            try
+            {
+                if (target.Data.Role != null)
+                {
+                    int roleId = (int)target.Data.Role.Role;
+                    wasImpTeam = roleId == 1 || roleId == 5 || roleId == 7 || roleId == 9 || roleId == 18;
+                }
+                else
+                {
+                    var rt = target.Data.RoleType;
+                    wasImpTeam = rt == RoleTypes.Impostor || rt == RoleTypes.Shapeshifter || (int)rt == 9 || (int)rt == 18;
+                }
+            }
+            catch { }
+
+            target.RpcSetRole(wasImpTeam ? RoleTypes.Impostor : RoleTypes.Crewmate, true);
+
+            var netObj = GameData.Instance?.GetComponent<InnerNetObject>();
+            if (netObj != null) netObj.SetDirtyBit(uint.MaxValue);
+
+            SkidMenu.notifications.Send("Revive", $"{target.Data.PlayerName} revived!");
+        }
+        catch
+        {
+            SkidMenu.notifications.Send("Revive", "Revive failed.");
+        }
     }
 }
 

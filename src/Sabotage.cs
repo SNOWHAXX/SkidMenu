@@ -242,6 +242,103 @@ namespace SkidMenu
             }
         }
 
+        public static void SabotageSystem(SystemTypes system, int targetClientId)
+        {
+            if (!UpdateSystemsDirectly)
+            {
+                ShipStatus.Instance.RpcUpdateSystem(SystemTypes.Sabotage, (byte)system);
+                return;
+            }
+
+            Network.BatchedMessage batch = new Network.BatchedMessage(targetClientId);
+
+            switch (system)
+            {
+                case SystemTypes.Reactor:
+                case SystemTypes.Laboratory:
+                case SystemTypes.HeliSabotage:
+                case SystemTypes.LifeSupp:
+                case SystemTypes.Comms:
+                    batch.QueueUpdateSystem(PlayerControl.LocalPlayer, system, 128);
+                    break;
+
+                case SystemTypes.Electrical:
+                    byte amount = 4;
+
+                    for (byte i = 0; i < 5; i++)
+                    {
+                        if (BoolRange.Next(0.5f))
+                        {
+                            amount |= (byte)(1 << i);
+                        }
+                    }
+
+                    batch.QueueUpdateSystem(PlayerControl.LocalPlayer, SystemTypes.Electrical, (byte)(amount | 128));
+                    break;
+
+                case SystemTypes.MushroomMixupSabotage:
+                    batch.QueueUpdateSystem(PlayerControl.LocalPlayer, system, 1);
+                    break;
+            }
+
+            batch.FinishBatch();
+        }
+
+        public static void FixSabotage(SystemTypes system, int targetClientId)
+        {
+            Network.BatchedMessage batch = new Network.BatchedMessage(targetClientId);
+
+            switch (system)
+            {
+                case SystemTypes.Reactor:
+                case SystemTypes.Laboratory:
+                case SystemTypes.LifeSupp:
+                    batch.QueueUpdateSystem(PlayerControl.LocalPlayer, system, 16);
+                    break;
+
+                case SystemTypes.Comms:
+                case SystemTypes.HeliSabotage:
+                    batch.QueueUpdateSystem(PlayerControl.LocalPlayer, system, 16);
+                    batch.QueueUpdateSystem(PlayerControl.LocalPlayer, system, 17);
+                    break;
+
+                case SystemTypes.Electrical:
+                    SwitchSystem switches = ShipStatus.Instance.Systems[SystemTypes.Electrical].Cast<SwitchSystem>();
+
+                    int lightAmount = switches.ActualSwitches ^ switches.ExpectedSwitches;
+
+                    if (lightAmount == 0)
+                    {
+                        SkidMenu.Log.LogInfo($"Attempted to fix lights, XOR operation is 0 so that means we have nothing to fix");
+                        break;
+                    }
+
+                    batch.QueueUpdateSystem(PlayerControl.LocalPlayer, SystemTypes.Electrical, (byte)(lightAmount | 128));
+                    break;
+
+                case SystemTypes.MushroomMixupSabotage:
+                    if (!AmongUsClient.Instance.AmHost)
+                    {
+                        SkidMenu.Log.LogInfo("Attempted to fix Mushroom Mixup, we are not the host so nothing can be done");
+                        break;
+                    }
+
+                    MushroomMixupSabotageSystem mixupSystem = ShipStatus.Instance.Systems[SystemTypes.MushroomMixupSabotage].Cast<MushroomMixupSabotageSystem>();
+
+                    if (!mixupSystem.IsActive)
+                    {
+                        SkidMenu.Log.LogInfo("Attempted to fix Mushroom Mixup, the sabotage is not enabled so we have nothing to fix");
+                        break;
+                    }
+
+                    mixupSystem.currentSecondsUntilHeal = 0.1f;
+                    mixupSystem.IsDirty = true;
+                    break;
+            }
+
+            batch.FinishBatch();
+        }
+
         public static bool IsSabotageActive(SystemTypes system)
         {
             ShipStatus.Instance.Systems.TryGetValue(system, out ISystemType systemType);

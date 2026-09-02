@@ -135,6 +135,8 @@ public static class ViperBodies
         Cleanup();
     }
 
+    public static bool HasTrackedVipers() => _states.Count > 0;
+
     public static bool CanReport(byte parentId)
     {
         if (!_states.TryGetValue(parentId, out var st) || st.maxTime <= 0f) return true;

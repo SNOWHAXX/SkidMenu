@@ -61,5 +61,6 @@ public static class AmongUsClient_OnGameJoined
     public static void Postfix(string gameIdString)
     {
         lastGameIdString = gameIdString;
+        features.AdvancedLogger.Event("OnGameJoined", gameIdString);
     }
 }

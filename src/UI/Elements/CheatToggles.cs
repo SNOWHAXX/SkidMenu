@@ -54,6 +54,7 @@ public struct CheatToggles
     public static float killReachRange = 5f;
     public static bool killReachInfinite = true;
     public static bool killAnyone;
+    public static bool killGhosts;
     public static bool killOtherImpostors = false;
     public static bool endlessSsDuration;
     public static bool endlessBattery;
@@ -87,6 +88,9 @@ public struct CheatToggles
 
     // Notifications
     public static bool notifKill;
+    public static bool notifZipline;
+    public static bool notifPlatform;
+    public static bool notifLadder;
     public static bool notifShapeshift;
     public static bool notifShapeshiftRevert;
     public static bool notifVent;
@@ -106,8 +110,9 @@ public struct CheatToggles
     public static bool notifGuardianProtect;
     public static bool notifKillAttempt;
     public static bool notifEjections;
-    public static bool notifVerdict;
-    public static bool notifSabotageFix;
+public static bool notifVerdict;
+public static bool notifVerdictLive;
+public static bool notifSabotageFix;
     public static bool notifGameOver;
     public static bool notifCameras;
     public static bool notifRoomEntry;
@@ -115,9 +120,10 @@ public struct CheatToggles
     public static bool notifShowTaskCount;
     public static bool notifShowDistance;
     // index: 0=Kill 1=Sab 2=Vent 3=ExitVent 4=Shift 5=Phantom 6=Meeting 7=BodyReport 8=Vote 9=Votekick 10=Chat 11=Disconnect 12=RoleAssign 13=Task 14=Join 15=ShiftRevert 16=PhantomReappear 17=GuardianProtect 18=KillAttempt 19=Ejection 20=SabFix 21=GameOver 22=Verdict
-    public static bool[] notifExSelf = new bool[23];
-    public static bool[] notifExHost = new bool[23];
+public static bool[] notifExSelf = new bool[27];
+public static bool[] notifExHost = new bool[27];
     public static bool espShowRole;
+    public static bool espShowRoleSimple;
     public static bool espKillCooldown;
     public static bool espTasks;
 
@@ -200,6 +206,7 @@ public struct CheatToggles
     public static bool unlockVents;
     public static bool walkInVents;
     public static bool kickVents;
+    public static bool noMapCooldowns;
 
     // Animations
     public static bool animShields;
@@ -222,8 +229,9 @@ public struct CheatToggles
     public static bool logMeetingCalled;
     public static bool logBodyReport;
     public static bool logEjections;
-    public static bool logVerdict;
-    public static bool logVotes;
+public static bool logVerdict;
+public static bool logVerdictLive;
+public static bool logVotes;
     public static bool logVotekicks;
     public static bool logChat;
     public static bool logDisconnects;
@@ -236,6 +244,9 @@ public struct CheatToggles
     public static bool logSabotageFix;
     public static bool logGameOver;
     public static bool logCameras;
+    public static bool logZipline;
+    public static bool logPlatform;
+    public static bool logLadder;
     public static bool logRoomEntry;
     public static int maxLogEntries = 300;
     public static int chatMaxEntries = 300;
@@ -265,6 +276,13 @@ public struct CheatToggles
     public static bool noTaskMode;
     public static bool noSettingLimit;
     public static bool killAura;
+
+    // Host Protection
+    public static bool bypassShield;
+    public static bool godMode;
+    public static bool godModeAll;
+    public static bool autoAngel;
+    public static float autoAngelInterval = 0.5f;
 
     // Passive
     public static bool antiOverload;
@@ -429,12 +447,20 @@ public struct CheatToggles
         writer.WriteLine($"FR.OnVotekicked = {FullyRandomizeTriggers.OnVotekicked} = KeyCode.None");
         writer.WriteLine($"FR.OnPlayerJoin = {FullyRandomizeTriggers.OnPlayerJoin} = KeyCode.None");
         writer.WriteLine($"FR.OnPlayerLeave = {FullyRandomizeTriggers.OnPlayerLeave} = KeyCode.None");
-        writer.WriteLine($"Self.DarkGameTheme = {DarkMode.Enabled} = KeyCode.None");
-        writer.WriteLine($"Self.CustomGameTheme = {CustomGameTheme.Enabled} = KeyCode.None");
-        writer.WriteLine($"Self.GameBgColor = {SelfTab.BgHex} = KeyCode.None");
-        writer.WriteLine($"Self.GameTextColor = {SelfTab.TextHex} = KeyCode.None");
-        writer.WriteLine($"Self.ChatFont = {ChatFontChanger.Enabled} = KeyCode.None");
-        writer.WriteLine($"Self.ChatFontType = {ChatFontChanger.FontType} = KeyCode.None");
+        writer.WriteLine($"Chat.DarkTheme = {ChatTheme.DarkModeEnabled} = KeyCode.None");
+        writer.WriteLine($"Chat.CustomTheme = {ChatTheme.CustomEnabled} = KeyCode.None");
+        writer.WriteLine($"Chat.ThemeBg = {ChatTheme.BgHex} = KeyCode.None");
+        writer.WriteLine($"Chat.ThemeText = {ChatTheme.TextHex} = KeyCode.None");
+        writer.WriteLine($"Chat.ThemeBgAlpha = {ChatTheme.BgAlpha.ToString(System.Globalization.CultureInfo.InvariantCulture)} = KeyCode.None");
+        writer.WriteLine($"Chat.ThemeTextAlpha = {ChatTheme.TextAlpha.ToString(System.Globalization.CultureInfo.InvariantCulture)} = KeyCode.None");
+        writer.WriteLine($"Chat.DarkThemeAlpha = {ChatTheme.DarkBgAlpha.ToString(System.Globalization.CultureInfo.InvariantCulture)} = KeyCode.None");
+        writer.WriteLine($"Chat.DeadTheme = {ChatTheme.DeadCustomEnabled} = KeyCode.None");
+        writer.WriteLine($"Chat.DeadThemeBg = {ChatTheme.DeadBgHex} = KeyCode.None");
+        writer.WriteLine($"Chat.DeadThemeText = {ChatTheme.DeadTextHex} = KeyCode.None");
+        writer.WriteLine($"Chat.DeadThemeBgAlpha = {ChatTheme.DeadBgAlpha.ToString(System.Globalization.CultureInfo.InvariantCulture)} = KeyCode.None");
+        writer.WriteLine($"Chat.DeadThemeTextAlpha = {ChatTheme.DeadTextAlpha.ToString(System.Globalization.CultureInfo.InvariantCulture)} = KeyCode.None");
+        writer.WriteLine($"Chat.ChatFont = {ChatFontChanger.Enabled} = KeyCode.None");
+        writer.WriteLine($"Chat.ChatFontType = {ChatFontChanger.FontType} = KeyCode.None");
         writer.WriteLine($"NameSpoof.SpoofedName = {SkidMenu.nameSpoofName} = KeyCode.None");
         writer.WriteLine($"NameSpoof.Enabled = {SkidMenu.nameSpoofEnabled} = KeyCode.None");
         writer.WriteLine($"NameSpoof.Mode = {SkidMenu.nameSpoofMode} = KeyCode.None");
@@ -515,6 +541,9 @@ public struct CheatToggles
         writer.WriteLine($"ESP.SeePhantoms = {SeePlayersInVents.SeePhantoms} = KeyCode.None");
         writer.WriteLine($"ESP.LobbyTimer = {LobbyTimer.Enabled} = KeyCode.None");
         writer.WriteLine($"ESP.SubCtx = {ESPContexts.ShowRole},{ESPContexts.ShowInfo},{ESPContexts.KillCooldown},{ESPContexts.Tasks},{ESPContexts.IsHost},{ESPContexts.Level},{ESPContexts.Platform},{ESPContexts.Votekicks},{ESPContexts.FriendCode},{ESPContexts.Puid},{ESPContexts.DeviceId},{ESPContexts.ModUser} = KeyCode.None");
+        writer.WriteLine($"Spoof.Enabled = {anticheat.SpoofIdentity.Enabled} = KeyCode.None");
+        writer.WriteLine($"Spoof.Index = {anticheat.SpoofIdentity.SelectedIndex} = KeyCode.None");
+        writer.WriteLine($"Spoof.AutoBroadcast = {anticheat.SpoofIdentity.AutoBroadcast} = KeyCode.None");
         writer.WriteLine($"Dummy.WalkToTasks = {DummySpawner.WalkToTasks} = KeyCode.None");
         writer.WriteLine($"Dummy.FixSabotages = {DummySpawner.FixSabotages} = KeyCode.None");
         writer.WriteLine($"Dummy.ReportAndChat = {DummySpawner.ReportAndChat} = KeyCode.None");
@@ -525,6 +554,7 @@ public struct CheatToggles
         writer.WriteLine($"HO.BypassHostOnly = {bypassHostOnly} = KeyCode.None");
         writer.WriteLine($"HO.KillVanished = {killVanished} = KeyCode.None");
         writer.WriteLine($"HO.KillAnyone = {killAnyone} = KeyCode.None");
+        writer.WriteLine($"HO.KillGhosts = {killGhosts} = KeyCode.None");
         writer.WriteLine($"HO.NoKillCd = {noKillCd} = KeyCode.None");
         writer.WriteLine($"HO.ShowProtectMenu = {showProtectMenu} = KeyCode.None");
         writer.WriteLine($"HO.NoTaskMode = {noTaskMode} = KeyCode.None");
@@ -547,6 +577,18 @@ public struct CheatToggles
         writer.WriteLine($"HO.DiscoDelay = {SkidMenu.routines.discoHost.randomizationDelay.ToString(System.Globalization.CultureInfo.InvariantCulture)} = KeyCode.None");
         writer.WriteLine($"HO.BlockLowLevels = {Host.BlockLowLevels.Enabled} = KeyCode.None");
         writer.WriteLine($"HO.BlockLowLevelsMin = {Host.BlockLowLevels.MinLevel} = KeyCode.None");
+        writer.WriteLine($"NKC.Enabled = {features.NoKillChecks.Enabled} = KeyCode.None");
+        writer.WriteLine($"NKC.KillOtherImpostors = {features.NoKillChecks.KillOtherImpostors} = KeyCode.None");
+        writer.WriteLine($"NKC.KillAsPhantom = {features.NoKillChecks.KillAsPhantom} = KeyCode.None");
+        writer.WriteLine($"Troll.AutoExposeImpostors = {features.AutoExposeImpostors.Enabled} = KeyCode.None");
+        writer.WriteLine($"Troll.ExposeOnMurder = {features.AutoExposeImpostors.ExposeOnMurder} = KeyCode.None");
+        writer.WriteLine($"Troll.ExposeOnShapeshift = {features.AutoExposeImpostors.ExposeOnShapeshift} = KeyCode.None");
+        writer.WriteLine($"Troll.ExposeOnPhantom = {features.AutoExposeImpostors.ExposeOnPhantom} = KeyCode.None");
+        writer.WriteLine($"Troll.DisableCloseDoors = {features.DisableCloseDoors.Enabled} = KeyCode.None");
+        writer.WriteLine($"Troll.DisableCameras = {features.DisableCameras.Enabled} = KeyCode.None");
+        writer.WriteLine($"Troll.QueueLobbyCrash = {features.QueueLobbyCrash.Enabled} = KeyCode.None");
+        writer.WriteLine($"Protections.AntiCrash = {features.Protections.AntiCrash.Enabled} = KeyCode.None");
+        writer.WriteLine($"Troll.GlitterBomb = {SkidMenu.routines.glitterBomb.Enabled} = KeyCode.None");
 
         writer.WriteLine($"AC.Enabled = {anticheat.Anticheat.Enabled} = KeyCode.None");
         writer.WriteLine($"AC.SendNotification = {anticheat.Anticheat.sendNotification} = KeyCode.None");
@@ -690,6 +732,7 @@ public struct CheatToggles
         writer.WriteLine($"Console.LogBodyReport = {logBodyReport} = KeyCode.None");
         writer.WriteLine($"Console.LogEjections = {logEjections} = KeyCode.None");
         writer.WriteLine($"Console.LogVerdict = {logVerdict} = KeyCode.None");
+        writer.WriteLine($"Console.LogVerdictLive = {logVerdictLive} = KeyCode.None");
         writer.WriteLine($"Console.LogVotes = {logVotes} = KeyCode.None");
         writer.WriteLine($"Console.LogVotekicks = {logVotekicks} = KeyCode.None");
         writer.WriteLine($"Console.LogChat = {logChat} = KeyCode.None");
@@ -845,11 +888,11 @@ public struct CheatToggles
                     continue;
                 case "Notif.ExSelf":
                     var exs = valuePart.Split(',');
-                    for (int i = 0; i < exs.Length && i < 23; i++) if (bool.TryParse(exs[i].Trim(), out var b)) notifExSelf[i] = b;
+                    for (int i = 0; i < exs.Length && i < 27; i++) if (bool.TryParse(exs[i].Trim(), out var b)) notifExSelf[i] = b;
                     continue;
                 case "Notif.ExHost":
                     var exh = valuePart.Split(',');
-                    for (int i = 0; i < exh.Length && i < 23; i++) if (bool.TryParse(exh[i].Trim(), out var b2)) notifExHost[i] = b2;
+                    for (int i = 0; i < exh.Length && i < 27; i++) if (bool.TryParse(exh[i].Trim(), out var b2)) notifExHost[i] = b2;
                     continue;
                 case "Votekick.NotifyVotekickInfo":
                     if (bool.TryParse(valuePart, out var vnvi)) VotekickHandler.NotifyVotekickInfo = vnvi;
@@ -982,6 +1025,42 @@ public struct CheatToggles
                     continue;
                 case "Troll.FuckGame":
                     if (bool.TryParse(valuePart, out var tfg)) features.FuckGame.Enabled = tfg;
+                    continue;
+                case "NKC.Enabled":
+                    if (bool.TryParse(valuePart, out var nkcEnabled)) features.NoKillChecks.Enabled = nkcEnabled;
+                    continue;
+                case "NKC.KillOtherImpostors":
+                    if (bool.TryParse(valuePart, out var nkcKillOthers)) features.NoKillChecks.KillOtherImpostors = nkcKillOthers;
+                    continue;
+                case "NKC.KillAsPhantom":
+                    if (bool.TryParse(valuePart, out var nkcKillPhantom)) features.NoKillChecks.KillAsPhantom = nkcKillPhantom;
+                    continue;
+                case "Troll.AutoExposeImpostors":
+                    if (bool.TryParse(valuePart, out var aeiEnabled)) features.AutoExposeImpostors.Enabled = aeiEnabled;
+                    continue;
+                case "Troll.ExposeOnMurder":
+                    if (bool.TryParse(valuePart, out var aeiMurder)) features.AutoExposeImpostors.ExposeOnMurder = aeiMurder;
+                    continue;
+                case "Troll.ExposeOnShapeshift":
+                    if (bool.TryParse(valuePart, out var aeiShapeshift)) features.AutoExposeImpostors.ExposeOnShapeshift = aeiShapeshift;
+                    continue;
+                case "Troll.ExposeOnPhantom":
+                    if (bool.TryParse(valuePart, out var aeiPhantom)) features.AutoExposeImpostors.ExposeOnPhantom = aeiPhantom;
+                    continue;
+                case "Troll.DisableCloseDoors":
+                    if (bool.TryParse(valuePart, out var trollDcd)) features.DisableCloseDoors.Enabled = trollDcd;
+                    continue;
+                case "Troll.DisableCameras":
+                    if (bool.TryParse(valuePart, out var trollDcams)) features.DisableCameras.Enabled = trollDcams;
+                    continue;
+                case "Troll.QueueLobbyCrash":
+                    if (bool.TryParse(valuePart, out var trollQlc)) features.QueueLobbyCrash.Enabled = trollQlc;
+                    continue;
+                case "Protections.AntiCrash":
+                    if (bool.TryParse(valuePart, out var antiCrashEnabled)) features.Protections.AntiCrash.Enabled = antiCrashEnabled;
+                    continue;
+                case "Troll.GlitterBomb":
+                    if (bool.TryParse(valuePart, out var glitterBombEnabled)) SkidMenu.routines.glitterBomb.Enabled = glitterBombEnabled;
                     continue;
                 case "GUI.MenuOpacity":
                     if (float.TryParse(valuePart, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var gmo)) menuOpacity = System.Math.Clamp(gmo, 0.01f, 1f);
@@ -1232,6 +1311,9 @@ public struct CheatToggles
                 case "Console.LogVerdict":
                     if (bool.TryParse(valuePart, out var clvd)) logVerdict = clvd;
                     continue;
+                case "Console.LogVerdictLive":
+                    if (bool.TryParse(valuePart, out var clvl)) logVerdictLive = clvl;
+                    continue;
                 case "Console.LogVotes":
                     if (bool.TryParse(valuePart, out var clvo)) logVotes = clvo;
                     continue;
@@ -1391,24 +1473,50 @@ public struct CheatToggles
                 case "FR.OnPlayerLeave":
                     if (bool.TryParse(valuePart, out var fopl)) FullyRandomizeTriggers.OnPlayerLeave = fopl;
                     continue;
-                case "Self.DarkGameTheme":
-                    if (bool.TryParse(valuePart, out var sdgt)) DarkMode.Enabled = sdgt;
+                case "Chat.DarkTheme":
+                    if (bool.TryParse(valuePart, out var cdt)) ChatTheme.DarkModeEnabled = cdt;
                     continue;
-                case "Self.CustomGameTheme":
-                    if (bool.TryParse(valuePart, out var scgt)) CustomGameTheme.Enabled = scgt;
+                case "Chat.CustomTheme":
+                    if (bool.TryParse(valuePart, out var cct)) ChatTheme.CustomEnabled = cct;
                     continue;
-                case "Self.GameBgColor":
-                    SelfTab.BgHex = valuePart;
-                    if (ColorUtility.TryParseHtmlString("#" + valuePart, out Color bgc)) CustomGameTheme.BgColor = bgc;
+                case "Chat.ThemeBg":
+                    ChatTheme.BgHex = valuePart;
+                    if (ColorUtility.TryParseHtmlString("#" + valuePart, out Color cbgc)) ChatTheme.BgColor = cbgc;
                     continue;
-                case "Self.GameTextColor":
-                    SelfTab.TextHex = valuePart;
-                    if (ColorUtility.TryParseHtmlString("#" + valuePart, out Color txc)) CustomGameTheme.TextColor = txc;
+                case "Chat.ThemeText":
+                    ChatTheme.TextHex = valuePart;
+                    if (ColorUtility.TryParseHtmlString("#" + valuePart, out Color ctxtc)) ChatTheme.TextColor = ctxtc;
                     continue;
-                case "Self.ChatFont":
+                case "Chat.ThemeBgAlpha":
+                    if (float.TryParse(valuePart, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var cbga)) ChatTheme.BgAlpha = cbga;
+                    continue;
+                case "Chat.ThemeTextAlpha":
+                    if (float.TryParse(valuePart, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var ctta)) ChatTheme.TextAlpha = ctta;
+                    continue;
+                case "Chat.DarkThemeAlpha":
+                    if (float.TryParse(valuePart, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var cdta)) ChatTheme.DarkBgAlpha = cdta;
+                    continue;
+                case "Chat.DeadTheme":
+                    if (bool.TryParse(valuePart, out var cdth)) ChatTheme.DeadCustomEnabled = cdth;
+                    continue;
+                case "Chat.DeadThemeBg":
+                    ChatTheme.DeadBgHex = valuePart;
+                    if (ColorUtility.TryParseHtmlString("#" + valuePart, out Color cdbgc)) ChatTheme.DeadBgColor = cdbgc;
+                    continue;
+                case "Chat.DeadThemeText":
+                    ChatTheme.DeadTextHex = valuePart;
+                    if (ColorUtility.TryParseHtmlString("#" + valuePart, out Color cdtxtc)) ChatTheme.DeadTextColor = cdtxtc;
+                    continue;
+                case "Chat.DeadThemeBgAlpha":
+                    if (float.TryParse(valuePart, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var cdbga)) ChatTheme.DeadBgAlpha = cdbga;
+                    continue;
+                case "Chat.DeadThemeTextAlpha":
+                    if (float.TryParse(valuePart, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var cddta)) ChatTheme.DeadTextAlpha = cddta;
+                    continue;
+                case "Chat.ChatFont":
                     if (bool.TryParse(valuePart, out var scf)) ChatFontChanger.Enabled = scf;
                     continue;
-                case "Self.ChatFontType":
+                case "Chat.ChatFontType":
                     if (int.TryParse(valuePart, out var scft)) ChatFontChanger.FontType = System.Math.Clamp(scft, 0, 20);
                     continue;
                 case "NameSpoof.SpoofedName":
@@ -1668,6 +1776,21 @@ public struct CheatToggles
                         if (sc.Length >= 12 && byte.TryParse(sc[11], out var b11)) ESPContexts.ModUser = b11;
                     }
                     continue;
+                case "Spoof.Enabled":
+                    if (bool.TryParse(valuePart, out var spoofEn))
+                    {
+                        anticheat.SpoofIdentity.Enabled = spoofEn;
+                        anticheat.SpoofIdentity.TrackOwnUsage();
+                    }
+                    continue;
+                case "Spoof.Index":
+                    if (int.TryParse(valuePart, out var spoofIdx))
+                        anticheat.SpoofIdentity.SelectedIndex = spoofIdx;
+                    continue;
+                case "Spoof.AutoBroadcast":
+                    if (bool.TryParse(valuePart, out var spoofAuto))
+                        anticheat.SpoofIdentity.AutoBroadcast = spoofAuto;
+                    continue;
                 case "Dummy.WalkToTasks":
                     if (bool.TryParse(valuePart, out var dwt)) DummySpawner.WalkToTasks = dwt;
                     continue;
@@ -1697,6 +1820,9 @@ public struct CheatToggles
                     continue;
                 case "HO.KillAnyone":
                     if (bool.TryParse(valuePart, out var hoka)) killAnyone = hoka;
+                    continue;
+                case "HO.KillGhosts":
+                    if (bool.TryParse(valuePart, out var hokg)) killGhosts = hokg;
                     continue;
                 case "HO.NoKillCd":
                     if (bool.TryParse(valuePart, out var honkcd)) noKillCd = honkcd;

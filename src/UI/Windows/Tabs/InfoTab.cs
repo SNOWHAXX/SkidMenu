@@ -41,7 +41,7 @@ public class InfoTab : ITab
         // Warnings
         GUILayout.Label("<color=#63CCCF><b>Things to keep in mind</b></color>", _subheader, w);
         GUILayout.Space(4);
-        GUILayout.Label("This build is labeled Stable. No crashes or major performance issues were observed during testing, though some functions may still behave unexpectedly in certain situations. Using this menu can get you banned, so use with caution.", _body, w);
+        GUILayout.Label($"This build is labeled {SkidMenu.hyperBuild}. Using this menu can get you banned, so use with caution.", _body, w);
         GUILayout.Space(6);
 
         GUILayout.Label("<color=#FF8888><b>For hosts and private lobbies</b></color>", _sub2, w);

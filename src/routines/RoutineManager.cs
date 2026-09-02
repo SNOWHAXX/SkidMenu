@@ -14,6 +14,7 @@ namespace SkidMenu.routines
 		public PetPlayerRoutine petPlayer = new PetPlayerRoutine();
 		public HnSTimerDepleteRoutine hnsTimerDeplete = new HnSTimerDepleteRoutine();
 		public ZiplineSpamRoutine ziplineSpam = new ZiplineSpamRoutine();
+		public GlitterBombRoutine glitterBomb = new GlitterBombRoutine();
 		public void Update()
 		{
 			if(autoTriggerSpores.Enabled) autoTriggerSpores.Run();
@@ -25,7 +26,8 @@ namespace SkidMenu.routines
 			if(teleportFlooder.Enabled) teleportFlooder.Run();
 			if(petPlayer._enabled) petPlayer.Run();
 			if(hnsTimerDeplete.Enabled) hnsTimerDeplete.Run();
-			if(ziplineSpam.Enabled) ziplineSpam.Run();
+			if(ZiplineSpamRoutine.Active) ziplineSpam.Run();
+			if(glitterBomb.Enabled) glitterBomb.Run();
 		}
 	}
 }

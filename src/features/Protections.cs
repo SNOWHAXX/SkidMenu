@@ -3,6 +3,7 @@ using Hazel;
 using InnerNet;
 using UnityEngine;
 
+
 namespace SkidMenu.features
 {
 	internal class Protections
@@ -333,5 +334,40 @@ namespace SkidMenu.features
 				catch { return true; }
 			}
 		}
+
+		// Prevents the report-body exploit that crashes the lobby in the pre-game screen
+		[HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.ReportDeadBody))]
+		public static class AntiCrash
+		{
+			public static bool Enabled { get; set; } = true;
+
+			internal static bool gameFullyLoaded = false;
+
+			static bool Prefix()
+			{
+				if (!Enabled) return true;
+				return gameFullyLoaded;
+			}
+
+			[HarmonyPatch(typeof(AmongUsClient), nameof(AmongUsClient.CoStartGame))]
+			class OnGameStart
+			{
+				static void Postfix()
+				{
+					gameFullyLoaded = false;
+				}
+			}
+
+			[HarmonyPatch(typeof(GameManager), nameof(GameManager.StartGame))]
+			class OnGameLoad
+			{
+				static void Postfix()
+				{
+					gameFullyLoaded = true;
+				}
+			}
+		}
+
+		
 	}
 }

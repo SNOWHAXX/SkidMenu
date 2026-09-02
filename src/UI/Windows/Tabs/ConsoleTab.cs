@@ -70,6 +70,7 @@ public class ConsoleTab : ITab
         CheatToggles.logVotes     = GUIStylePreset.CustomToggle(CheatToggles.logVotes, " Log Votes");
         CheatToggles.logVotekicks = GUIStylePreset.CustomToggle(CheatToggles.logVotekicks, " Log Votekicks");
         CheatToggles.logVerdict   = GUIStylePreset.CustomToggle(CheatToggles.logVerdict, " Log Judge Verdicts");
+        CheatToggles.logVerdictLive = GUIStylePreset.CustomToggle(CheatToggles.logVerdictLive, " Log Judge Gavel");
 
         GUILayout.Space(5);
         GUILayout.Label("-- Game --");
@@ -79,6 +80,9 @@ public class ConsoleTab : ITab
         CheatToggles.logRoomEntry = GUIStylePreset.CustomToggle(CheatToggles.logRoomEntry, " Log Room Entries");
         CheatToggles.logGameOver = GUIStylePreset.CustomToggle(CheatToggles.logGameOver, " Log Round Start / Game Over");
         CheatToggles.logChat      = GUIStylePreset.CustomToggle(CheatToggles.logChat, " Log Chat Messages");
+        CheatToggles.logZipline   = GUIStylePreset.CustomToggle(CheatToggles.logZipline, " Log Zipline");
+        CheatToggles.logPlatform  = GUIStylePreset.CustomToggle(CheatToggles.logPlatform, " Log Platform");
+        CheatToggles.logLadder    = GUIStylePreset.CustomToggle(CheatToggles.logLadder, " Log Ladder");
 
         GUILayout.Space(5);
         GUILayout.Label("-- Settings --");

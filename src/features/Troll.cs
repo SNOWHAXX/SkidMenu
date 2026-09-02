@@ -330,6 +330,47 @@ namespace SkidMenu.features
 			batch.QueueDataFlag(GameManager.Instance.NetId, writer);
 			batch.FinishBatch();
 		}
+
+		// Sends a quick-chat RPC (33) with a fixed category payload so it renders as a
+		// coloured text/emote in chat. Matches ChocooMenu byte-for-byte: the payload is
+		// written TWICE - once broadcast to the server (-1) and once targeted at our own
+		// client id so the emote actually renders in our own chat.
+		public static void SendColouredChat(int id)
+		{
+			try
+			{
+				if (PlayerControl.LocalPlayer == null) return;
+
+				MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(
+					PlayerControl.LocalPlayer.NetId,
+					(byte)33,
+					SendOption.Reliable,
+					-1);
+				writer.Write((byte)3);
+				writer.Write((ushort)78);
+				writer.Write((byte)1);
+				writer.Write((byte)2);
+				writer.Write((ushort)id);
+				AmongUsClient.Instance.FinishRpcImmediately(writer);
+
+				MessageWriter self = AmongUsClient.Instance.StartRpcImmediately(
+					PlayerControl.LocalPlayer.NetId,
+					(byte)33,
+					SendOption.Reliable,
+					PlayerControl.LocalPlayer.OwnerId);
+				self.Write((byte)3);
+				self.Write((ushort)78);
+				self.Write((byte)1);
+				self.Write((byte)2);
+				self.Write((ushort)id);
+				AmongUsClient.Instance.FinishRpcImmediately(self);
+			}
+			catch (System.Exception ex)
+			{
+				SkidMenu.Log.LogError("Troll.SendColouredChat: " + ex.Message);
+			}
+		}
+
 	}
 }
 

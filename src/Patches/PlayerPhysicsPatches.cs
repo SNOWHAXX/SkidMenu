@@ -10,6 +10,7 @@ public static class PlayerPhysics_LateUpdate
     private static GameObject[] _cachedBodyObjects = System.Array.Empty<GameObject>();
     private static DeadBody[]   _cachedDeadBodies  = System.Array.Empty<DeadBody>();
     private const float BodySearchInterval = 0.3f;
+    private static float _bodySearchTimer = 0f;
 
     public static void Postfix(PlayerPhysics __instance)
     {
@@ -44,10 +45,16 @@ public static class PlayerPhysics_LateUpdate
             Utils.TickClientCache();
             Utils.TickTracerFrame();
 
-            _cachedBodyObjects = GameObject.FindGameObjectsWithTag("DeadBody");
-            _cachedDeadBodies  = new DeadBody[_cachedBodyObjects.Length];
-            for (int i = 0; i < _cachedBodyObjects.Length; i++)
-                _cachedDeadBodies[i] = _cachedBodyObjects[i]?.GetComponent<DeadBody>();
+            _bodySearchTimer += Time.deltaTime;
+            bool needBodies = CheatToggles.tracersBodies || CheatToggles.autoReportBodies || ViperBodies.HasTrackedVipers();
+            if (needBodies && _bodySearchTimer >= BodySearchInterval)
+            {
+                _bodySearchTimer = 0f;
+                _cachedBodyObjects = GameObject.FindGameObjectsWithTag("DeadBody");
+                _cachedDeadBodies  = new DeadBody[_cachedBodyObjects.Length];
+                for (int i = 0; i < _cachedBodyObjects.Length; i++)
+                    _cachedDeadBodies[i] = _cachedBodyObjects[i]?.GetComponent<DeadBody>();
+            }
 
             ViperBodies.TickBodies(_cachedDeadBodies);
 

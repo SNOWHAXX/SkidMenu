@@ -19,12 +19,19 @@ public class TrollTab : ITab
 
         DrawAutoReport();
         DrawAutoSpores();
+        DrawGlitterBomb();
+        DrawExposeImpostors();
+        DrawDisableCloseDoors();
+        DrawDisableCameras();
+        DrawQueueLobbyCrash();
         DrawBlockToggles();
         DrawHnSTimer();
         DrawActionButtons();
         DrawDoorTroller();
         DrawVentTp();
         DrawZipline();
+        DrawColouredChat();
+        DrawSkidMenuBrand();
 
         GUILayout.EndVertical();
     }
@@ -43,6 +50,37 @@ public class TrollTab : ITab
     private void DrawAutoSpores()
     {
         SkidMenu.routines.autoTriggerSpores.Enabled = GUIStylePreset.CustomToggle(SkidMenu.routines.autoTriggerSpores.Enabled, "Auto Trigger Spores");
+    }
+
+    private void DrawGlitterBomb()
+    {
+        SkidMenu.routines.glitterBomb.Enabled = GUIStylePreset.CustomToggle(SkidMenu.routines.glitterBomb.Enabled, "GlitterBomb");
+    }
+
+    private void DrawExposeImpostors()
+    {
+        AutoExposeImpostors.Enabled = GUIStylePreset.CustomToggle(AutoExposeImpostors.Enabled, "Auto Expose Impostors");
+        if (AutoExposeImpostors.Enabled)
+        {
+            AutoExposeImpostors.ExposeOnMurder = GUIStylePreset.CustomToggle(AutoExposeImpostors.ExposeOnMurder, "   On Murder");
+            AutoExposeImpostors.ExposeOnShapeshift = GUIStylePreset.CustomToggle(AutoExposeImpostors.ExposeOnShapeshift, "   On Shapeshift");
+            AutoExposeImpostors.ExposeOnPhantom = GUIStylePreset.CustomToggle(AutoExposeImpostors.ExposeOnPhantom, "   On Phantom");
+        }
+    }
+
+    private void DrawDisableCloseDoors()
+    {
+        DisableCloseDoors.Enabled = GUIStylePreset.CustomToggle(DisableCloseDoors.Enabled, "Disable Close Doors");
+    }
+
+    private void DrawDisableCameras()
+    {
+        DisableCameras.Enabled = GUIStylePreset.CustomToggle(DisableCameras.Enabled, "Disable Security Cameras");
+    }
+
+    private void DrawQueueLobbyCrash()
+    {
+        QueueLobbyCrash.Enabled = GUIStylePreset.CustomToggle(QueueLobbyCrash.Enabled, "Queue Lobby Crash");
     }
 
     private void DrawBlockToggles()
@@ -141,11 +179,32 @@ public class TrollTab : ITab
         GUILayout.Space(2);
         if (GUILayout.Button("Select All", GUILayout.Width(110), GUILayout.Height(28))) { foreach (var p in PlayerControl.AllPlayerControls) if (p != null && p != PlayerControl.LocalPlayer) ZiplineSpamRoutine.Marked.Add(p.PlayerId); }
         GUILayout.Space(4);
-        if (GUILayout.Button("Clear All", GUILayout.Width(90), GUILayout.Height(28))) ZiplineSpamRoutine.Marked.Clear();
+        if (GUILayout.Button("Clear All", GUILayout.Width(90), GUILayout.Height(28))) { ZiplineSpamRoutine.Marked.Clear(); ZiplineSpamRoutine.Active = false; }
         GUILayout.Space(4);
         if (GUILayout.Button("Down All", GUILayout.Width(90), GUILayout.Height(28))) features.ZiplineTools.RideAll(ZiplineSpamRoutine.Marked, true);
         GUILayout.Space(4);
         if (GUILayout.Button("Up All", GUILayout.Width(80), GUILayout.Height(28))) features.ZiplineTools.RideAll(ZiplineSpamRoutine.Marked, false);
+        GUILayout.Space(4);
+        var spamGreen = new Color(0.0f, 0.45f, 0.0f);
+        var spamBg = GUI.backgroundColor;
+
+        bool downAllActive = ZiplineSpamRoutine.Active && ZiplineSpamRoutine.SpamDirection && !ZiplineSpamRoutine.IsPerPlayer;
+        bool upAllActive = ZiplineSpamRoutine.Active && !ZiplineSpamRoutine.SpamDirection && !ZiplineSpamRoutine.IsPerPlayer;
+
+        GUI.backgroundColor = downAllActive ? spamGreen : spamBg;
+        if (GUILayout.Button("Spam Down All", GUILayout.Width(110), GUILayout.Height(28)))
+        {
+            if (downAllActive) ZiplineSpamRoutine.Stop();
+            else { ZiplineSpamRoutine.IsPerPlayer = false; ZiplineSpamRoutine.SpamDirection = true; ZiplineSpamRoutine.Active = true; }
+        }
+        GUILayout.Space(4);
+        GUI.backgroundColor = upAllActive ? spamGreen : spamBg;
+        if (GUILayout.Button("Spam Up All", GUILayout.Width(100), GUILayout.Height(28)))
+        {
+            if (upAllActive) ZiplineSpamRoutine.Stop();
+            else { ZiplineSpamRoutine.IsPerPlayer = false; ZiplineSpamRoutine.SpamDirection = false; ZiplineSpamRoutine.Active = true; }
+        }
+        GUI.backgroundColor = spamBg;
         GUILayout.EndHorizontal();
 
         GUILayout.Space(6);
@@ -171,12 +230,98 @@ public class TrollTab : ITab
             if (GUILayout.Button("Down", GUILayout.Width(70), GUILayout.Height(26))) features.ZiplineTools.Ride(p, true);
             GUILayout.Space(4);
             if (GUILayout.Button("Up", GUILayout.Width(60), GUILayout.Height(26))) features.ZiplineTools.Ride(p, false);
+            GUILayout.Space(4);
+            bool pDownActive = ZiplineSpamRoutine.Active && ZiplineSpamRoutine.SpamDirection && ZiplineSpamRoutine.IsPerPlayer && ZiplineSpamRoutine.PerPlayerId == p.PlayerId;
+            bool pUpActive = ZiplineSpamRoutine.Active && !ZiplineSpamRoutine.SpamDirection && ZiplineSpamRoutine.IsPerPlayer && ZiplineSpamRoutine.PerPlayerId == p.PlayerId;
+
+            GUI.backgroundColor = pDownActive ? spamGreen : prev;
+            if (GUILayout.Button("Spam Down", GUILayout.Width(90), GUILayout.Height(26)))
+                ZiplineSpamRoutine.StartPerPlayer(p.PlayerId, true);
+            GUILayout.Space(4);
+            GUI.backgroundColor = pUpActive ? spamGreen : prev;
+            if (GUILayout.Button("Spam Up", GUILayout.Width(80), GUILayout.Height(26)))
+                ZiplineSpamRoutine.StartPerPlayer(p.PlayerId, false);
+            GUI.backgroundColor = prev;
             GUILayout.Space(2);
             GUILayout.EndHorizontal();
             GUILayout.Space(2);
         }
 
 
+    }
+
+    private static void DrawColouredChat()
+    {
+        GUILayout.Space(8);
+        GUILayout.Label("Coloured Chat (send emotes)");
+        GUILayout.Label("Each button sends a coloured quick-chat entry to the lobby.", new GUIStyle(GUI.skin.label) { fontSize = 10 });
+
+        // (label, rgb, quick-chat id) — copied from ChocooMenu's Coloured Chat feature.
+        var buttons = new (string label, Color rgb, int id)[]
+        {
+            ("1",  new Color(0.8f, 0.2f, 0.2f), 1912),
+            ("2",  new Color(0.2f, 0.6f, 0.8f), 197),
+            ("3",  new Color(0.2f, 0.7f, 0.5f), 155),
+            ("4",  new Color(0.6f, 0.4f, 0.8f), 156),
+            ("5",  new Color(0.8f, 0.6f, 0.2f), 73),
+            ("6",  new Color(0.9f, 0.3f, 0.9f), 1914),
+            ("7",  new Color(0.9f, 0.4f, 0.6f), 1567),
+            ("8",  new Color(0.7f, 0.5f, 0.9f), 6),
+            ("9",  new Color(0.5f, 0.6f, 0.9f), 269),
+            ("10", new Color(1f,   0.5f, 0.3f), 96),
+            ("11", new Color(0.3f, 0.9f, 0.5f), 95),
+            ("12", new Color(0.5f, 0.3f, 0.9f), 700),
+            ("13", new Color(0.9f, 0.7f, 0.3f), 350),
+            ("14", new Color(0.3f, 0.5f, 0.9f), 400),
+            ("15", new Color(0.9f, 0.3f, 0.5f), 1650),
+        };
+
+        int index = 0;
+        while (index < buttons.Length)
+        {
+            GUILayout.BeginHorizontal();
+            for (int col = 0; col < 5 && index < buttons.Length; col++, index++)
+            {
+                var b = buttons[index];
+                var prev = GUI.backgroundColor;
+                GUI.backgroundColor = b.rgb;
+                if (GUILayout.Button(b.label, GUILayout.Width(40), GUILayout.Height(30)))
+                    features.Troll.SendColouredChat(b.id);
+                GUI.backgroundColor = prev;
+                GUILayout.Space(3);
+            }
+            GUILayout.EndHorizontal();
+        }
+        GUILayout.Space(5);
+    }
+
+    private static void DrawSkidMenuBrand()
+    {
+        GUILayout.Space(8);
+        GUILayout.Label("SkidMenu (test emotes)", new GUIStyle(GUIStylePreset.TabSubtitle) { fontSize = 12 });
+        GUILayout.Label("5 new quick-chat emotes - test which render coloured in the lobby.", new GUIStyle(GUI.skin.label) { fontSize = 10 });
+
+        // (label, rgb, quick-chat id) - 198/1913/1915 confirmed from ChocooMenu,
+        // 1916/1917 are the next sequential eggs for testing.
+        var tests = new (string label, Color rgb, int id)[]
+        {
+            ("A", new Color(0.4f, 0.9f, 0.4f), 198),
+            ("B", new Color(0.9f, 0.4f, 0.4f), 1913),
+            ("C", new Color(0.4f, 0.4f, 0.9f), 1915),
+            ("D", new Color(0.9f, 0.9f, 0.3f), 1916),
+            ("E", new Color(0.8f, 0.3f, 0.8f), 1917),
+        };
+
+        var prev = GUI.backgroundColor;
+        foreach (var t in tests)
+        {
+            GUI.backgroundColor = t.rgb;
+            if (GUILayout.Button(t.label, GUILayout.Width(60), GUILayout.Height(30)))
+                features.Troll.SendColouredChat(t.id);
+            GUI.backgroundColor = prev;
+            GUILayout.Space(3);
+        }
+        GUILayout.Space(5);
     }
 
     private static void DrawSpam()

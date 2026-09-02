@@ -111,5 +111,10 @@ namespace SkidMenu
                 PlayerControl.LocalPlayer.NetTransform.SnapTo(position);
             }
         }
+
+        public static void TeleportToLocal(Vector2 position)
+        {
+            PlayerControl.LocalPlayer.NetTransform.SnapTo(position);
+        }
     }
 }

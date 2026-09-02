@@ -17,6 +17,8 @@ public class VotekickTab : ITab
         GUILayout.Space(12);
         DrawMassVotekick();
         GUILayout.Space(12);
+        DrawRejoin();
+        GUILayout.Space(12);
         DrawPlayerList();
         GUILayout.Space(12);
         DrawInfo();
@@ -93,6 +95,39 @@ public class VotekickTab : ITab
             VotekickHandler.ResetTracking();
             VotekickHandler.VotekickAllNow();
         }
+        GUI.backgroundColor = prevBg;
+    }
+
+    private void DrawRejoin()
+    {
+        GUILayout.Label("Rejoin (leave lobby first)", GUIStylePreset.TabSubtitle);
+        GUILayout.Space(3);
+
+        float delay = VotekickHandler.RejoinDelay;
+        GUILayout.BeginHorizontal();
+        GUILayout.Label($"  Rejoin delay:  {delay:F1}s", GUILayout.Width(150));
+        float newDelay = Mathf.Round(GUILayout.HorizontalSlider(delay, 0f, 10f, GUILayout.Width(140)) * 10f) / 10f;
+        if (System.Math.Abs(newDelay - delay) > 0.05f) VotekickHandler.RejoinDelay = newDelay;
+        GUILayout.EndHorizontal();
+        GUI.color = new Color(0.65f, 0.65f, 0.65f);
+        GUILayout.Label("  Leaves the lobby first, waits for the menu, then rejoins last code.");
+        GUI.color = Color.white;
+
+        GUILayout.Space(5);
+
+        VotekickHandler.AutoRejoinEnabled      = GUIStylePreset.CustomToggle(VotekickHandler.AutoRejoinEnabled, " Auto-rejoin on disconnect");
+        VotekickHandler.AutoRejoinVotekickAll  = GUIStylePreset.CustomToggle(VotekickHandler.AutoRejoinVotekickAll, " Auto-rejoin after Votekick All");
+        VotekickHandler.AutoRejoinVotekickHost = GUIStylePreset.CustomToggle(VotekickHandler.AutoRejoinVotekickHost, " Auto-rejoin after Votekick Host");
+
+        GUILayout.Space(5);
+
+        var prevBg = GUI.backgroundColor;
+        GUI.backgroundColor = new Color(0.15f, 0.45f, 0.9f, 1f);
+        if (GUILayout.Button("VOTEKICK ALL + REJOIN", GUILayout.Height(32)))
+            VotekickHandler.VotekickAllAndRejoin();
+        GUI.backgroundColor = new Color(0.2f, 0.2f, 0.2f, 1f);
+        if (GUILayout.Button("REJOIN LAST GAME", GUILayout.Height(28)))
+            VotekickHandler.RejoinGame();
         GUI.backgroundColor = prevBg;
     }
 

@@ -32,6 +32,8 @@ public class ProtectionsTab : ITab
         Protections.Votekicks.Enabled = GUIStylePreset.CustomToggle(Protections.Votekicks.Enabled, "Prevent being votekicked as host");
         Protections.MemoryAllocationOverload.Enabled = GUIStylePreset.CustomToggle(Protections.MemoryAllocationOverload.Enabled, "Protect against VotingComplete overloads");
         Protections.BypassShapeshiftRatelimits.Enabled = GUIStylePreset.CustomToggle(Protections.BypassShapeshiftRatelimits.Enabled, "Bypass ratelimits for Shapeshift RPC");
+        Protections.AntiCrash.Enabled = GUIStylePreset.CustomToggle(Protections.AntiCrash.Enabled, "Protect against report-body crash exploit");
+        
 
         GUILayout.BeginHorizontal();
         Protections.AntiExploits = GUIStylePreset.CustomToggle(Protections.AntiExploits, "Anti-Exploits", GUILayout.Width(260));

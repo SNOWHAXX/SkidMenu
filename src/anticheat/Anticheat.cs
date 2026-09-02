@@ -26,7 +26,24 @@ namespace SkidMenu.anticheat
 			{ RpcCalls.CloseDoorsOfType, new CloseDoorsOfType() },
 			{ RpcCalls.ClimbLadder,      new ClimbLadder() },
 			{ RpcCalls.UpdateSystem,     new UpdateSystem() },
-			{ RpcCalls.SetLevel,         new SetLevel() }
+			{ RpcCalls.SetLevel,         new SetLevel() },
+			{ RpcCalls.MurderPlayer,     new MurderPlayer() },
+			{ RpcCalls.CheckMurder,      new CheckMurder() },
+			{ RpcCalls.CheckShapeshift,  new CheckShapeshift() },
+			{ RpcCalls.CheckVanish,      new CheckVanish() },
+			{ RpcCalls.CheckProtect,     new CheckProtect() },
+			{ RpcCalls.SetRole,          new SetRole() },
+			{ RpcCalls.SetTasks,         new SetTasks() },
+			{ RpcCalls.CloseMeeting,     new CloseMeeting() },
+			{ RpcCalls.ExtendLobbyTimer, new ExtendLobbyTimer() },
+			{ RpcCalls.SyncSettings,     new SyncSettings() },
+			{ RpcCalls.CastVote,         new CastVote() },
+			{ RpcCalls.ClearVote,        new ClearVote() },
+			{ RpcCalls.QueueOverruleVotes, new QueueOverruleVotes() },
+			{ RpcCalls.SnapTo,           new SnapTo() },
+			{ RpcCalls.UsePlatform,      new UsePlatform() },
+			{ RpcCalls.AddVote,          new AddVote() },
+			{ RpcCalls.VotingComplete,   new VotingComplete() }
 		};
 
 		public static bool CheckSpoofedPlatforms { get; set; } = true;
@@ -77,12 +94,28 @@ namespace SkidMenu.anticheat
 			}
 		}
 
+		[HarmonyPatch(typeof(VoteBanSystem), nameof(VoteBanSystem.HandleRpc))]
+		class OnVoteBanSystemRPC
+		{
+			static bool Prefix(byte callId, MessageReader reader)
+			{
+				// Votekick votes do not map to a specific PlayerControl, so we pass null
+				// and let the AddVote check resolve the source from the RPC payload itself
+				return HandleRpc(typeof(VoteBanSystem), null, (RpcCalls)callId, reader);
+			}
+		}
+
 		private static bool HandleRpc(Type sourceNetObj, PlayerControl player, RpcCalls rpc, MessageReader reader)
 		{
+			features.AdvancedLogger.Rpc(sourceNetObj?.Name ?? "?", rpc.ToString(), player?.Data?.PlayerName);
+
 			if (player != null && player.AmOwner) return true;
 
 			RpcHandlers.TryGetValue(rpc, out RpcCheck rpcCheck);
 			if (!Enabled || rpcCheck == null || !rpcCheck.Enabled) return true;
+
+			if (CheckInLobbyRpc(player, rpc)) return false;
+			if (CheckInGameplayCosmetics(player, rpc)) return false;
 
 			if (rpcCheck.GetExpectedNetObject() != sourceNetObj) return false;
 
@@ -106,6 +139,62 @@ namespace SkidMenu.anticheat
 			return false;
 		}
 
+		// Ported from GreaterAmongUs/BetterAmongUs: RPCs that are only ever valid during a live
+		// game are a guaranteed cheat when a non-host sends them from the lobby.
+		private static readonly HashSet<RpcCalls> GameOnlyRpcs = new HashSet<RpcCalls>
+		{
+			RpcCalls.CompleteTask, RpcCalls.MurderPlayer, RpcCalls.CheckMurder,
+			RpcCalls.ReportDeadBody, RpcCalls.StartMeeting, RpcCalls.Exiled,
+			RpcCalls.EnterVent, RpcCalls.ExitVent, RpcCalls.BootFromVent,
+			RpcCalls.ClimbLadder, RpcCalls.UsePlatform, RpcCalls.UseZipline,
+			RpcCalls.CloseDoorsOfType, RpcCalls.CloseMeeting, RpcCalls.CastVote,
+			RpcCalls.ClearVote, RpcCalls.SendChatNote, RpcCalls.SetRole, RpcCalls.SetTasks,
+			RpcCalls.CheckShapeshift, RpcCalls.Shapeshift, RpcCalls.RejectShapeshift,
+			RpcCalls.CheckProtect, RpcCalls.ProtectPlayer, RpcCalls.CheckAppear,
+			RpcCalls.StartAppear, RpcCalls.CheckVanish, RpcCalls.StartVanish,
+			RpcCalls.QueueOverruleVotes, RpcCalls.SetInfected, RpcCalls.TriggerSpores, RpcCalls.CheckSpore,
+			RpcCalls.CancelPet, RpcCalls.Pet, RpcCalls.ExtendLobbyTimer, RpcCalls.SyncSettings,
+			RpcCalls.LobbyTimeExpiring
+		};
+
+		private static bool CheckInLobbyRpc(PlayerControl player, RpcCalls rpc)
+		{
+			// Only applies while sitting in the lobby (not in a live game, not freeplay)
+			if (!Utils.isLobby) return false;
+			if (player == null || player.Data == null) return false;
+
+			if (GameOnlyRpcs.Contains(rpc))
+			{
+				Flag(player, $"{player.Data.PlayerName} sent the {rpc} RPC while in the lobby.");
+				return true;
+			}
+
+			return false;
+		}
+
+		// Ported from GreaterAmongUs/BetterAmongUs: cosmetic RPCs are legit layout choices, so a
+		// non-host firing them once the game is live is a strong cheat tell.
+		private static readonly HashSet<RpcCalls> GameplayCosmeticsRpcs = new HashSet<RpcCalls>
+		{
+			RpcCalls.SetColor, RpcCalls.SetHatStr, RpcCalls.SetSkinStr, RpcCalls.SetVisorStr,
+			RpcCalls.SetPetStr, RpcCalls.SetNamePlateStr, RpcCalls.CheckName, RpcCalls.CheckColor
+		};
+
+		private static bool CheckInGameplayCosmetics(PlayerControl player, RpcCalls rpc)
+		{
+			// Only applies during a live game outside the lobby
+			if (!Utils.isInGame || Utils.isLobby) return false;
+			if (player == null || player.Data == null) return false;
+
+			if (GameplayCosmeticsRpcs.Contains(rpc))
+			{
+				Flag(player, $"{player.Data.PlayerName} changed cosmetics ({rpc}) during gameplay.");
+				return true;
+			}
+
+			return false;
+		}
+
 		public static void Flag(PlayerControl player, string reason, bool shouldPunish = true)
 		{
 			if (player != null && player.AmOwner) return;
@@ -122,6 +211,13 @@ namespace SkidMenu.anticheat
 				else
 					NonHostPunish(player);
 			}
+		}
+
+		// For violations where we can not pin the blame on a specific player
+		public static void Flag(string reason)
+		{
+			if (sendNotification)
+				SkidMenu.notifications.Send("Anticheat", reason, NotificationDuration);
 		}
 
 		private static void HostPunish(PlayerControl player)

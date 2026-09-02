@@ -4,7 +4,7 @@ Host-side toolkit for running private Among Us lobbies. SkidMenu puts per-player
 
 **Created by SNOWHAXX**
 
- **Current version:** `1.3.4` (Stable)
+ **Current version:** `1.4.0` (Stable)
 
 ![SkidMenu in lobby](image%20in%20lobby.png)
 
@@ -48,24 +48,24 @@ The menu is split into the following tabs and features (this isn't a full list o
 
 - Movement: NoClip, Invert controls, Lag Compensation, Speed modifier, Current Speed Changer, Teleport (to cursor, to player, to map locations)
 - Self: Set color, Snipe Color, Rainbow, Body Type, Immortality, Invisibility, Load Info, Task animations, No Ladder cooldown, No Zipline cooldown, Unlimited meetings, Chat theme/Font customization
-- ESP: See Roles, Ghosts, Phantoms, Player info, Notifications, Votes, Lobby Info, No Shadows, Zoom, Freecam
-- Roles: Fake Roles, Fake Alive, Kill Aura/Reach, Tracking, Engineer, Sabotage, Instant Pet, Spam Pet, Break Pet Infinite Protect Range, Shapeshifter, Judge stuff
-- Players: Player targeted actions and Info, Teleport, Murder, Watch, Shapeshift, Copy Info, Protect, Save Info, Copy Player, Ban, Kick, Judge, Teleport to Vent, Frame, Immortal, Zip Down/Up
-- Ship: Doors Menu, Meetings, Body Reports, Fake Tasks, Unlock Vents, Sabotages
+- ESP: See Roles, Ghosts, Phantoms, Player info, Notifications, Votes, Lobby Info, No Shadows, Zoom, Freecam, Match info (role colour + detected mod names in the player info line)
+- Roles: Fake Roles, Fake Alive, Kill Aura/Reach, Tracking, Engineer, Sabotage, Instant Pet, Spam Pet, Break Pet Infinite Protect Range, Shapeshifter, Judge stuff, No Kill Checks (Kill Other Impostors / Kill While Vanished)
+- Players: Player targeted actions and Info, Teleport, Murder, Watch, Shapeshift, Copy Info, Protect, Save Info, Copy Player, Ban, Kick, Judge, Teleport to Vent, Frame, Immortal, Zip Down/Up, Rainbow Target (cycle a player's colour)
+- Ship: Doors Menu, Meetings, Body Reports, Fake Tasks, Unlock Vents, Sabotages, No Map cooldowns (ladders + ziplines)
 - Chat: Chat unlocks, Extended Chat, Chat History, Chat Windows, Copy Message, Chat sender (Manual Spam and Trigger based Messages on Join, Death, Meeting, Kill, and Ejection)
 - Animations: Task animations, Skip Shhh Animation, Skip Roles Reveal
 - Console: In game event log (kills, vents, phantom vanishes, shapeshifts, sabotages, sabotage fixes, cameras, vitals, binoculars, meetings, ejections, votes, votekicks, chat, disconnects, joins, messages, and more)
-- Host: Host only tools (Disable Sabotages, Meetings, Cameras, pre-game role forcing, live role forcing, Disco party, Kill all, Force Start, END Game, Vote Immune, Protect)
+- Host: Host only tools (Disable Sabotages, Meetings, Cameras, pre-game role forcing, live role forcing, Disco party, Kill all, Force Start, END Game, Vote Immune, Protect), God Mode, God Mode All, Auto-Angel (automatic Guardian Angel protect), Disable Close Doors, Queued Lobby Crash
 - Host Settings: Allows u to see, edit, save and load Host settings from ur lobby and different lobbies
 - AutoHost: Automatic Match Starting
 - Fun Ban Exploit: A single ban related exploit that can be used to ban SOME players while in-game.
 - Vent Kick Exploit: Better version of Fun Ban Exploit
 - Schizo/FakeSab: Fake Sabotage Spam (Doors and Reactor)
 - Passive: Anti-overload, Unlock features, Free Cosmetics, Penalty Avoidance, Auto Return After Match, Copy code on Disconnect
-- Troll: Troll stuff such as Disabling Vents, Door troller, Block Sabotages, Vent Teleporter, Auto Report Bodies and a Delay Setting for it, Zipline (per-player Down/Up, Select All, Down All, Up All)
-- Votekick: Votekick Players, Votekick all, Auto Votekick All, Crews, Imps, Host, Finish the Kick
-- Protections: client side hardening against malicious hosts and players (DTLS, overload protection, ladder validation, anti exploits, block forced ziplines, block forced vent teleports)
-- Anticheat: RPC validation, Blacklist, known mod detection, punishments, max level
+- Troll: Troll stuff such as Disabling Vents, Door troller, Block Sabotages, Vent Teleporter, Auto Report Bodies and a Delay Setting for it, Zipline (per-player Down/Up, Select All, Down All, Up All), Zipline Spam, Glitter Bomb (phantom colour spam), Auto Expose Impostors (teleport witnesses to a vent when an impostor acts), Coloured chat (send with a custom chat colour)
+- Votekick: Votekick Players, Votekick all, Auto Votekick All, Crews, Imps, Host, Finish the Kick, Votekick all + rejoin (auto-vote everyone, leave and rejoin the lobby), Auto-Rejoin on Votekick all / Votekick host
+- Protections: client side hardening against malicious hosts and players (DTLS, overload protection, ladder validation, anti exploits, block forced ziplines, block forced vent teleports, body-report anti-crash)
+- Anticheat: host-side RPC validation and spoof detection across the game surface (murder, shapeshift, vanish, protect, role/task set, votes, overruling votes, settings sync, snap-to, platform use, task completion, body reports, lobby timer, more), Blacklist, known mod detection (BetterAmongUs/GreaterAmongUs, Starlight, custom RPCs), punishments, max level
 - Spoofing: Spoof Level, Platform, Name, Randomizers
 - Lobby Finding: extended lobby list with filters for finding the right kind of lobby, community lobbies.
 - Modes: Streamer Mode

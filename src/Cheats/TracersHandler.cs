@@ -101,7 +101,7 @@ public static class TracersHandler
                 }
             }
 
-            Utils.DrawTracer(deadBody.gameObject, PlayerControl.LocalPlayer.gameObject, color, 0.07f);
+            Utils.DrawTracer(deadBody.gameObject, PlayerControl.LocalPlayer.gameObject, color, 0.02f);
         }
         catch { }
     }

@@ -1,5 +1,6 @@
 using UnityEngine;
 using SkidMenu.features;
+using System.Collections.Generic;
 
 namespace SkidMenu;
 
@@ -105,6 +106,10 @@ public class ChatTab : ITab
         int newMax = Mathf.RoundToInt(GUILayout.HorizontalSlider(CheatToggles.chatMaxEntries, 50, 2000, GUILayout.Width(150)));
         if (newMax != CheatToggles.chatMaxEntries) CheatToggles.chatMaxEntries = newMax;
         GUILayout.EndHorizontal();
+
+        GUILayout.Space(8);
+
+        DrawChatTheme();
 
         GUILayout.Space(8);
 
@@ -401,6 +406,160 @@ public class ChatTab : ITab
                 float lineW = GUI.skin.label.CalcSize(new GUIContent(currentLine)).x;
                 GUI.Label(new Rect(_msgRect.x + lineW + 8, _msgRect.y + 6 + lineNum * lineH, 10, lineH), "|");
             }
+        }
+    }
+
+    private void DrawChatTheme()
+    {
+        GUILayout.Label("Chat Theme", GUIStylePreset.TabSubtitle);
+
+        bool newDark = GUIStylePreset.CustomToggle(ChatTheme.DarkModeEnabled, " Dark Theme");
+        if (newDark != ChatTheme.DarkModeEnabled) ChatTheme.DarkModeEnabled = newDark;
+        if (ChatTheme.DarkModeEnabled)
+            DrawAlphaSlider("Dark Transparency", ref ChatTheme.DarkBgAlpha);
+
+        GUILayout.Space(4);
+
+        bool newCustom = GUIStylePreset.CustomToggle(ChatTheme.CustomEnabled, " Custom Theme");
+        if (newCustom != ChatTheme.CustomEnabled) ChatTheme.CustomEnabled = newCustom;
+        if (ChatTheme.CustomEnabled)
+        {
+            DrawThemeRow("BG", "#", ChatTheme.BgHex, ChatTheme.BgColor, v => ChatTheme.BgColor = v, "themeBg");
+            DrawThemeRow("Text", "#", ChatTheme.TextHex, ChatTheme.TextColor, v => ChatTheme.TextColor = v, "themeText");
+            DrawAlphaSlider("BG Transparency", ref ChatTheme.BgAlpha);
+            DrawAlphaSlider("Text Transparency", ref ChatTheme.TextAlpha);
+        }
+
+        GUILayout.Space(4);
+
+        bool newDead = GUIStylePreset.CustomToggle(ChatTheme.DeadCustomEnabled, " Dead Theme");
+        if (newDead != ChatTheme.DeadCustomEnabled) ChatTheme.DeadCustomEnabled = newDead;
+        if (ChatTheme.DeadCustomEnabled)
+        {
+            DrawThemeRow("Dead BG", "#", ChatTheme.DeadBgHex, ChatTheme.DeadBgColor, v => ChatTheme.DeadBgColor = v, "deadBg");
+            DrawThemeRow("Dead Text", "#", ChatTheme.DeadTextHex, ChatTheme.DeadTextColor, v => ChatTheme.DeadTextColor = v, "deadText");
+            DrawAlphaSlider("Dead BG Transparency", ref ChatTheme.DeadBgAlpha);
+            DrawAlphaSlider("Dead Text Transparency", ref ChatTheme.DeadTextAlpha);
+        }
+
+        GUILayout.Space(4);
+
+        bool newFont = GUIStylePreset.CustomToggle(ChatFontChanger.Enabled, " Change Chat Font");
+        if (newFont != ChatFontChanger.Enabled) ChatFontChanger.Enabled = newFont;
+        if (ChatFontChanger.Enabled)
+        {
+            GUILayout.Label($"  Font: {ChatFontChanger.FontNames[ChatFontChanger.FontType]}");
+            int newFontType = (int)GUILayout.HorizontalSlider(ChatFontChanger.FontType, 0, ChatFontChanger.FontNames.Length - 1);
+            if (newFontType != ChatFontChanger.FontType) ChatFontChanger.FontType = newFontType;
+        }
+    }
+
+    private void DrawAlphaSlider(string label, ref float value)
+    {
+        int pct = System.Math.Max(1, Mathf.RoundToInt(value * 100f));
+        GUILayout.BeginHorizontal();
+        GUILayout.Label($"{label}: {pct}%", GUILayout.Width(160));
+        float newVal = GUILayout.HorizontalSlider(pct, 1f, 100f, GUILayout.Width(150)) / 100f;
+        if (newVal != value) value = newVal;
+        GUILayout.EndHorizontal();
+    }
+
+    private readonly Dictionary<string, string> _themeHex = new();
+    private readonly Dictionary<string, bool> _themeHexFocused = new();
+    private readonly Dictionary<string, int> _themeHexCursor = new();
+    private readonly Dictionary<string, Rect> _themeHexRect = new();
+    private readonly Dictionary<string, bool> _themeHexCursorVisible = new();
+    private readonly Dictionary<string, float> _themeHexLastBlink = new();
+
+    private void DrawThemeRow(string label, string prefix, string hex, UnityEngine.Color color, System.Action<UnityEngine.Color> apply, string key)
+    {
+        if (!_themeHex.ContainsKey(key)) _themeHex[key] = hex;
+        if (!_themeHexFocused.ContainsKey(key)) _themeHexFocused[key] = false;
+        if (!_themeHexCursor.ContainsKey(key)) _themeHexCursor[key] = _themeHex[key].Length;
+        if (!_themeHexCursorVisible.ContainsKey(key)) _themeHexCursorVisible[key] = true;
+        if (!_themeHexLastBlink.ContainsKey(key)) _themeHexLastBlink[key] = 0f;
+        if (!_themeHexRect.ContainsKey(key)) _themeHexRect[key] = new Rect(0, 0, 0, 0);
+
+        GUILayout.BeginHorizontal();
+        try
+        {
+            string content = _themeHex[key];
+            var boxRect = _themeHexRect[key];
+
+            GUILayout.Label(label, GUILayout.Width(70));
+            GUILayout.Box("", GUIStylePreset.NormalTextField, GUILayout.Width(70), GUILayout.Height(20));
+
+            if (Event.current.type == EventType.Repaint)
+                _themeHexRect[key] = boxRect = GUILayoutUtility.GetLastRect();
+
+            if (Event.current.type == EventType.MouseDown)
+            {
+                bool hit = boxRect.Contains(Event.current.mousePosition);
+                if (hit != _themeHexFocused[key])
+                {
+                    _themeHexFocused[key] = hit;
+                    _themeHexCursor[key] = content.Length;
+                }
+                if (hit) Event.current.Use();
+            }
+
+            if (_themeHexFocused[key] && Event.current.type == EventType.KeyDown)
+            {
+                int cp = System.Math.Clamp(_themeHexCursor[key], 0, content.Length);
+                bool ctrl = Event.current.control || Event.current.command;
+
+                if (ctrl && Event.current.keyCode == KeyCode.C) { GUIUtility.systemCopyBuffer = content; Event.current.Use(); }
+                else if (ctrl && Event.current.keyCode == KeyCode.V)
+                {
+                    string clip = GUIUtility.systemCopyBuffer ?? "";
+                    var sb = new System.Text.StringBuilder();
+                    foreach (char c in clip) if (!char.IsControl(c)) sb.Append(c);
+                    clip = sb.ToString();
+                    int room = 6 - content.Length;
+                    if (room > 0 && clip.Length > 0)
+                    {
+                        clip = clip.Substring(0, System.Math.Min(clip.Length, room));
+                        content = content.Substring(0, cp) + clip + content.Substring(cp);
+                        cp = System.Math.Clamp(cp + clip.Length, 0, content.Length);
+                    }
+                    Event.current.Use();
+                }
+                else if (Event.current.keyCode == KeyCode.Backspace) { if (cp > 0) { content = content.Substring(0, cp - 1) + content.Substring(cp); cp--; } Event.current.Use(); }
+                else if (Event.current.keyCode == KeyCode.Delete) { if (cp < content.Length) content = content.Substring(0, cp) + content.Substring(cp + 1); Event.current.Use(); }
+                else if (Event.current.keyCode == KeyCode.LeftArrow) { if (cp > 0) cp--; Event.current.Use(); }
+                else if (Event.current.keyCode == KeyCode.RightArrow) { if (cp < content.Length) cp++; Event.current.Use(); }
+                else if (Event.current.keyCode == KeyCode.Home) { cp = 0; Event.current.Use(); }
+                else if (Event.current.keyCode == KeyCode.End) { cp = content.Length; Event.current.Use(); }
+                else if (Event.current.character != '\0' && !char.IsControl(Event.current.character) && content.Length < 6)
+                {
+                    content = content.Substring(0, cp) + Event.current.character + content.Substring(cp);
+                    cp++;
+                    Event.current.Use();
+                }
+
+                _themeHexCursor[key] = System.Math.Clamp(cp, 0, content.Length);
+                if (content.Length == 6 && ColorUtility.TryParseHtmlString("#" + content, out Color parsed))
+                    apply(parsed);
+                _themeHex[key] = content;
+            }
+
+            GUI.Label(new Rect(boxRect.x + 5, boxRect.y + 2, boxRect.width - 10, boxRect.height), content);
+
+            if (_themeHexFocused[key])
+            {
+                if (Time.time - _themeHexLastBlink[key] > BlinkRate) { _themeHexCursorVisible[key] = !_themeHexCursorVisible[key]; _themeHexLastBlink[key] = Time.time; }
+                if (_themeHexCursorVisible[key])
+                {
+                    int cp2 = System.Math.Clamp(_themeHexCursor[key], 0, content.Length);
+                    Vector2 sz = GUI.skin.label.CalcSize(new GUIContent(content.Substring(0, cp2)));
+                    GUI.Label(new Rect(boxRect.x + sz.x + 7, boxRect.y + 2, 10, boxRect.height - 4), "|");
+                }
+            }
+            GUI.Label(new Rect(boxRect.x + 76, boxRect.y + 2, 20, boxRect.height), prefix);
+        }
+        finally
+        {
+            GUILayout.EndHorizontal();
         }
     }
 }

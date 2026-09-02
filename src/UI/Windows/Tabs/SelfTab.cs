@@ -44,34 +44,10 @@ namespace SkidMenu
         public static float           LongBodyHeight    = 1f;
         public static PlayerBodyTypes _lastApplied     = (PlayerBodyTypes)(-1);
 
-        public static string BgHex   = "222222";
-        public static string TextHex = "FFFFFF";
-
-        private bool  _configInitialized = false;
-        private bool  _bgFocused         = false;
-        private bool  _textFocused       = false;
-        private Rect  _bgRect;
-        private Rect  _textRect;
-        private bool  _bgCursorVisible   = true;
-        private bool  _textCursorVisible = true;
-        private float _bgLastBlink       = 0f;
-        private float _textLastBlink     = 0f;
-        private int   _bgCursorPos       = 0;
-        private int   _textCursorPos     = 0;
-        private const float BlinkRate    = 0.5f;
-
-        private static readonly GUIStyle _richStyle = null;
-        private GUIStyle RichStyle => _richStyle ?? new GUIStyle(GUI.skin.label) { richText = true };
+        private GUIStyle RichStyle => new GUIStyle(GUI.skin.label) { richText = true };
 
         public void Draw()
         {
-            if (!_configInitialized)
-            {
-                BgHex   = SkidMenu.gameBgColorHex;
-                TextHex = SkidMenu.gameTextColorHex;
-                _configInitialized = true;
-            }
-
             GUILayout.BeginVertical(GUILayout.Width(MenuUI.windowWidth * 0.425f));
 
             // ── Status ───────────────────────────────────────────────────
@@ -219,36 +195,6 @@ namespace SkidMenu
 
             GUILayout.Space(8);
 
-            // ── Game Theme ───────────────────────────────────────────────
-            GUILayout.Label("Game Theme", GUIStylePreset.TabSubtitle);
-            bool newDark = GUIStylePreset.CustomToggle(DarkMode.Enabled, " Dark Game Theme");
-            if (newDark != DarkMode.Enabled) DarkMode.Enabled = newDark;
-
-            bool newCustom = GUIStylePreset.CustomToggle(CustomGameTheme.Enabled, " Custom Game Theme");
-            if (newCustom != CustomGameTheme.Enabled) CustomGameTheme.Enabled = newCustom;
-
-            if (CustomGameTheme.Enabled)
-            {
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("BG #", GUILayout.Width(32));
-                DrawHexField(ref BgHex, ref _bgFocused, ref _bgRect, ref _bgCursorVisible, ref _bgLastBlink, ref _bgCursorPos, true);
-                GUILayout.Space(10);
-                GUILayout.Label("Text #", GUILayout.Width(42));
-                DrawHexField(ref TextHex, ref _textFocused, ref _textRect, ref _textCursorVisible, ref _textLastBlink, ref _textCursorPos, false);
-                GUILayout.EndHorizontal();
-            }
-
-            bool newFont = GUIStylePreset.CustomToggle(ChatFontChanger.Enabled, " Change Chat Font");
-            if (newFont != ChatFontChanger.Enabled) ChatFontChanger.Enabled = newFont;
-            if (ChatFontChanger.Enabled)
-            {
-                GUILayout.Label($"  Font: {ChatFontChanger.FontNames[ChatFontChanger.FontType]}");
-                int newFontType = (int)GUILayout.HorizontalSlider(ChatFontChanger.FontType, 0, ChatFontChanger.FontNames.Length - 1);
-                if (newFontType != ChatFontChanger.FontType) ChatFontChanger.FontType = newFontType;
-            }
-
-            GUILayout.Space(8);
-
             // ── Task Animations ──────────────────────────────────────────
             GUILayout.Label("Task Animations", GUIStylePreset.TabSubtitle);
             GUILayout.BeginHorizontal();
@@ -268,6 +214,8 @@ namespace SkidMenu
             if (GUILayout.Button("Prime Shields"))
                 TaskAnim(!Utils.isLobby, () => Network.SendPlayAnimation((byte)TaskTypes.PrimeShields));
 
+            GUILayout.Space(8);
+
             GUILayout.EndVertical();
         }
 
@@ -277,80 +225,18 @@ namespace SkidMenu
             else SkidMenu.notifications.Send("Anticheat Notice", "Disabled in lobby. Use once the game starts.");
         }
 
-        private void DrawHexField(ref string hex, ref bool focused, ref Rect rect, ref bool cursorVisible, ref float lastBlink, ref int cursorPos, bool isBg)
-        {
-            GUILayout.Box("", GUIStylePreset.NormalTextField, GUILayout.Width(70), GUILayout.Height(20));
-
-            if (Event.current.type == EventType.Repaint)
-                rect = GUILayoutUtility.GetLastRect();
-
-            if (Event.current.type == EventType.MouseDown)
-            {
-                bool wasUnfocused = !focused;
-                focused = rect.Contains(Event.current.mousePosition);
-                if (focused) { if (wasUnfocused) cursorPos = hex.Length; Event.current.Use(); }
-            }
-
-            if (focused && Event.current.type == EventType.KeyDown)
-            {
-                cursorPos = System.Math.Clamp(cursorPos, 0, hex.Length);
-                bool ctrl = Event.current.control || Event.current.command;
-
-                if (ctrl && Event.current.keyCode == KeyCode.C) { GUIUtility.systemCopyBuffer = hex; Event.current.Use(); }
-                else if (ctrl && Event.current.keyCode == KeyCode.X) { GUIUtility.systemCopyBuffer = hex; hex = ""; cursorPos = 0; Event.current.Use(); }
-                else if (ctrl && Event.current.keyCode == KeyCode.V)
-                {
-                    string clip = GUIUtility.systemCopyBuffer ?? "";
-                    var sb = new System.Text.StringBuilder();
-                    foreach (char c in clip) if (!char.IsControl(c)) sb.Append(c);
-                    clip = sb.ToString();
-                    int room = 6 - hex.Length;
-                    if (room > 0) { clip = clip.Substring(0, System.Math.Min(clip.Length, room)); hex = hex.Substring(0, cursorPos) + clip + hex.Substring(cursorPos); cursorPos = System.Math.Clamp(cursorPos + clip.Length, 0, hex.Length); }
-                    Event.current.Use();
-                }
-                else if (ctrl && Event.current.keyCode == KeyCode.A) { GUIUtility.systemCopyBuffer = hex; cursorPos = hex.Length; Event.current.Use(); }
-                else if (Event.current.keyCode == KeyCode.Backspace) { if (cursorPos > 0) { hex = hex.Substring(0, cursorPos - 1) + hex.Substring(cursorPos); cursorPos--; } Event.current.Use(); }
-                else if (Event.current.keyCode == KeyCode.Delete) { if (cursorPos < hex.Length) hex = hex.Substring(0, cursorPos) + hex.Substring(cursorPos + 1); Event.current.Use(); }
-                else if (Event.current.keyCode == KeyCode.LeftArrow) { if (cursorPos > 0) cursorPos--; Event.current.Use(); }
-                else if (Event.current.keyCode == KeyCode.RightArrow) { if (cursorPos < hex.Length) cursorPos++; Event.current.Use(); }
-                else if (Event.current.keyCode == KeyCode.Home) { cursorPos = 0; Event.current.Use(); }
-                else if (Event.current.keyCode == KeyCode.End) { cursorPos = hex.Length; Event.current.Use(); }
-                else if (Event.current.character != '\0' && !char.IsControl(Event.current.character) && hex.Length < 6)
-                {
-                    hex = hex.Substring(0, cursorPos) + Event.current.character + hex.Substring(cursorPos);
-                    cursorPos++;
-                    Event.current.Use();
-                }
-
-                cursorPos = System.Math.Clamp(cursorPos, 0, hex.Length);
-                if (hex.Length == 6 && ColorUtility.TryParseHtmlString("#" + hex, out Color parsedColor))
-                {
-                    if (isBg) CustomGameTheme.BgColor = parsedColor;
-                    else      CustomGameTheme.TextColor = parsedColor;
-                }
-            }
-
-            GUI.Label(new Rect(rect.x + 5, rect.y + 2, rect.width - 10, rect.height), hex);
-
-            if (focused)
-            {
-                if (Time.time - lastBlink > BlinkRate) { cursorVisible = !cursorVisible; lastBlink = Time.time; }
-                if (cursorVisible)
-                {
-                    int cp = System.Math.Clamp(cursorPos, 0, hex.Length);
-                    Vector2 sz = GUI.skin.label.CalcSize(new GUIContent(hex.Substring(0, cp)));
-                    GUI.Label(new Rect(rect.x + sz.x + 7, rect.y + 2, 10, rect.height - 4), "|");
-                }
-            }
-        }
-
         private IEnumerator CompleteAllTasks()
         {
+            uint lastId = 0;
+            bool hasLast = false;
             foreach (PlayerTask task in PlayerControl.LocalPlayer.myTasks)
             {
                 if (task.IsComplete) continue;
+                if (hasLast && task.Id == lastId) continue;
                 PlayerControl.LocalPlayer.RpcCompleteTask(task.Id);
-                yield return Effects.Wait(0.40f);
+                lastId = task.Id;
+                hasLast = true;
+                yield return Effects.Wait(Utils.TaskCompleteSpacing);
             }
             SkidMenu.notifications.Send("Task Finisher", "All tasks finished.", 5);
         }

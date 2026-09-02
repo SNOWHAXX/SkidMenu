@@ -23,10 +23,11 @@ public class SpoofingTab : ITab
 
     private bool _initialized = false;
     private bool _platformExcludeOpen = false;
+    private static bool _spoofDropdownOpen = false;
 
     private static readonly string[] AllPlatforms = {
         "Unknown", "StandaloneEpicPC", "StandaloneSteamPC", "StandaloneMac",
-        "StandaloneWin10", "StandaloneItch", "IPhone", "Android", "Switch", "Xbox", "Playstation"
+        "StandaloneWin10", "StandaloneItch", "IPhone", "Android", "Switch", "Xbox", "Playstation", "Starlight"
     };
 
     private static HashSet<string> _excludedPlatforms = new();
@@ -67,6 +68,19 @@ public class SpoofingTab : ITab
         return _fullRandStyle;
     }
 
+    private GUIStyle RichStyle => new GUIStyle(GUI.skin.label) { richText = true };
+
+    private static bool TryParsePlatform(string input, out Platforms platform)
+    {
+        platform = Platforms.Unknown;
+        if (string.Equals(input, "Starlight", System.StringComparison.OrdinalIgnoreCase))
+        {
+            platform = (Platforms)112;
+            return true;
+        }
+        return System.Enum.TryParse<Platforms>(input, true, out platform);
+    }
+
     public void Draw()
     {
         if (!_initialized)
@@ -78,6 +92,8 @@ public class SpoofingTab : ITab
         GUILayout.BeginVertical(GUILayout.Width(MenuUI.windowWidth * 0.74f));
 
         DrawSpoofingSettings();
+        GUILayout.Space(15);
+        DrawSpoofIdentity();
         GUILayout.Space(15);
         DrawNameSpooferSettings();
         GUILayout.Space(15);
@@ -298,8 +314,8 @@ public class SpoofingTab : ITab
         if (GUILayout.Button("Save", GUILayout.Width(50)))
         {
             SkidMenu.spoofPlatform = _spoofPlatformInput;
-            if (Utils.StringToPlatformType(_spoofPlatformInput, out Platforms? savedPlatform))
-                features.Spoofer.spoofedPlatform = (Platforms)savedPlatform;
+            if (TryParsePlatform(_spoofPlatformInput, out Platforms savedPlatform))
+                features.Spoofer.spoofedPlatform = savedPlatform;
         }
         if (GUILayout.Button("Random", GUILayout.Width(60)))
         {
@@ -310,7 +326,7 @@ public class SpoofingTab : ITab
                 var picked = pool[UnityEngine.Random.Range(0, pool.Count)];
                 _spoofPlatformInput = picked;
                 SkidMenu.spoofPlatform = picked;
-                if (System.Enum.TryParse<Platforms>(picked, out var pickedPlatform))
+                if (TryParsePlatform(picked, out Platforms pickedPlatform))
                     features.Spoofer.spoofedPlatform = pickedPlatform;
             }
         }
@@ -395,6 +411,52 @@ public class SpoofingTab : ITab
 
         GUILayout.Space(5);
         GUILayout.Label("Supported Platforms: StandaloneEpicPC, StandaloneSteamPC, StandaloneMac, StandaloneWin10, etc.");
+    }
+
+    private void DrawSpoofIdentity()
+    {
+        GUILayout.Label("Spoof Identity", GUIStylePreset.TabSubtitle);
+        GUILayout.Space(3);
+
+        bool wasEnabled = anticheat.SpoofIdentity.Enabled;
+        anticheat.SpoofIdentity.Enabled = GUIStylePreset.CustomToggle(anticheat.SpoofIdentity.Enabled, " Spoof Menu Identity");
+        if (wasEnabled != anticheat.SpoofIdentity.Enabled)
+        {
+            anticheat.SpoofIdentity.TrackOwnUsage();
+            if (anticheat.SpoofIdentity.Enabled) anticheat.SpoofIdentity.Broadcast();
+        }
+
+        if (anticheat.SpoofIdentity.Enabled)
+        {
+            anticheat.SpoofIdentity.AutoBroadcast = GUIStylePreset.CustomToggle(anticheat.SpoofIdentity.AutoBroadcast, " Auto Broadcast Every 30s");
+            GUILayout.Space(4);
+            GUILayout.Label($"Impersonating: <color=#ffdd00>{anticheat.SpoofIdentity.Current.Name}</color>", RichStyle);
+            GUILayout.Label($"RPC ID: <color=#00ccff>{anticheat.SpoofIdentity.Current.RpcId}</color>", RichStyle);
+
+            if (GUILayout.Button(_spoofDropdownOpen ? "▲ Close Menu List" : "▼ Select Menu to Impersonate"))
+                _spoofDropdownOpen = !_spoofDropdownOpen;
+
+            if (_spoofDropdownOpen)
+            {
+                GUILayout.BeginVertical("box");
+                for (int i = 0; i < anticheat.SpoofIdentity.Menus.Count; i++)
+                {
+                    var entry = anticheat.SpoofIdentity.Menus[i];
+                    bool selected = anticheat.SpoofIdentity.SelectedIndex == i;
+                    if (GUILayout.Button((selected ? "● " : "  ") + entry.Name, GUIStylePreset.NormalButton))
+                    {
+                        anticheat.SpoofIdentity.SelectedIndex = i;
+                        _spoofDropdownOpen = false;
+                        anticheat.SpoofIdentity.TrackOwnUsage();
+                    }
+                }
+                GUILayout.EndVertical();
+            }
+
+            GUILayout.Space(4);
+            if (GUILayout.Button("Broadcast Now"))
+                anticheat.SpoofIdentity.Broadcast();
+        }
     }
 
     private static readonly string[] NameModeLabels =

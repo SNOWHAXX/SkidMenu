@@ -21,6 +21,9 @@ public static class VotekickHandler
     public static bool IgnoreOwnVotekicks = false;
     public static bool NotifyVotekickInfo = false;
     public static bool AutoRejoinEnabled = false;
+    public static bool AutoRejoinVotekickAll = false;
+    public static bool AutoRejoinVotekickHost = false;
+    public static float RejoinDelay = 1f;
     public static int SelectedTargetId = -1;
     public static int VoteCount = 3;
     public static float AutoKickInterval = 3f;
@@ -107,6 +110,18 @@ public static class VotekickHandler
         _staggerCoroutine = AmongUsClient.Instance.StartCoroutine(StaggerVotes(targets, false).WrapToIl2Cpp());
     }
 
+    // One-shot "vote everyone, then leave and rejoin". The stagger MUST finish before we
+    // exit, otherwise ExitGame nukes VoteBanSystem mid-vote and only the first target
+    // ever gets a vote.
+    public static void VotekickAllAndRejoin()
+    {
+        if (VoteBanSystem.Instance == null) return;
+        ResetTracking();
+        VotekickAllNow();
+        if (_staggerCoroutine != null && AmongUsClient.Instance != null)
+            AmongUsClient.Instance.StartCoroutine(RejoinAfterStagger().WrapToIl2Cpp());
+    }
+
     public static void VotekickAll()
     {
         if (!VotekickAllEnabled) return;
@@ -132,6 +147,16 @@ public static class VotekickHandler
         }
         if (targets.Count == 0) return;
         _staggerCoroutine = AmongUsClient.Instance.StartCoroutine(StaggerVotes(targets, true).WrapToIl2Cpp());
+        if (AutoRejoinVotekickAll)
+            AmongUsClient.Instance.StartCoroutine(RejoinAfterStagger().WrapToIl2Cpp());
+    }
+
+    private static IEnumerator RejoinAfterStagger()
+    {
+        while (_staggerCoroutine != null) yield return null;
+        // Tiny fixed buffer so the last votes register before we leave.
+        yield return new WaitForSeconds(0.25f);
+        RejoinGame();
     }
 
     private static IEnumerator StaggerVotes(List<int> targets, bool multi)
@@ -141,11 +166,8 @@ public static class VotekickHandler
             if (VoteBanSystem.Instance == null) break;
             int count = multi ? VoteCount : 1;
             for (int i = 0; i < count; i++)
-            {
                 VoteBanSystem.Instance.CmdAddVote(clientId);
-                yield return new WaitForSeconds(0.18f);
-            }
-            yield return new WaitForSeconds(0.2f);
+            yield return null;
         }
         _staggerCoroutine = null;
     }
@@ -187,6 +209,7 @@ public static class VotekickHandler
 
         string myName = PlayerControl.LocalPlayer?.Data?.DefaultOutfit?.PlayerName ?? "Me";
         int myClientId = AmongUsClient.Instance.ClientId;
+        bool hostVoted = false;
 
         try
         {
@@ -208,10 +231,21 @@ public static class VotekickHandler
 
                 if (!shouldKick) continue;
                 VoteBanSystem.Instance.CmdAddVote(clientId);
+                if (player.OwnerId == AmongUsClient.Instance.HostId) hostVoted = true;
                 if (!IgnoreOwnVotekicks) ShowInfo(myName, player.Data.DefaultOutfit.PlayerName);
             }
         }
         catch { }
+
+        if (AutoRejoinVotekickHost && hostVoted)
+            AmongUsClient.Instance?.StartCoroutine(RejoinAfterHostVote().WrapToIl2Cpp());
+    }
+
+    private static IEnumerator RejoinAfterHostVote()
+    {
+        // Small buffer so the host vote registers client-side before we leave.
+        yield return new WaitForSeconds(0.25f);
+        RejoinGame();
     }
 
     public static void CheckForNewPlayers()
@@ -244,20 +278,111 @@ public static class VotekickHandler
 
     public static void RejoinGame()
     {
-        if (_isRejoining || string.IsNullOrEmpty(LastGameCode)) return;
+        if (_isRejoining) return;
         if (AmongUsClient.Instance == null) return;
+        if (SkidMenu.menuUI == null) return;
+
+        // Always resolve the code from the live game id so this works whether
+        // we host or joined. GameId is a public int field on InnerNetClient and
+        // is populated the moment a room exists - no string callback needed.
+        int liveGameId = AmongUsClient.Instance.GameId;
+        string code = LastGameCode;
+        if (liveGameId != 0)
+        {
+            try { code = GameCode.IntToGameName(liveGameId); }
+            catch { }
+        }
+        if (string.IsNullOrEmpty(code))
+        {
+            SkidMenu.Log.LogMessage("[Rejoin] no game code available, cannot rejoin");
+            SkidMenu.notifications?.Send("Rejoin", "<color=#ff4444>No game code - cannot rejoin</color>", 4f);
+            return;
+        }
+        LastGameCode = code;
         _isRejoining = true;
-        AmongUsClient.Instance.StartCoroutine(RejoinCoroutine(LastGameCode));
+        // Host the coroutine on the persistent menu component, NOT on
+        // AmongUsClient. ExitGame destroys AmongUsClient and every coroutine it
+        // is running, which killed the rejoin at its first yield after we left.
+        // menuUI survives the exit, so the coroutine runs to the join.
+        SkidMenu.menuUI.StartCoroutine(RejoinCoroutine(code).WrapToIl2Cpp());
     }
 
     private static IEnumerator RejoinCoroutine(string code)
     {
-        if (AmongUsClient.Instance != null && AmongUsClient.Instance.IsGameStarted)
-            AmongUsClient.Instance.ExitGame(DisconnectReasons.ExitGame);
-        yield return new WaitForSeconds(2f);
-        yield return AmongUsClient.Instance.CoFindGameInfoFromCodeAndJoin(GameCode.GameNameToIntV2(code));
-        RejoinCount++;
-        _isRejoining = false;
+        try
+        {
+            if (AmongUsClient.Instance == null || string.IsNullOrEmpty(code)) yield break;
+
+            SkidMenu.notifications?.Send("Rejoin", $"Rejoining {code}...", 3f);
+
+            // 1) Leave the current game/lobby first if we are in one. The game
+            //    needs to fully drop the OnlineGame state before a new join.
+            //    We do NOT gate the join on the scene reaching a menu - after a
+            //    forced host exit the scene often stays on "OnlineGame" for a
+            //    long while, so we just wait a short fixed time and join anyway.
+            if (IsInGameOrLobby())
+            {
+                SkidMenu.Log.LogMessage($"[Rejoin] leaving current lobby to rejoin {code}");
+                AmongUsClient.Instance.ExitGame(DisconnectReasons.ExitGame);
+                // Just enough for the client to tear down OnlineGame state and
+                // start spawning the menu scene. Any longer is pure wasted time;
+                // CoJoinOnlineGameFromCode accumulates the join correctly even if
+                // the scene is still mid-transition.
+                yield return new WaitForSeconds(0.6f);
+            }
+            else
+            {
+                SkidMenu.Log.LogMessage($"[Rejoin] not in a game, joining {code} directly");
+                yield return null;
+            }
+
+            // 2) Join by the remembered code. Use the same coroutine the game's
+            //    own join-from-code button drives (CoJoinOnlineGameFromCode) and
+            //    poll the game state instead of trusting the nested enumerator.
+            int gameId;
+            try { gameId = GameCode.GameNameToIntV2(code); }
+            catch { gameId = 0; }
+            if (gameId == 0)
+            {
+                SkidMenu.Log.LogError($"[Rejoin] could not decode code {code}");
+                SkidMenu.notifications?.Send("Rejoin", "<color=#ff4444>Invalid code - cannot rejoin</color>", 4f);
+                _isRejoining = false;
+                yield break;
+            }
+
+            // Hand the join to the game's own coroutine engine exactly like the
+            // join-from-code button does. Host it on the persistent plugin
+            // component so it isn't killed if AmongUsClient gets recreated while
+            // the menu scene loads. OnGameJoined / OnDisconnected patches flip
+            // _isRejoining to end this routine.
+            SkidMenu.Log.LogMessage($"[Rejoin] firing join for {code}");
+            AmongUsClient.Instance.StartCoroutine(
+                AmongUsClient.Instance.CoJoinOnlineGameFromCode(gameId, true));
+
+            float settle = 0f;
+            while (_isRejoining && settle < 15f)
+            {
+                yield return null;
+                settle += Time.deltaTime;
+            }
+        }
+        finally
+        {
+            _isRejoining = false;
+        }
+    }
+
+    private static bool IsInGameOrLobby()
+    {
+        try
+        {
+            if (AmongUsClient.Instance == null) return false;
+            if (AmongUsClient.Instance.GameState != InnerNet.InnerNetClient.GameStates.NotJoined)
+                return true;
+            string scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+            return scene != "MainMenu" && scene != "MatchMaking";
+        }
+        catch { return false; }
     }
 
     [HarmonyPatch(typeof(AmongUsClient), nameof(AmongUsClient.OnGameJoined))]
@@ -265,12 +390,17 @@ public static class VotekickHandler
     {
         public static void Postfix(string gameIdString)
         {
-            LastGameCode = gameIdString ?? LastGameCode;
+            if (!string.IsNullOrEmpty(gameIdString)) LastGameCode = gameIdString;
             _votekickedIds.Clear();
             _knownPlayerIds.Clear();
             UniqueVoters.Clear();
             _autoKickTimer = 0f;
             _pendingFastKick = true;
+            if (_isRejoining)
+            {
+                RejoinCount++;
+                SkidMenu.notifications?.Send("Rejoin", "<color=#88ff88>Rejoined</color>", 3f);
+            }
             _isRejoining = false;
         }
     }
@@ -280,10 +410,16 @@ public static class VotekickHandler
     {
         public static void Postfix()
         {
-            if (!AutoRejoinEnabled || string.IsNullOrEmpty(LastGameCode) || _isRejoining) return;
+            if (!AutoRejoinEnabled || _isRejoining) return;
             if (AmongUsClient.Instance == null) return;
+
+            int liveGameId = AmongUsClient.Instance.GameId;
+            string code = liveGameId != 0 ? GameCode.IntToGameName(liveGameId) : LastGameCode;
+            if (string.IsNullOrEmpty(code)) return;
+            LastGameCode = code;
             _isRejoining = true;
-            AmongUsClient.Instance.StartCoroutine(RejoinCoroutine(LastGameCode));
+            if (SkidMenu.menuUI != null)
+                SkidMenu.menuUI.StartCoroutine(RejoinCoroutine(code).WrapToIl2Cpp());
         }
     }
 

@@ -25,6 +25,8 @@ public class MenuUI : MonoBehaviour
     private bool _wasInGameplay = false;
     private static Texture2D _overlayTex;
     private static bool _overlayLoaded = false;
+    private static string _cachedMenuKeyStr = "";
+    private static KeyCode _cachedMenuKey;
 
     private void Start()
     {
@@ -94,7 +96,13 @@ public class MenuUI : MonoBehaviour
     private void Update()
     {
 
-        if (Input.GetKeyDown(Utils.StringToKeycode(SkidMenu.menuKeybind)))
+        if (SkidMenu.menuKeybind != _cachedMenuKeyStr)
+        {
+            _cachedMenuKeyStr = SkidMenu.menuKeybind;
+            _cachedMenuKey   = Utils.StringToKeycode(SkidMenu.menuKeybind);
+        }
+
+        if (Input.GetKeyDown(_cachedMenuKey))
         {
             // Enable or disable GUI with DELETE key
             isGUIActive = !isGUIActive;

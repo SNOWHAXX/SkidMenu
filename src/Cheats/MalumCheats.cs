@@ -103,28 +103,45 @@ public static class MalumCheats
     {
         var player = PlayerControl.LocalPlayer;
         int count = player.myTasks.Count;
+        uint lastId = 0;
+        bool hasLast = false;
         for (int i = 0; i < count; i++)
         {
             var task = player.myTasks[i];
             if (task == null || task.IsComplete) continue;
+            if (hasLast && task.Id == lastId) continue;
             Utils.CompleteTask(task);
-            yield return Effects.Wait(0.40f);
+            lastId = task.Id;
+            hasLast = true;
+            yield return Effects.Wait(Utils.TaskCompleteSpacing);
         }
     }
 
     public static void CompleteAllTasksCheat()
     {
         if (!CheatToggles.completeAllTasks) return;
+        CheatToggles.completeAllTasks = false;
+        PlayerControl.LocalPlayer.StartCoroutine(CompleteAllTasksCoroutine().WrapToIl2Cpp());
+    }
 
+    public static System.Collections.IEnumerator CompleteAllTasksCoroutine()
+    {
         foreach (var player in PlayerControl.AllPlayerControls)
         {
-            foreach (var task in player.myTasks)
+            uint lastId = 0;
+            bool hasLast = false;
+            int count = player.myTasks.Count;
+            for (int i = 0; i < count; i++)
             {
+                var task = player.myTasks[i];
+                if (task == null || task.IsComplete) continue;
+                if (hasLast && task.Id == lastId) continue;
                 Utils.CompleteTask(player, task.Cast<PlayerTask>());
+                lastId = task.Id;
+                hasLast = true;
+                yield return Effects.Wait(Utils.TaskCompleteSpacing);
             }
         }
-
-        CheatToggles.completeAllTasks = false;
     }
 
     public static void OpenSabotageMapCheat()
@@ -248,7 +265,17 @@ public static class MalumCheats
         try
         {
             if (!CheatToggles.walkInVents) return;
-            PlayerControl.LocalPlayer.moveable = true;
+            var local = PlayerControl.LocalPlayer;
+            if (local == null) return;
+            if (local.inVent)
+            {
+                local.inVent = false;
+                local.moveable = true;
+            }
+            else
+            {
+                local.moveable = true;
+            }
         } catch { }
     }
 

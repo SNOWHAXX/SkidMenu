@@ -13,7 +13,7 @@ public static class PendingReportTeleport
         static void Prefix()
         {
             if (Position == null) return;
-            Teleporter.TeleportTo(Position.Value);
+            Teleporter.TeleportToLocal(Position.Value);
             Position = null;
         }
     }

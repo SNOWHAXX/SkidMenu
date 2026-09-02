@@ -78,9 +78,12 @@ namespace SkidMenu
 		public class BatchedMessage
 		{
 			public MessageWriter writer;
+			public int targetClientId;
+			public int msgCount = 0;
 
 			public BatchedMessage(int targetClientId = -1)
 			{
+				this.targetClientId = targetClientId;
 				writer = MessageWriter.Get(SendOption.Reliable);
 
 				if(targetClientId == -1)
@@ -380,9 +383,57 @@ namespace SkidMenu
 				writer.EndMessage();
 			}
 
+			public void QueueUpdateSystem(PlayerControl source, SystemTypes system, byte value)
+			{
+				writer.StartMessage((byte)GameDataTypes.RpcFlag);
+				writer.WritePacked(ShipStatus.Instance.NetId);
+				writer.Write((byte)RpcCalls.UpdateSystem);
+				writer.Write((byte)system);
+				writer.WriteNetObject(source);
+				writer.Write(value);
+				writer.EndMessage();
+				msgCount++;
+			}
+
+			public void QueueVanish(PlayerControl source)
+			{
+				if (targetClientId == -1 || targetClientId == AmongUsClient.Instance.ClientId)
+				{
+					source.SetRoleInvisibility(true, true, false);
+					source.HandleServerVanish();
+				}
+
+				writer.StartMessage((byte)GameDataTypes.RpcFlag);
+				writer.WritePacked(source.NetId);
+				writer.Write((byte)RpcCalls.StartVanish);
+				writer.EndMessage();
+				msgCount++;
+			}
+
+			public void QueueAppear(PlayerControl source, bool shouldAnimate = true)
+			{
+				if (targetClientId == -1 || targetClientId == AmongUsClient.Instance.ClientId)
+				{
+					source.HandleServerAppear(shouldAnimate);
+				}
+
+				writer.StartMessage((byte)GameDataTypes.RpcFlag);
+				writer.WritePacked(source.NetId);
+				writer.Write((byte)RpcCalls.StartAppear);
+				writer.Write(shouldAnimate);
+				writer.EndMessage();
+				msgCount++;
+			}
+
 			public void FinishBatch()
 			{
 				writer.EndMessage();
+
+				if (msgCount > AmongUsClient.Instance.GetMaxMessagePackingLimit())
+				{
+					SkidMenu.Log.LogMessage($"BatchedMessage has {msgCount} packed messages, which exceeds the packing limit of {AmongUsClient.Instance.GetMaxMessagePackingLimit()}!");
+				}
+
 				AmongUsClient.Instance.SendOrDisconnect(writer);
 				writer.Recycle();
 			}

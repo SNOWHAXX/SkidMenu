@@ -21,7 +21,7 @@ public class ESPTab : ITab
     private void DrawGeneral()
     {
         GUILayout.Label("Roles", GUIStylePreset.TabSubtitle);
-        CtxRow(" Show Role", ref CheatToggles.espShowRole, ref ESPContexts.ShowRole);
+        CtxRow(" Show Role", ref CheatToggles.espShowRole, ref ESPContexts.ShowRole, withSimple: true);
         if (CheatToggles.espShowRole)
         {
             CtxRow("   Kill Cooldown",        ref CheatToggles.espKillCooldown, ref ESPContexts.KillCooldown);
@@ -80,8 +80,12 @@ public class ESPTab : ITab
         NotifRow(ref CheatToggles.notifKillAttempt,     " Kill Attempt",      18);
         NotifRow(ref CheatToggles.notifEjections,       " Ejection",          19);
         NotifRow(ref CheatToggles.notifVerdict,         " Judge Verdict",     22);
+        NotifRow(ref CheatToggles.notifVerdictLive,     " Judge Gavel",       26);
         NotifRow(ref CheatToggles.notifSabotageFix,     " Sabotage Fix",      20);
         NotifRow(ref CheatToggles.notifGameOver,        " Round Start / Over",21);
+        NotifRow(ref CheatToggles.notifZipline,          " Zipline",          23);
+        NotifRow(ref CheatToggles.notifPlatform,         " Platform",         24);
+        NotifRow(ref CheatToggles.notifLadder,           " Ladder",           25);
 
         GUILayout.Label("  — Extra Info —", GUIStylePreset.ModernLabel);
         CheatToggles.notifCameras    = GUIStylePreset.CustomToggle(CheatToggles.notifCameras, " Notify Cameras / Vitals");
@@ -108,8 +112,9 @@ public class ESPTab : ITab
     private static readonly GUILayoutOption _w180 = GUILayout.Width(180);
     private static readonly GUILayoutOption _w35  = GUILayout.Width(35);
     private static readonly GUILayoutOption _w40  = GUILayout.Width(40);
+    private static readonly GUILayoutOption _w85  = GUILayout.Width(85);
 
-    private static void CtxRow(string label, ref bool toggle, ref byte ctx)
+    private static void CtxRow(string label, ref bool toggle, ref byte ctx, bool withSimple = false)
     {
         GUILayout.BeginHorizontal();
         toggle = GUIStylePreset.CustomToggle(toggle, label, _w160);
@@ -128,6 +133,8 @@ public class ESPTab : ITab
         if (nm != m) ctx = (byte)(nm ? ctx | ESPContexts.InMeeting : ctx & ~ESPContexts.InMeeting);
         if (nc != c) ctx = (byte)(nc ? ctx | ESPContexts.InChat    : ctx & ~ESPContexts.InChat);
         if (nd != d) ctx = (byte)(nd ? ctx | ESPContexts.InGuide   : ctx & ~ESPContexts.InGuide);
+        if (withSimple)
+            CheatToggles.espShowRoleSimple = GUIStylePreset.CustomToggle(CheatToggles.espShowRoleSimple, "Simple Role", _w85);
         GUILayout.EndHorizontal();
     }
 

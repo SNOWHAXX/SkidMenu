@@ -41,6 +41,10 @@ public class RolesTab : ITab
 
         GUILayout.Space(15);
 
+        DrawNoKillChecks();
+
+        GUILayout.Space(15);
+
         DrawShapeshifter();
 
         GUILayout.Space(15);
@@ -128,6 +132,18 @@ public class RolesTab : ITab
 
         CheatToggles.impostorTasks = GUIStylePreset.CustomToggle(CheatToggles.impostorTasks, " Allow Tasks");
         KillImpostors.Enabled      = GUIStylePreset.CustomToggle(KillImpostors.Enabled,      " Kill Other Impostors");
+    }
+
+    private void DrawNoKillChecks()
+    {
+        GUILayout.Label("No Kill Checks", GUIStylePreset.TabSubtitle);
+
+        NoKillChecks.Enabled = GUIStylePreset.CustomToggle(NoKillChecks.Enabled, "No Kill Checks");
+        if (NoKillChecks.Enabled)
+        {
+            NoKillChecks.KillOtherImpostors = GUIStylePreset.CustomToggle(NoKillChecks.KillOtherImpostors, "   Kill Other Impostors");
+            NoKillChecks.KillAsPhantom = GUIStylePreset.CustomToggle(NoKillChecks.KillAsPhantom, "   Kill While Vanished");
+        }
     }
 
     private void DrawShapeshifter()

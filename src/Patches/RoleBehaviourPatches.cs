@@ -60,8 +60,16 @@ public static class TrackerRole_FixedUpdate
 public static class PhantomRole_IsValidTarget
 {
     // Postfix patch of PhantomRole.IsValidTarget to allow killing while invisible
-    public static void Postfix(NetworkedPlayerInfo target, ref bool __result)
+    public static void Postfix(PhantomRole __instance, NetworkedPlayerInfo target, ref bool __result)
     {
+        if (target == null) return;
+
+        if (features.NoKillChecks.Enabled)
+        {
+            __result = features.NoKillChecks.IsValidTarget(target) && (!__instance.isInvisible || features.NoKillChecks.KillAsPhantom);
+            return;
+        }
+
         if (CheatToggles.killVanished)
         {
             __result = Utils.IsValidTarget(target);
@@ -76,9 +84,24 @@ public static class ImpostorRole_IsValidTarget
     // Allows killing ghosts (with seeGhosts), impostors, players in vents, etc...
     public static void Postfix(NetworkedPlayerInfo target, ref bool __result)
     {
+        if (target == null) return;
+
+        // NoKillChecks takes priority over all other kill target cheats
+        if (features.NoKillChecks.Enabled)
+        {
+            __result = features.NoKillChecks.IsValidTarget(target);
+            return;
+        }
+
         if (CheatToggles.killAnyone)
         {
-           __result = Utils.IsValidTarget(target);
+            __result = Utils.IsValidTarget(target);
+            return;
+        }
+
+        if (CheatToggles.killGhosts && !__result && !target.Disconnected && target.IsDead)
+        {
+            __result = true;
         }
     }
 }

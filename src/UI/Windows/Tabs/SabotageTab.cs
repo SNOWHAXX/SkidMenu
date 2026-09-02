@@ -63,6 +63,7 @@ public class SabotageTab : ITab
         CheatToggles.unlockVents = GUIStylePreset.CustomToggle(CheatToggles.unlockVents, " Unlock Vents");
         CheatToggles.kickVents   = GUIStylePreset.CustomToggle(CheatToggles.kickVents,   " Kick All From Vents");
         CheatToggles.walkInVents = GUIStylePreset.CustomToggle(CheatToggles.walkInVents, " Walk In Vents");
+        CheatToggles.noMapCooldowns = GUIStylePreset.CustomToggle(CheatToggles.noMapCooldowns, " No Map Cooldowns");
 
         GUILayout.Space(8);
         GUILayout.Label("Fungus", GUIStylePreset.TabSubtitle);

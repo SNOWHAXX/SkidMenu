@@ -19,6 +19,17 @@ public class KeybindListener : MonoBehaviour
     private const float HoldInterval   = 0.4f;
     private const float SpamInterval   = 0.05f;
 
+    // Cache reflected FieldInfo per toggle name to avoid per-press reflection lookups.
+    private static readonly System.Collections.Generic.Dictionary<string, System.Reflection.FieldInfo> _toggleFieldCache = new();
+
+    private static System.Reflection.FieldInfo GetToggleField(string name)
+    {
+        if (_toggleFieldCache.TryGetValue(name, out var fi)) return fi;
+        fi = CheatToggles.ToggleFields.TryGetValue(name, out var f) ? f : null;
+        _toggleFieldCache[name] = fi;
+        return fi;
+    }
+
     private static bool InGame => ShipStatus.Instance != null;
 
     public void Update()
@@ -31,13 +42,14 @@ public class KeybindListener : MonoBehaviour
         if (HudManager.InstanceExists && HudManager.Instance.Chat != null &&
             HudManager.Instance.Chat.IsOpenOrOpening) return;
 
-        if (Input.anyKeyDown)
+if (Input.anyKeyDown)
         {
             foreach (var (name, key) in CheatToggles.Keybinds)
             {
                 if (key == KeyCode.None) continue;
                 if (!Input.GetKeyDown(key)) continue;
-                if (!CheatToggles.ToggleFields.TryGetValue(name, out var field)) continue;
+                var field = GetToggleField(name);
+                if (field == null) continue;
                 field.SetValue(null, !(bool)field.GetValue(null));
             }
         }
@@ -116,7 +128,7 @@ public class KeybindListener : MonoBehaviour
             if (bodies == null || bodies.Length == 0) return;
             var body = bodies[Random.Range(0, bodies.Length)];
             if (body == null || !ViperBodies.CanReport(body)) return;
-            Teleporter.TeleportTo(body.transform.position);
+            Teleporter.TeleportToLocal(body.transform.position);
             PlayerControl.LocalPlayer.CmdReportDeadBody(GameData.Instance.GetPlayerById(body.ParentId));
         }
         catch { }
@@ -234,12 +246,17 @@ public class KeybindListener : MonoBehaviour
     {
         var player = PlayerControl.LocalPlayer;
         int count = player.myTasks.Count;
+        uint lastId = 0;
+        bool hasLast = false;
         for (int i = 0; i < count; i++)
         {
             var task = player.myTasks[i];
             if (task == null || task.IsComplete) continue;
+            if (hasLast && task.Id == lastId) continue;
             player.RpcCompleteTask(task.Id);
-            yield return Effects.Wait(0.40f);
+            lastId = task.Id;
+            hasLast = true;
+            yield return Effects.Wait(Utils.TaskCompleteSpacing);
         }
     }
 }

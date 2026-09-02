@@ -35,7 +35,7 @@ public partial class SkidMenu : BasePlugin
     public static StreamerUI streamerUI;
     public static KeybindListener keybindListener;
 
-    public static string hyperVersion = "1.3.4";
+    public static string hyperVersion = "1.4.0";
     public static string hyperBuild = "Stable";
     public static List<string> supportedAU = new List<string> { "2026.6.5", "2026.8.18" };
     public static List<string> toleratedAU = new List<string> { "2026.2.24", "2026.3.17", "2026.3.31" };
@@ -143,17 +143,21 @@ public partial class SkidMenu : BasePlugin
         anticheat.Blacklist.Load();
         AddComponent<features.AutoReturnAfterMatch>();
         AddComponent<ProtectionKeeper>();
+        AddComponent<features.HostProtection>();
+        AddComponent<features.RainbowTarget>();
         AddComponent<VentVisibilityKeeper>();
         features.MatchInfoEnhancer.Init();
 
-        DarkMode.Enabled         = darkGameTheme;
-        CustomGameTheme.Enabled  = customGameTheme;
-        ChatFontChanger.Enabled  = chatFont;
-        ChatFontChanger.FontType = chatFontType;
+        ChatTheme.DarkModeEnabled   = darkGameTheme;
+        ChatTheme.CustomEnabled     = customGameTheme;
+        ChatFontChanger.Enabled     = chatFont;
+        ChatFontChanger.FontType    = chatFontType;
         if (ColorUtility.TryParseHtmlString("#" + gameBgColorHex, out Color bgCol))
-            CustomGameTheme.BgColor = bgCol;
+            ChatTheme.BgColor = bgCol;
         if (ColorUtility.TryParseHtmlString("#" + gameTextColorHex, out Color textCol))
-            CustomGameTheme.TextColor = textCol;
+            ChatTheme.TextColor = textCol;
+        ChatTheme.BgHex   = gameBgColorHex;
+        ChatTheme.TextHex = gameTextColorHex;
 
         features.NameSpoofer.Mode         = (features.NameSpoofer.RandomizerMode)nameSpoofMode;
         features.NameSpoofer.RandomLength = nameSpoofLength;
@@ -248,6 +252,7 @@ public class FilteredConsoleLogListener : BepInEx.Logging.ILogListener
     public void LogEvent(object sender, BepInEx.Logging.LogEventArgs eventArgs)
     {
         if (eventArgs.Data?.ToString()?.Contains("modifying system") == true) return;
+        if (eventArgs.Data?.ToString()?.Contains("AbstractSaveData::TrySerializeAndEncrypt") == true) return;
         _inner.LogEvent(sender, eventArgs);
     }
 

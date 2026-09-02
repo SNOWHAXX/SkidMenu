@@ -34,6 +34,113 @@ public class HostSettingsTab : ITab
     private static volatile string _pendingLoadPath = null;
     private static volatile bool   _dialogRunning   = false;
 
+    private static string _editKey = "";
+    private static string _editBuffer = "";
+    private static System.Action<string> _editCommit = null;
+    private static bool _editCursor = true;
+    private static float _editCursorTimer = 0f;
+    private static int _lastInputFrame = -1;
+
+    private static GUIStyle _editBox;
+    private static GUIStyle EditBoxStyle
+    {
+        get
+        {
+            if (_editBox == null)
+                _editBox = new GUIStyle(GUI.skin.box)
+                {
+                    padding = new RectOffset { left = 4, right = 4, top = 2, bottom = 2 },
+                    alignment = UnityEngine.TextAnchor.MiddleLeft,
+                    fontSize = 12,
+                };
+            return _editBox;
+        }
+    }
+
+    private static void QueueEdit(string id, string current, System.Action<string> commit)
+    {
+        _editKey = id;
+        _editBuffer = current;
+        _editCommit = commit;
+        _editCursor = true;
+        _editCursorTimer = 0f;
+        _lastInputFrame = -1;
+        GUI.FocusControl(id);
+    }
+
+    // Render the value as a box (driven by commit on Enter/Esc, no GUILayout.TextField).
+    // Typed digits/./- and backspace are captured in CaptureEditInput (frame-guarded).
+    private static void EditValueBox(string id, string display, System.Action<string> commit, bool host, float width)
+    {
+        bool focused = _editKey == id;
+        var prev = GUI.backgroundColor;
+        GUI.backgroundColor = focused ? new Color(0.30f, 0.55f, 1f, 1f) : new Color(0.2f, 0.2f, 0.2f, 1f);
+
+        if (host && !focused)
+        {
+            if (GUILayout.Button(display, EditBoxStyle, GUILayout.Width(width), GUILayout.Height(22)))
+            {
+                if (!string.IsNullOrEmpty(_editKey) && _editKey != id) CommitPendingEdit();
+                QueueEdit(id, display, commit);
+            }
+        }
+        else
+        {
+            string shown = focused ? (string.IsNullOrEmpty(_editBuffer) ? " " : _editBuffer + (_editCursor ? "|" : "")) : display;
+            GUILayout.Box(shown, EditBoxStyle, GUILayout.Width(width), GUILayout.Height(22));
+            if (focused) CaptureEditInput();
+        }
+        GUI.backgroundColor = prev;
+    }
+
+    // Frame-guarded keystroke capture. Digits, '.', '-' accepted; backspace deletes;
+    // Enter/KeypadEnter commits; Esc commits-and-clears (matches chocoo).
+    private static void CaptureEditInput()
+    {
+        if (_lastInputFrame == Time.frameCount) return;
+        _lastInputFrame = Time.frameCount;
+
+        _editCursorTimer += Time.unscaledDeltaTime;
+        if (_editCursorTimer >= 0.5f) { _editCursor = !_editCursor; _editCursorTimer = 0f; }
+
+        if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
+            CommitPendingEdit();
+        else if (Input.GetKeyDown(KeyCode.Escape))
+            CommitPendingEdit();
+        else
+        {
+            if (Input.GetKeyDown(KeyCode.Backspace) && _editBuffer.Length > 0)
+                _editBuffer = _editBuffer.Substring(0, _editBuffer.Length - 1);
+            foreach (char c in Input.inputString)
+            {
+                if ((c >= '0' && c <= '9') || c == '.' || c == '-')
+                    if (_editBuffer.Length < 10) _editBuffer += c;
+            }
+        }
+    }
+
+    private static void CommitPendingEdit()
+    {
+        if (_editCommit != null)
+        {
+            try { _editCommit(_editBuffer); } catch { }
+        }
+        _editCommit = null;
+        _editKey = "";
+        _editBuffer = "";
+        GUI.FocusControl(null);
+    }
+
+    private static void CommitFloat(string id, float step, System.Action<float> set)
+    {
+        if (float.TryParse(_editBuffer, out float v)) set(Mathf.Round(v * 10f) / 10f);
+    }
+
+    private static void CommitInt(string id, int min, int max, System.Action<int> set)
+    {
+        if (int.TryParse(_editBuffer, out int v)) set(System.Math.Clamp(v, min, max));
+    }
+
     private static string ShowSaveDialog()
     {
         try
@@ -105,55 +212,72 @@ public class HostSettingsTab : ITab
         if (Opts == null) return;
         try
         {
+            float F(FloatOptionNames o) => _floats.TryGetValue(o, out var f) ? f : 0f;
+            int I(Int32OptionNames o) => _ints.TryGetValue(o, out var i) ? i : 0;
+            bool B(BoolOptionNames o) => _bools.TryGetValue(o, out var b) && b;
+
             var lines = new List<string>
             {
-                $"MapId={(int)Opts.GetByte(ByteOptionNames.MapId)}",
-                $"NumImpostors={Opts.GetInt(Int32OptionNames.NumImpostors)}",
-                $"PlayerSpeedMod={Opts.GetFloat(FloatOptionNames.PlayerSpeedMod)}",
-                $"CrewLightMod={Opts.GetFloat(FloatOptionNames.CrewLightMod)}",
-                $"ImpostorLightMod={Opts.GetFloat(FloatOptionNames.ImpostorLightMod)}",
-                $"KillCooldown={Opts.GetFloat(FloatOptionNames.KillCooldown)}",
-                $"KillDistance={Opts.GetInt(Int32OptionNames.KillDistance)}",
-                $"ConfirmImpostor={Opts.GetBool(BoolOptionNames.ConfirmImpostor)}",
-                $"VisualTasks={Opts.GetBool(BoolOptionNames.VisualTasks)}",
-                $"AnonymousVotes={Opts.GetBool(BoolOptionNames.AnonymousVotes)}",
-                $"TaskBarMode={Opts.GetInt(Int32OptionNames.TaskBarMode)}",
-                $"DiscussionTime={Opts.GetInt(Int32OptionNames.DiscussionTime)}",
-                $"VotingTime={Opts.GetInt(Int32OptionNames.VotingTime)}",
-                $"NumEmergencyMeetings={Opts.GetInt(Int32OptionNames.NumEmergencyMeetings)}",
-                $"EmergencyCooldown={Opts.GetInt(Int32OptionNames.EmergencyCooldown)}",
-                $"NumCommonTasks={Opts.GetInt(Int32OptionNames.NumCommonTasks)}",
-                $"NumLongTasks={Opts.GetInt(Int32OptionNames.NumLongTasks)}",
-                $"NumShortTasks={Opts.GetInt(Int32OptionNames.NumShortTasks)}",
-                $"ShapeshifterCooldown={Opts.GetFloat(FloatOptionNames.ShapeshifterCooldown)}",
-                $"ShapeshifterDuration={Opts.GetFloat(FloatOptionNames.ShapeshifterDuration)}",
-                $"ShapeshifterLeaveSkin={Opts.GetBool(BoolOptionNames.ShapeshifterLeaveSkin)}",
-                $"ScientistCooldown={Opts.GetFloat(FloatOptionNames.ScientistCooldown)}",
-                $"ScientistBatteryCharge={Opts.GetFloat(FloatOptionNames.ScientistBatteryCharge)}",
-                $"EngineerCooldown={Opts.GetFloat(FloatOptionNames.EngineerCooldown)}",
-                $"EngineerInVentMaxTime={Opts.GetFloat(FloatOptionNames.EngineerInVentMaxTime)}",
-                $"GuardianAngelCooldown={Opts.GetFloat(FloatOptionNames.GuardianAngelCooldown)}",
-                $"ProtectionDurationSeconds={Opts.GetFloat(FloatOptionNames.ProtectionDurationSeconds)}",
-                $"ImpostorsCanSeeProtect={Opts.GetBool(BoolOptionNames.ImpostorsCanSeeProtect)}",
-                $"PhantomCooldown={Opts.GetFloat(FloatOptionNames.PhantomCooldown)}",
-                $"PhantomDuration={Opts.GetFloat(FloatOptionNames.PhantomDuration)}",
+                $"MapId={_mapId}",
+                $"NumImpostors={I(Int32OptionNames.NumImpostors)}",
+                $"PlayerSpeedMod={F(FloatOptionNames.PlayerSpeedMod)}",
+                $"CrewLightMod={F(FloatOptionNames.CrewLightMod)}",
+                $"ImpostorLightMod={F(FloatOptionNames.ImpostorLightMod)}",
+                $"KillCooldown={F(FloatOptionNames.KillCooldown)}",
+                $"KillDistance={I(Int32OptionNames.KillDistance)}",
+                $"ConfirmImpostor={B(BoolOptionNames.ConfirmImpostor)}",
+                $"VisualTasks={B(BoolOptionNames.VisualTasks)}",
+                $"AnonymousVotes={B(BoolOptionNames.AnonymousVotes)}",
+                $"TaskBarMode={I(Int32OptionNames.TaskBarMode)}",
+                $"DiscussionTime={I(Int32OptionNames.DiscussionTime)}",
+                $"VotingTime={I(Int32OptionNames.VotingTime)}",
+                $"NumEmergencyMeetings={I(Int32OptionNames.NumEmergencyMeetings)}",
+                $"EmergencyCooldown={I(Int32OptionNames.EmergencyCooldown)}",
+                $"NumCommonTasks={I(Int32OptionNames.NumCommonTasks)}",
+                $"NumLongTasks={I(Int32OptionNames.NumLongTasks)}",
+                $"NumShortTasks={I(Int32OptionNames.NumShortTasks)}",
+                $"ShapeshifterCooldown={F(FloatOptionNames.ShapeshifterCooldown)}",
+                $"ShapeshifterDuration={F(FloatOptionNames.ShapeshifterDuration)}",
+                $"ShapeshifterLeaveSkin={B(BoolOptionNames.ShapeshifterLeaveSkin)}",
+                $"ScientistCooldown={F(FloatOptionNames.ScientistCooldown)}",
+                $"ScientistBatteryCharge={F(FloatOptionNames.ScientistBatteryCharge)}",
+                $"EngineerCooldown={F(FloatOptionNames.EngineerCooldown)}",
+                $"EngineerInVentMaxTime={F(FloatOptionNames.EngineerInVentMaxTime)}",
+                $"GuardianAngelCooldown={F(FloatOptionNames.GuardianAngelCooldown)}",
+                $"ProtectionDurationSeconds={F(FloatOptionNames.ProtectionDurationSeconds)}",
+                $"ImpostorsCanSeeProtect={B(BoolOptionNames.ImpostorsCanSeeProtect)}",
+                $"PhantomCooldown={F(FloatOptionNames.PhantomCooldown)}",
+                $"PhantomDuration={F(FloatOptionNames.PhantomDuration)}",
             };
-            lines.Add($"TrackerCooldown={Opts.GetFloat(FloatOptionNames.TrackerCooldown)}");
-            lines.Add($"TrackerDuration={Opts.GetFloat(FloatOptionNames.TrackerDuration)}");
-            lines.Add($"TrackerDelay={Opts.GetFloat(FloatOptionNames.TrackerDelay)}");
-            lines.Add($"NoisemakerAlertDuration={Opts.GetFloat(FloatOptionNames.NoisemakerAlertDuration)}");
-            lines.Add($"NoisemakerImpostorAlert={Opts.GetBool(BoolOptionNames.NoisemakerImpostorAlert)}");
-            lines.Add($"ViperDissolveTime={Opts.GetFloat(FloatOptionNames.ViperDissolveTime)}");
-            lines.Add($"DetectiveSuspectLimit={Opts.GetFloat(FloatOptionNames.DetectiveSuspectLimit)}");
-            lines.Add($"JudgeTaskUnlockPct={Opts.GetFloat(FloatOptionNames.JudgeTaskRequirementPercentage)}");
-            if (Roles != null)
-                foreach (RoleTypes role in new[] { RoleTypes.Scientist, RoleTypes.Engineer, RoleTypes.GuardianAngel,
-                    RoleTypes.Shapeshifter, RoleTypes.Noisemaker, RoleTypes.Tracker,
-                    RoleTypes.Phantom, RoleTypes.Viper, RoleTypes.Detective, RoleTypes.Judge })
-                {
-                    lines.Add($"Role_{role}_Chance={Roles.GetChancePerGame(role)}");
-                    lines.Add($"Role_{role}_Count={Roles.GetNumPerGame(role)}");
-                }
+            lines.Add($"TrackerCooldown={F(FloatOptionNames.TrackerCooldown)}");
+            lines.Add($"TrackerDuration={F(FloatOptionNames.TrackerDuration)}");
+            lines.Add($"TrackerDelay={F(FloatOptionNames.TrackerDelay)}");
+            lines.Add($"NoisemakerAlertDuration={F(FloatOptionNames.NoisemakerAlertDuration)}");
+            lines.Add($"NoisemakerImpostorAlert={B(BoolOptionNames.NoisemakerImpostorAlert)}");
+            lines.Add($"ViperDissolveTime={F(FloatOptionNames.ViperDissolveTime)}");
+            lines.Add($"DetectiveSuspectLimit={F(FloatOptionNames.DetectiveSuspectLimit)}");
+            lines.Add($"JudgeTaskUnlockPct={F(FloatOptionNames.JudgeTaskRequirementPercentage)}");
+            foreach (var kv in _roles)
+            {
+                lines.Add($"Role_{kv.Key}_Chance={kv.Value.chance}");
+                lines.Add($"Role_{kv.Key}_Count={kv.Value.count}");
+            }
+            if (HnS != null)
+            {
+                lines.Add($"HnS_CrewmateVentUses={HnS.CrewmateVentUses}");
+                lines.Add($"HnS_CrewmateTimeInVent={HnS.CrewmateTimeInVent}");
+                lines.Add($"HnS_EscapeTime={HnS.EscapeTime}");
+                lines.Add($"HnS_FinalCountdownTime={HnS.FinalCountdownTime}");
+                lines.Add($"HnS_CrewmateFlashlightSize={HnS.CrewmateFlashlightSize}");
+                lines.Add($"HnS_ImpostorFlashlightSize={HnS.ImpostorFlashlightSize}");
+                lines.Add($"HnS_SeekerFinalSpeed={HnS.SeekerFinalSpeed}");
+                lines.Add($"HnS_MaxPingTime={HnS.MaxPingTime}");
+                lines.Add($"HnS_UseFlashlight={HnS.useFlashlight}");
+                lines.Add($"HnS_SeekerFinalMap={HnS.SeekerFinalMap}");
+                lines.Add($"HnS_ShowCrewmateNames={HnS.ShowCrewmateNames}");
+                lines.Add($"HnS_SeekerPings={HnS.SeekerPings}");
+                lines.Add($"HnS_GhostsDoTasks={HnS.GhostsDoTasks}");
+            }
             File.WriteAllLines(path, lines);
         }
         catch { }
@@ -210,6 +334,26 @@ public class HostSettingsTab : ITab
                     if (k == "ViperDissolveTime")         { Opts.SetFloat(FloatOptionNames.ViperDissolveTime, float.Parse(v)); continue; }
                     if (k == "DetectiveSuspectLimit")     { Opts.SetFloat(FloatOptionNames.DetectiveSuspectLimit, float.Parse(v)); continue; }
                     if (k == "JudgeTaskUnlockPct")        { Opts.SetFloat(FloatOptionNames.JudgeTaskRequirementPercentage, float.Parse(v)); continue; }
+                    if (HnS != null && k.StartsWith("HnS_"))
+                    {
+                        switch (k)
+                        {
+                            case "HnS_CrewmateVentUses":       HnS.CrewmateVentUses = int.Parse(v); continue;
+                            case "HnS_CrewmateTimeInVent":     HnS.CrewmateTimeInVent = float.Parse(v); continue;
+                            case "HnS_EscapeTime":             HnS.EscapeTime = float.Parse(v); continue;
+                            case "HnS_FinalCountdownTime":     HnS.FinalCountdownTime = float.Parse(v); continue;
+                            case "HnS_CrewmateFlashlightSize": HnS.CrewmateFlashlightSize = float.Parse(v); continue;
+                            case "HnS_ImpostorFlashlightSize": HnS.ImpostorFlashlightSize = float.Parse(v); continue;
+                            case "HnS_SeekerFinalSpeed":       HnS.SeekerFinalSpeed = float.Parse(v); continue;
+                            case "HnS_MaxPingTime":            HnS.MaxPingTime = float.Parse(v); continue;
+                            case "HnS_UseFlashlight":          HnS.useFlashlight = bool.Parse(v); continue;
+                            case "HnS_SeekerFinalMap":         HnS.SeekerFinalMap = bool.Parse(v); continue;
+                            case "HnS_ShowCrewmateNames":      HnS.ShowCrewmateNames = bool.Parse(v); continue;
+                            case "HnS_SeekerPings":            HnS.SeekerPings = bool.Parse(v); continue;
+                            case "HnS_GhostsDoTasks":          HnS.GhostsDoTasks = bool.Parse(v); continue;
+                        }
+                        continue;
+                    }
                     if (k.StartsWith("Role_") && Roles != null)
                     {
                         var parts = k.Split('_');
@@ -222,6 +366,9 @@ public class HostSettingsTab : ITab
                 }
                 catch { }
             }
+            Sync();
+            _shadowInit = false;
+            InitShadow();
         }
         catch { }
     }
@@ -304,9 +451,10 @@ public class HostSettingsTab : ITab
         GUILayout.Label(label, GUILayout.Width(180));
         if (host)
         {
-            if (GUILayout.Button("-", StepBtn, GUILayout.Width(26))) _floats[opt] = Mathf.Round((val - step) * 10f) / 10f;
-            GUILayout.Label($"{val:F1}", GUILayout.Width(50));
-            if (GUILayout.Button("+", StepBtn, GUILayout.Width(26))) _floats[opt] = Mathf.Round((val + step) * 10f) / 10f;
+            float cur = val;
+            if (GUILayout.Button("-", StepBtn, GUILayout.Width(26))) _floats[opt] = Mathf.Round((cur - step) * 10f) / 10f;
+            EditValueBox("F_" + label, $"{cur:F1}", b => CommitFloat("F_" + label, step, v => { _floats[opt] = v; Sync(); }), host, 50);
+            if (GUILayout.Button("+", StepBtn, GUILayout.Width(26))) _floats[opt] = Mathf.Round((cur + step) * 10f) / 10f;
         }
         else GUILayout.Label($"{val:F1}", GUILayout.Width(50));
         GUILayout.EndHorizontal();
@@ -319,9 +467,10 @@ public class HostSettingsTab : ITab
         GUILayout.Label(label, GUILayout.Width(180));
         if (host)
         {
-            if (GUILayout.Button("-", StepBtn, GUILayout.Width(26))) _ints[opt] = System.Math.Clamp(val - 1, min, max);
-            GUILayout.Label($"{val}", GUILayout.Width(50));
-            if (GUILayout.Button("+", StepBtn, GUILayout.Width(26))) _ints[opt] = System.Math.Clamp(val + 1, min, max);
+            int cur = val;
+            if (GUILayout.Button("-", StepBtn, GUILayout.Width(26))) _ints[opt] = System.Math.Clamp(cur - 1, min, max);
+            EditValueBox("I_" + label, $"{cur}", b => CommitInt("I_" + label, min, max, v => { _ints[opt] = v; Sync(); }), host, 50);
+            if (GUILayout.Button("+", StepBtn, GUILayout.Width(26))) _ints[opt] = System.Math.Clamp(cur + 1, min, max);
         }
         else GUILayout.Label($"{val}", GUILayout.Width(50));
         GUILayout.EndHorizontal();
@@ -335,9 +484,10 @@ public class HostSettingsTab : ITab
         GUILayout.Label(label, GUILayout.Width(180));
         if (host)
         {
-            if (GUILayout.Button("-", StepBtn, GUILayout.Width(26))) _ints[opt] = System.Math.Clamp(val - 1, 0, labels.Length - 1);
-            GUILayout.Label(display, GUILayout.Width(60));
-            if (GUILayout.Button("+", StepBtn, GUILayout.Width(26))) _ints[opt] = System.Math.Clamp(val + 1, 0, labels.Length - 1);
+            int cur = val;
+            if (GUILayout.Button("-", StepBtn, GUILayout.Width(26))) _ints[opt] = System.Math.Clamp(cur - 1, 0, labels.Length - 1);
+            GUILayout.Label(display, GUILayout.Width(60), GUILayout.Height(22));
+            if (GUILayout.Button("+", StepBtn, GUILayout.Width(26))) _ints[opt] = System.Math.Clamp(cur + 1, 0, labels.Length - 1);
         }
         else GUILayout.Label(display, GUILayout.Width(60));
         GUILayout.EndHorizontal();
@@ -361,12 +511,12 @@ public class HostSettingsTab : ITab
         GUILayout.Label($"{label}:", GUILayout.Width(130));
         GUILayout.Label("Chance:", GUILayout.Width(55));
         if (host && GUILayout.Button("-", StepBtn, GUILayout.Width(26))) _roles[role] = (System.Math.Clamp(chance - 1, 0, 100), count);
-        GUILayout.Label($"{chance}%", GUILayout.Width(35));
+        EditValueBox("R_" + label + "_C", $"{chance}%", b => CommitInt("R_" + label + "_C", 0, 100, v => { _roles[role] = (v, _roles.TryGetValue(role, out var rv2) ? rv2.count : count); Sync(); }), host, 40);
         if (host && GUILayout.Button("+", StepBtn, GUILayout.Width(26))) _roles[role] = (System.Math.Clamp(chance + 1, 0, 100), count);
         GUILayout.Space(10);
         GUILayout.Label("Count:", GUILayout.Width(45));
         if (host && GUILayout.Button("-", StepBtn, GUILayout.Width(26))) _roles[role] = (chance, System.Math.Clamp(count - 1, 0, 9999));
-        GUILayout.Label($"{count}", GUILayout.Width(25));
+        EditValueBox("R_" + label + "_N", $"{count}", b => CommitInt("R_" + label + "_N", 0, 9999, v => { _roles[role] = (_roles.TryGetValue(role, out var rv3) ? rv3.chance : chance, v); Sync(); }), host, 30);
         if (host && GUILayout.Button("+", StepBtn, GUILayout.Width(26))) _roles[role] = (chance, System.Math.Clamp(count + 1, 0, 9999));
         GUILayout.EndHorizontal();
     }
@@ -375,6 +525,75 @@ public class HostSettingsTab : ITab
         ("Skeld",   0), ("Mira",    1), ("Polus",   2),
         ("Airship", 4), ("Fungus",  5),
     };
+
+    private static bool IsHnS =>
+        GameOptionsManager.Instance != null &&
+        GameOptionsManager.Instance.currentGameMode == GameModes.HideNSeek;
+
+    private static HideNSeekGameOptionsV11 HnS =>
+        GameOptionsManager.Instance?.currentHideNSeekGameOptions;
+
+    private static void HnSFloatRow(string label, System.Func<float> get, System.Action<float> set, float step, bool host)
+    {
+        float val = get();
+        GUILayout.BeginHorizontal();
+        GUILayout.Label(label, GUILayout.Width(180));
+        if (host)
+        {
+            if (GUILayout.Button("-", StepBtn, GUILayout.Width(26))) { set(Mathf.Round((val - step) * 10f) / 10f); Sync(); }
+            EditValueBox("H_" + label, $"{val:F1}", b => CommitFloat("H_" + label, step, v => { set(v); Sync(); }), host, 50);
+            if (GUILayout.Button("+", StepBtn, GUILayout.Width(26))) { set(Mathf.Round((val + step) * 10f) / 10f); Sync(); }
+        }
+        else GUILayout.Label($"{val:F1}", GUILayout.Width(50));
+        GUILayout.EndHorizontal();
+        GUILayout.Space(2);
+    }
+
+    private static void HnSIntRow(string label, System.Func<int> get, System.Action<int> set, bool host, int min = 0, int max = 999)
+    {
+        int val = get();
+        GUILayout.BeginHorizontal();
+        GUILayout.Label(label, GUILayout.Width(180));
+        if (host)
+        {
+            if (GUILayout.Button("-", StepBtn, GUILayout.Width(26))) { set(System.Math.Clamp(val - 1, min, max)); Sync(); }
+            EditValueBox("H_" + label, $"{val}", b => CommitInt("H_" + label, min, max, v => { set(v); Sync(); }), host, 50);
+            if (GUILayout.Button("+", StepBtn, GUILayout.Width(26))) { set(System.Math.Clamp(val + 1, min, max)); Sync(); }
+        }
+        else GUILayout.Label($"{val}", GUILayout.Width(50));
+        GUILayout.EndHorizontal();
+        GUILayout.Space(2);
+    }
+
+    private static void HnSBoolRow(string label, System.Func<bool> get, System.Action<bool> set, bool host)
+    {
+        bool val = get();
+        GUILayout.BeginHorizontal();
+        GUILayout.Label(label, GUILayout.Width(220));
+        if (host) { bool n = GUIStylePreset.CustomToggle(val, ""); if (n != val) { set(n); Sync(); } }
+        else GUILayout.Label(val ? "On" : "Off");
+        GUILayout.EndHorizontal();
+        GUILayout.Space(2);
+    }
+
+    private static void DrawHnSSection(bool host)
+    {
+        GUILayout.Space(6);
+        GUILayout.Label("Hide & Seek", GUIStylePreset.TabSubtitle);
+        HnSIntRow("Crewmate Vent Uses",     () => HnS.CrewmateVentUses,    v => HnS.CrewmateVentUses = v, host, 0, 999);
+        HnSFloatRow("Time in Vent",         () => HnS.CrewmateTimeInVent,  v => HnS.CrewmateTimeInVent = v, 0.1f, host);
+        HnSFloatRow("Escape Time",          () => HnS.EscapeTime,          v => HnS.EscapeTime = v, 1f, host);
+        HnSFloatRow("Final Countdown Time", () => HnS.FinalCountdownTime,  v => HnS.FinalCountdownTime = v, 1f, host);
+        HnSFloatRow("Crewmate Flashlight",  () => HnS.CrewmateFlashlightSize, v => HnS.CrewmateFlashlightSize = v, 0.1f, host);
+        HnSFloatRow("Seeker Flashlight",    () => HnS.ImpostorFlashlightSize, v => HnS.ImpostorFlashlightSize = v, 0.1f, host);
+        HnSFloatRow("Seeker Final Speed",   () => HnS.SeekerFinalSpeed,    v => HnS.SeekerFinalSpeed = v, 0.1f, host);
+        HnSFloatRow("Max Ping Time",        () => HnS.MaxPingTime,         v => HnS.MaxPingTime = v, 1f, host);
+        HnSBoolRow("Use Flashlight",        () => HnS.useFlashlight,       v => HnS.useFlashlight = v, host);
+        HnSBoolRow("Final Map",             () => HnS.SeekerFinalMap,      v => HnS.SeekerFinalMap = v, host);
+        HnSBoolRow("Show Crewmate Names",   () => HnS.ShowCrewmateNames,   v => HnS.ShowCrewmateNames = v, host);
+        HnSBoolRow("Seeker Pings",          () => HnS.SeekerPings,         v => HnS.SeekerPings = v, host);
+        HnSBoolRow("Ghosts Do Tasks",       () => HnS.GhostsDoTasks,       v => HnS.GhostsDoTasks = v, host);
+    }
 
     private void DrawMapSelection(bool host)
     {
@@ -529,6 +748,8 @@ public class HostSettingsTab : ITab
         GUILayout.Space(6);
         GUILayout.Label("Judge", GUIStylePreset.TabSubtitle);
         FloatRow("Task Unlock %", FloatOptionNames.JudgeTaskRequirementPercentage, 1f, host);
+
+        if (IsHnS && HnS != null) DrawHnSSection(host);
 
         GUILayout.EndScrollView();
     }

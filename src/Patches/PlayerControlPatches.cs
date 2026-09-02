@@ -20,9 +20,31 @@ public static class PlayerControl_CmdCheckMurder
 {
     public static bool Prefix(PlayerControl __instance, PlayerControl target)
     {
-        if (!Utils.isHost) return true;
+        // NoKillChecks lets us kill regardless of whether we are the host
+        if (!Utils.isHost && !features.NoKillChecks.Enabled) return true;
         PlayerControl.LocalPlayer.RpcMurderPlayer(target, true);
         return false;
+    }
+}
+
+[HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.CheckMurder))]
+public static class PlayerControl_CheckMurder_BypassShield
+{
+    public static bool Prefix(PlayerControl __instance, PlayerControl target)
+    {
+        try
+        {
+            if (!CheatToggles.bypassShield) return true;
+            if (!Utils.isHost) return true;
+            if (__instance == null || target == null) return true;
+            if (__instance != PlayerControl.LocalPlayer) return true;
+            if (target.Data == null || target.protectedByGuardianId < 0) return true;
+            if (target.Data.Disconnected || target.Data.IsDead) return true;
+
+            __instance.RpcMurderPlayer(target, true);
+            return false;
+        }
+        catch { return true; }
     }
 }
 
