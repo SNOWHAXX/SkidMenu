@@ -9,7 +9,7 @@ namespace SkidMenu.routines
 			RoutineName = "ReportBodySpam";
 		}
 
-		public float reportDelay = 2.5f;
+		public float reportDelay = 0.05f;
 		private float timeElapsed = 0f;
 
 		public override void Run()
@@ -31,14 +31,17 @@ namespace SkidMenu.routines
 			timeElapsed += Time.deltaTime;
 			if(timeElapsed < reportDelay) return;
 
-			PlayerControl player = Utilities.GetRandomPlayer(false, false, false, false);
-
-			if(MeetingHud.Instance == null)
+			foreach(PlayerControl p in PlayerControl.AllPlayerControls)
 			{
-				Utilities.OpenMeeting(PlayerControl.LocalPlayer, player.Data);
-			}
+				if(p == null || p.Data == null || p.Data.Disconnected) continue;
 
-			PlayerControl.LocalPlayer.RpcStartMeeting(player.Data);
+				if(MeetingHud.Instance == null)
+				{
+					Utilities.OpenMeeting(PlayerControl.LocalPlayer, p.Data);
+				}
+
+				PlayerControl.LocalPlayer.RpcStartMeeting(p.Data);
+			}
 
 			timeElapsed = 0f;
 		}

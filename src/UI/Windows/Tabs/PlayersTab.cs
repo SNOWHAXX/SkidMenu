@@ -20,6 +20,8 @@ public class PlayersTab : ITab
     private static bool  _rainbowColor = false;
     private static float _rainbowDelay = 0.2f;
     private static PlayerControl _rainbowTargetPlayer;
+    private static bool  _glitterTarget = false;
+    private static PlayerControl _glitterTargetPlayer;
     private static int _selectedVent = 0;
     private static int _frameJudgeIdx = 0;
 
@@ -735,6 +737,22 @@ public class PlayersTab : ITab
 
         UpdateRainbowTarget();
 
+        bool glitterActive = _glitterTarget && _glitterTargetPlayer == target;
+        var glitterBg = GUI.backgroundColor;
+        GUI.backgroundColor = glitterActive ? new Color(0.6f, 0.1f, 0.1f) : new Color(0.1f, 0.6f, 0.3f);
+        if (GUILayout.Button(glitterActive ? "Stop Glitter Bomb" : "Glitter Bomb"))
+        {
+            if (glitterActive) ClearGlitterTarget();
+            else
+            {
+                _glitterTarget = true;
+                _glitterTargetPlayer = target;
+            }
+        }
+        GUI.backgroundColor = glitterBg;
+
+        UpdateGlitterTarget();
+
         GUILayout.Space(10);
         GUILayout.Label("Player History", GUIStylePreset.TabSubtitle);
         PlayerTracker.History.TryGetValue(target.PlayerId, out var history);
@@ -777,6 +795,26 @@ public class PlayersTab : ITab
         {
             RainbowTarget.Instance.Enabled = false;
             RainbowTarget.Instance.Target = null;
+        }
+    }
+
+    private static void UpdateGlitterTarget()
+    {
+        if (GlitterTarget.Instance == null) return;
+
+        bool want = _glitterTarget && _glitterTargetPlayer != null && !_glitterTargetPlayer.Data.Disconnected;
+        GlitterTarget.Instance.Enabled = want;
+        GlitterTarget.Instance.Target = want ? _glitterTargetPlayer : null;
+    }
+
+    private static void ClearGlitterTarget()
+    {
+        _glitterTarget = false;
+        _glitterTargetPlayer = null;
+        if (GlitterTarget.Instance != null)
+        {
+            GlitterTarget.Instance.Enabled = false;
+            GlitterTarget.Instance.Target = null;
         }
     }
 

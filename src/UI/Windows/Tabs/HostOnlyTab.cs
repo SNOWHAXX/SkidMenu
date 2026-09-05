@@ -158,8 +158,28 @@ CheatToggles.killGhosts = GUIStylePreset.CustomToggle(CheatToggles.killGhosts, "
         GUILayout.Label("Players");
         SkidMenu.routines.reportBodySpam.Enabled = GUIStylePreset.CustomToggle(SkidMenu.routines.reportBodySpam.Enabled, " Spam Report Bodies");
         GUILayout.BeginHorizontal();
+        GUILayout.BeginVertical();
+        GUILayout.Space(6);
+        GUILayout.Label("Delay", GUILayout.Width(80));
+        GUILayout.EndVertical();
+        GUILayout.BeginVertical();
+        GUILayout.Space(6);
+        SkidMenu.routines.reportBodySpam.reportDelay = GUILayout.HorizontalSlider(SkidMenu.routines.reportBodySpam.reportDelay, 0.001f, 1.0f);
+        GUILayout.EndVertical();
+        GUILayout.BeginVertical();
+        GUILayout.Space(6);
+        GUILayout.Label($"{SkidMenu.routines.reportBodySpam.reportDelay:0.000}s", GUILayout.Width(60));
+        GUILayout.EndVertical();
+        GUILayout.EndHorizontal();
+        GUILayout.BeginHorizontal();
+        GUILayout.BeginVertical();
+        GUILayout.Space(6);
         Host.BlockLowLevels.Enabled = GUIStylePreset.CustomToggle(Host.BlockLowLevels.Enabled, $" Kick below level {Host.BlockLowLevels.MinLevel}");
+        GUILayout.EndVertical();
+        GUILayout.BeginVertical();
+        GUILayout.Space(8);
         Host.BlockLowLevels.MinLevel = (uint)GUILayout.HorizontalSlider(Host.BlockLowLevels.MinLevel, 0, 100);
+        GUILayout.EndVertical();
         GUILayout.EndHorizontal();
         GUILayout.EndVertical();
     }
