@@ -103,3 +103,5 @@ Use Save to Profile / Load from Profile in the Config tab to preserve your setti
 We have an official SkidMenu Discord server where you can report bugs, suggest features, or just hang out:
 
 **[Join the Discord](https://discord.gg/zgwTD4FFFx)**
+
+Pre-release and test builds drop in the Discord first, so join if you want new stuff early. Got a feature idea? Suggest it there, the good ones get built. And if you like the menu, drop a star on the project, more stars means more updates.
