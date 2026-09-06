@@ -18,7 +18,8 @@ public class ChatTab : ITab
 
     private string _chatScaleHInput = "100", _chatScaleVInput = "100";
     private bool _chatScaleFocused = false;
-    private Rect _chatScaleRect;
+    private Rect _chatScaleRectH;
+    private Rect _chatScaleRectV;
     private int _chatScaleCursor = 0;
     private string _chatScaleActiveKey = "";
     private bool _chatScaleCursorVisible = true;
@@ -28,12 +29,17 @@ public class ChatTab : ITab
     {
         GUILayout.Box("", GUIStylePreset.NormalTextField, GUILayout.Width(50), GUILayout.Height(20));
 
+        bool isH = fieldKey == "chatScaleH";
         if (Event.current.type == EventType.Repaint)
-            _chatScaleRect = GUILayoutUtility.GetLastRect();
+        {
+            if (isH) _chatScaleRectH = GUILayoutUtility.GetLastRect();
+            else _chatScaleRectV = GUILayoutUtility.GetLastRect();
+        }
+        Rect fieldRect = isH ? _chatScaleRectH : _chatScaleRectV;
 
         if (Event.current.type == EventType.MouseDown)
         {
-            bool hit = _chatScaleRect.Contains(Event.current.mousePosition);
+            bool hit = fieldRect.Contains(Event.current.mousePosition);
             if (hit != _chatScaleFocused)
             {
                 _chatScaleFocused = hit;
@@ -52,7 +58,7 @@ public class ChatTab : ITab
             else if (char.IsDigit(Event.current.character) && content.Length < 3) { content = content.Substring(0, _chatScaleCursor) + Event.current.character + content.Substring(_chatScaleCursor); _chatScaleCursor++; Event.current.Use(); }
         }
 
-        GUI.Label(new Rect(_chatScaleRect.x + 5, _chatScaleRect.y + 2, _chatScaleRect.width - 10, _chatScaleRect.height), content);
+        GUI.Label(new Rect(fieldRect.x + 5, fieldRect.y + 2, fieldRect.width - 10, fieldRect.height), content);
 
         if (_chatScaleFocused && _chatScaleActiveKey == fieldKey)
         {
@@ -61,7 +67,7 @@ public class ChatTab : ITab
             {
                 int cp = System.Math.Clamp(_chatScaleCursor, 0, content.Length);
                 Vector2 ts = GUI.skin.label.CalcSize(new GUIContent(content.Substring(0, cp)));
-                GUI.Label(new Rect(_chatScaleRect.x + ts.x + 7, _chatScaleRect.y + 2, 10, _chatScaleRect.height - 4), "|");
+                GUI.Label(new Rect(fieldRect.x + ts.x + 7, fieldRect.y + 2, 10, fieldRect.height - 4), "|");
             }
         }
     }
@@ -87,11 +93,13 @@ public class ChatTab : ITab
         CheatToggles.enableChat      = GUIStylePreset.CustomToggle(CheatToggles.enableChat, " Enable Chat");
         CheatToggles.bypassUrlBlock  = GUIStylePreset.CustomToggle(CheatToggles.bypassUrlBlock, " Bypass URL Block");
         CheatToggles.lowerRateLimits = GUIStylePreset.CustomToggle(CheatToggles.lowerRateLimits, " Lower Rate Limits");
+        CheatToggles.chatNoCooldown = GUIStylePreset.CustomToggle(CheatToggles.chatNoCooldown, " Chat No CD (0.1s)");
 
         GUILayout.Space(8);
 
         GUILayout.Label("Chat Window", GUIStylePreset.TabSubtitle);
         CheatToggles.showChatUI = GUIStylePreset.CustomToggle(CheatToggles.showChatUI, " Show Chat Window");
+        CheatToggles.chatUINoMenu = GUIStylePreset.CustomToggle(CheatToggles.chatUINoMenu, " Show Even If Menu Hidden");
         GUILayout.Space(4);
         GUILayout.BeginHorizontal();
         GUILayout.Label("Scale Horizontal:", GUILayout.Width(150));

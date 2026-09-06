@@ -139,6 +139,7 @@ public class SabotageTab : ITab
             GUILayout.EndHorizontal();
 
             CheatToggles.showDoorsMenu = GUIStylePreset.CustomToggle(CheatToggles.showDoorsMenu, " Show Doors Menu");
+            CheatToggles.doorsMenuNoMenu = GUIStylePreset.CustomToggle(CheatToggles.doorsMenuNoMenu, " Show Even If Menu Hidden");
             GUILayout.BeginHorizontal();
             GUILayout.Label("Scale H:", GUILayout.Width(60));
             HandleCustomTextField(ref _doorsScaleHInput, "doorsScaleH");

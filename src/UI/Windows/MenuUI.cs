@@ -439,6 +439,11 @@ public class MenuUI : MonoBehaviour
         GUI.skin = GetCustomSkin();
         GUI.backgroundColor = Color.white;
 
+        if (GUI.Button(new Rect(8, 2, 110, 30), "GITHUB"))
+            Application.OpenURL("https://github.com/SNOWHAXX/SkidMenu/");
+        if (GUI.Button(new Rect(windowWidth - 118, 2, 110, 30), "DISCORD"))
+            Application.OpenURL("https://discord.com/invite/zgwTD4FFFx");
+
         GUILayout.BeginHorizontal();
 
         GUILayout.BeginVertical(GUIStylePreset.ModernBox, _tabColWidth);

@@ -5,7 +5,7 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <DebugType>embedded</DebugType>
 
-        <VersionPrefix>1.4.1</VersionPrefix>
+        <VersionPrefix>1.4.2</VersionPrefix>
         <AssemblyName>SkidMenu</AssemblyName>
         <Product>SkidMenu</Product>
         <Description>Among Us Host Utility Tool</Description>
@@ -23,6 +23,45 @@
         </EmbeddedResource>
         <EmbeddedResource Include="Assets\Roboto_Condensed-Regular.ttf">
           <LogicalName>SkidMenu.Assets.Roboto_Condensed-Regular.ttf</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Assets\radar_skeld.png">
+          <LogicalName>SkidMenu.Assets.radar_skeld.png</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Assets\radar_mira_hq.png">
+          <LogicalName>SkidMenu.Assets.radar_mira_hq.png</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Assets\radar_polus.png">
+          <LogicalName>SkidMenu.Assets.radar_polus.png</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Assets\radar_airship.png">
+          <LogicalName>SkidMenu.Assets.radar_airship.png</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Assets\radar_fungle.png">
+          <LogicalName>SkidMenu.Assets.radar_fungle.png</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Assets\radar_player.png">
+          <LogicalName>SkidMenu.Assets.radar_player.png</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Assets\radar_player_visor.png">
+          <LogicalName>SkidMenu.Assets.radar_player_visor.png</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Assets\radar_dead_body.png">
+          <LogicalName>SkidMenu.Assets.radar_dead_body.png</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Assets\radar_realistic_skeld.png">
+          <LogicalName>SkidMenu.Assets.radar_realistic_skeld.png</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Assets\radar_realistic_mira_hq.png">
+          <LogicalName>SkidMenu.Assets.radar_realistic_mira_hq.png</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Assets\radar_realistic_polus.png">
+          <LogicalName>SkidMenu.Assets.radar_realistic_polus.png</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Assets\radar_realistic_airship.png">
+          <LogicalName>SkidMenu.Assets.radar_realistic_airship.png</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Assets\radar_realistic_fungle.png">
+          <LogicalName>SkidMenu.Assets.radar_realistic_fungle.png</LogicalName>
         </EmbeddedResource>
     </ItemGroup>
 

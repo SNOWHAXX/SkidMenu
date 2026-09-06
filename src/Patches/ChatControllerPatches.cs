@@ -82,10 +82,18 @@ public static class ChatController_Update
         if (CheatToggles.longerMessages)
 		{
 			try { __instance.freeChatField.textArea.characterLimit = 120; } catch { }
-        }
+		}
 		else
 		{
 			try { __instance.freeChatField.textArea.characterLimit = 100; } catch { }
+		}
+
+        // Chat No CD: pin the cooldown timer just under the vanilla gate so every message sends
+        if (CheatToggles.chatNoCooldown)
+        {
+            const float vanillaSafeCooldown = 3.15f;
+            if (__instance.timeSinceLastMessage < vanillaSafeCooldown - 0.1f)
+                __instance.timeSinceLastMessage = vanillaSafeCooldown - 0.1f;
         }
     }
 }

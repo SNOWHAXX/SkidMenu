@@ -46,6 +46,7 @@ public class ConsoleTab : ITab
         GUILayout.BeginVertical(GUILayout.Width(MenuUI.windowWidth * 0.425f));
 
         CheatToggles.showConsole = GUIStylePreset.CustomToggle(CheatToggles.showConsole, " Show Console");
+        CheatToggles.consoleNoMenu = GUIStylePreset.CustomToggle(CheatToggles.consoleNoMenu, " Show Even If Menu Hidden");
 
         GUILayout.Space(5);
         GUILayout.Label("-- Players --");

@@ -27,7 +27,7 @@ public class ProtectUI : MonoBehaviour
 
     private void OnGUI()
     {
-        if (!CheatToggles.showProtectMenu || !(MenuUI.isGUIActive || SkidMenu.menuKeepSubwindowsOpen) || SkidMenu.isPanicked) return;
+        if (!CheatToggles.showProtectMenu || !(MenuUI.isGUIActive || CheatToggles.protectMenuNoMenu || SkidMenu.menuKeepSubwindowsOpen) || SkidMenu.isPanicked) return;
 
         UIHelpers.ApplyUIColor();
 

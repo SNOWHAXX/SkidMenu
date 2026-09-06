@@ -84,6 +84,7 @@ public class ShipTab : ITab
         CheatToggles.commsSab = GUIStylePreset.CustomToggle(CheatToggles.commsSab, " Comms");
 
         CheatToggles.showDoorsMenu = GUIStylePreset.CustomToggle(CheatToggles.showDoorsMenu, " Show Doors Menu");
+        CheatToggles.doorsMenuNoMenu = GUIStylePreset.CustomToggle(CheatToggles.doorsMenuNoMenu, " Show Even If Menu Hidden");
         GUILayout.Space(4);
         GUILayout.BeginHorizontal();
         GUILayout.Label("Scale Horizontal:", GUILayout.Width(150));

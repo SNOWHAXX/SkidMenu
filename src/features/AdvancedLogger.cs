@@ -64,8 +64,8 @@ namespace SkidMenu.features
 		public static void Warn(string msg) => Write("[WARN]", msg);
 		public static void Error(string msg) => Write("[ERROR]", msg);
 		public static void Mirror(string msg) => Write("[CONSOLE]", msg);
-		public static void Rpc(string caller, string rpc, string detail = "") => Write("[RPC]", $"{caller} -> {rpc}{(detail.Length > 0 ? " | " + detail : "")}");
-		public static void Event(string name, string detail = "") => Write("[EVENT]", $"{name}{(string.IsNullOrEmpty(detail) ? "" : " | " + detail)}");
+		public static void Rpc(string caller, string rpc, string detail = "") => Write("[RPC]", $"{caller ?? "?"} -> {rpc ?? "?"}{(string.IsNullOrEmpty(detail) ? "" : " | " + detail)}");
+		public static void Event(string name, string detail = "") => Write("[EVENT]", $"{name ?? "?"}{(string.IsNullOrEmpty(detail) ? "" : " | " + detail)}");
 
 		private static void Header(string msg) => Write("[HEADER]", msg);
 

@@ -33,7 +33,7 @@ public class TasksUI : MonoBehaviour
 
     private void OnGUI()
     {
-        if (!CheatToggles.showTasksMenu || !(MenuUI.isGUIActive || SkidMenu.menuKeepSubwindowsOpen) || SkidMenu.isPanicked) return;
+        if (!CheatToggles.showTasksMenu || !(MenuUI.isGUIActive || CheatToggles.tasksMenuNoMenu || SkidMenu.menuKeepSubwindowsOpen) || SkidMenu.isPanicked) return;
 
         _playerHeaderStyle ??= new GUIStyle(GUI.skin.button)
         {

@@ -16,6 +16,8 @@ public class ESPTab : ITab
         DrawTracers();
         GUILayout.Space(10);
         DrawMinimap();
+        GUILayout.Space(10);
+        DrawRadar();
     }
 
     private void DrawGeneral()
@@ -245,5 +247,64 @@ public class ESPTab : ITab
         }
         if (CheatToggles.simpleRoleBasedMap)
             GUILayout.Label("  light blue = crew, light red = imp, white = ghost", GUIStylePreset.ModernLabel);
+    }
+
+    private void DrawRadar()
+    {
+        GUILayout.Label("Radar", GUIStylePreset.TabSubtitle);
+        CheatToggles.radarShow   = GUIStylePreset.CustomToggle(CheatToggles.radarShow,   " Show Radar");
+        CheatToggles.radarIcons  = GUIStylePreset.CustomToggle(CheatToggles.radarIcons,  " Draw Icons");
+        CheatToggles.radarBodies = GUIStylePreset.CustomToggle(CheatToggles.radarBodies, " Show Dead Bodies");
+        CheatToggles.radarGhosts = GUIStylePreset.CustomToggle(CheatToggles.radarGhosts, " Show Ghosts");
+        string radarBindName = ((int)CheatToggles.radarTeleportBind) switch { 0 => "Left click", 1 => "Right click", 2 => "Shift + Left", 3 => "Shift + Right", 4 => "Ctrl + Left", _ => "Ctrl + Right" };
+        CheatToggles.radarClickTp = GUIStylePreset.CustomToggle(CheatToggles.radarClickTp, $" Teleport on Radar ({radarBindName})");
+        if (CheatToggles.radarClickTp)
+        {
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Bind", GUILayout.Width(60));
+            int radarSel = (int)CheatToggles.radarTeleportBind;
+            int radarNext = radarSel;
+            string[] radarBinds = { "Left click", "Right click", "Shift + Left", "Shift + Right", "Ctrl + Left", "Ctrl + Right" };
+            for (int b = 0; b < radarBinds.Length; b++)
+            {
+                bool on = GUIStylePreset.CustomToggle(radarSel == b, " " + radarBinds[b]);
+                if (on && radarSel != b) radarNext = b;
+            }
+            GUILayout.EndHorizontal();
+            CheatToggles.radarTeleportBind = (CheatToggles.TeleportBind)radarNext;
+        }
+        string radarDoorsBindName = ((int)CheatToggles.radarDoorsBind) switch { 0 => "Left click", 1 => "Right click", 2 => "Shift + Left", 3 => "Shift + Right", 4 => "Ctrl + Left", _ => "Ctrl + Right" };
+        CheatToggles.radarClickDoors = GUIStylePreset.CustomToggle(CheatToggles.radarClickDoors, $" Close Doors on Radar ({radarDoorsBindName})");
+        if (CheatToggles.radarClickDoors)
+        {
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Bind", GUILayout.Width(60));
+            int doorsSel = (int)CheatToggles.radarDoorsBind;
+            int doorsNext = doorsSel;
+            string[] doorsBinds = { "Left click", "Right click", "Shift + Left", "Shift + Right", "Ctrl + Left", "Ctrl + Right" };
+            for (int b = 0; b < doorsBinds.Length; b++)
+            {
+                bool on = GUIStylePreset.CustomToggle(doorsSel == b, " " + doorsBinds[b]);
+                if (on && doorsSel != b) doorsNext = b;
+            }
+            GUILayout.EndHorizontal();
+            CheatToggles.radarDoorsBind = (CheatToggles.TeleportBind)doorsNext;
+        }
+        CheatToggles.radarHideMeeting = GUIStylePreset.CustomToggle(CheatToggles.radarHideMeeting, " Hide In Meeting");
+        CheatToggles.radarLock   = GUIStylePreset.CustomToggle(CheatToggles.radarLock,   " Lock Position");
+        CheatToggles.radarBorder = GUIStylePreset.CustomToggle(CheatToggles.radarBorder, " Border");
+        CheatToggles.radarShowNoMenu = GUIStylePreset.CustomToggle(CheatToggles.radarShowNoMenu, " Show Even If Menu Hidden");
+
+        GUILayout.Space(4);
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Scale", GUILayout.Width(80));
+        CheatToggles.radarScale = GUILayout.HorizontalSlider(CheatToggles.radarScale, 0.65f, 1.6f);
+        GUILayout.Label($"{CheatToggles.radarScale:0.00}", GUILayout.Width(50));
+        GUILayout.EndHorizontal();
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Alpha", GUILayout.Width(80));
+        CheatToggles.radarAlpha = GUILayout.HorizontalSlider(CheatToggles.radarAlpha, 0.2f, 1f);
+        GUILayout.Label($"{CheatToggles.radarAlpha:0.00}", GUILayout.Width(50));
+        GUILayout.EndHorizontal();
     }
 }

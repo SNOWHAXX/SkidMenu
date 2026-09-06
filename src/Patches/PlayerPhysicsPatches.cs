@@ -26,6 +26,7 @@ public static class PlayerPhysics_LateUpdate
             MalumCheats.KillAllImpsCheat();
             MalumCheats.ForceStartGameCheat();
             MalumCheats.TeleportCursorCheat();
+            MalumCheats.MapClickTeleportCheat();
             MalumCheats.CompleteMyTasksCheat();
             MalumCheats.CompleteAllTasksCheat();
             MalumCheats.PlayAnimationCheat();

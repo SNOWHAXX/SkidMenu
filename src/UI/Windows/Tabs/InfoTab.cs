@@ -51,24 +51,6 @@ public class InfoTab : ITab
         GUILayout.Label("SkidMenu is not affiliated with, endorsed by, or sponsored by Innersloth in any way. Whatever you choose to do with this menu, including any bans, account issues, or other consequences, is entirely your own responsibility, not the menu's.", _body, w);
         GUILayout.Space(10);
 
-        // Links
-        GUILayout.Label("<color=#A2FAFC><b>Links</b></color>", _subheader, w);
-        GUILayout.Space(4);
-        GUILayout.Label("<color=#63CCCF>github.com/SNOWHAXX/SkidMenu</color>", _line, w);
-        GUILayout.Space(4);
-        if (GUILayout.Button("GitHub Repository", GUILayout.Width(150)))
-        {
-            Application.OpenURL("https://github.com/SNOWHAXX/SkidMenu");
-        }
-        GUILayout.Space(8);
-        GUILayout.Label("We have an official Discord server for the community:", _body, w);
-        GUILayout.Space(4);
-        if (GUILayout.Button("Join Discord", GUILayout.Width(120)))
-        {
-            Application.OpenURL("https://discord.gg/zgwTD4FFFx");
-        }
-        GUILayout.Space(4);
-
         // Disable keybinds toggle
         GUILayout.Label("<color=#A2FAFC><b>Keybinds</b></color>", _subheader, w);
         GUILayout.Space(4);

@@ -105,6 +105,7 @@ CheatToggles.killGhosts = GUIStylePreset.CustomToggle(CheatToggles.killGhosts, "
             HostProtection.ProtectEveryone(true);
         GUILayout.Space(4);
         CheatToggles.showProtectMenu = GUIStylePreset.CustomToggle(CheatToggles.showProtectMenu, " Show Protect Menu");
+        CheatToggles.protectMenuNoMenu = GUIStylePreset.CustomToggle(CheatToggles.protectMenuNoMenu, " Show Even If Menu Hidden");
         GUILayout.BeginHorizontal();
         GUILayout.Label("Scale Horizontal:", GUILayout.Width(150));
         HandleCustomTextField(ref _protScaleHInput, "protScaleH");

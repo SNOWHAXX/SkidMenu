@@ -163,6 +163,7 @@ public class RolesTab : ITab
         Roles.SkipSabotageChecks.SabotageAsCrewmate = GUIStylePreset.CustomToggle(Roles.SkipSabotageChecks.SabotageAsCrewmate, " Sabotage As Crewmate");
 
         CheatToggles.showTasksMenu = GUIStylePreset.CustomToggle(CheatToggles.showTasksMenu, " Show Tasks Menu");
+        CheatToggles.tasksMenuNoMenu = GUIStylePreset.CustomToggle(CheatToggles.tasksMenuNoMenu, " Show Even If Menu Hidden");
         CheatToggles.instantPet = GUIStylePreset.CustomToggle(CheatToggles.instantPet, " Instant Pet");
         CheatToggles.spamPet = GUIStylePreset.CustomToggle(CheatToggles.spamPet, " Spam Pet");
         if (CheatToggles.spamPet)

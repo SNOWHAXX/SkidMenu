@@ -28,6 +28,8 @@ public class MovementTab : ITab
         DrawGeneral(inGame);
         GUILayout.Space(15);
         DrawTeleport(inGame);
+        GUILayout.Space(15);
+        DrawMinimapTeleport();
 
         GUILayout.EndVertical();
     }
@@ -164,6 +166,8 @@ public class MovementTab : ITab
         GUILayout.Label("Teleport", GUIStylePreset.TabSubtitle);
 
         CheatToggles.teleportCursor = GUIStylePreset.CustomToggle(CheatToggles.teleportCursor, " to Cursor");
+        if (CheatToggles.teleportCursor)
+            DrawTeleportBindPicker(ref CheatToggles.cursorTeleportBind);
         CheatToggles.teleportPlayer = GUIStylePreset.CustomToggle(CheatToggles.teleportPlayer, " to Player");
         Teleporter.UseSnapToRPC = GUIStylePreset.CustomToggle(Teleporter.UseSnapToRPC, "Use SnapTo RPC For Teleports");
 
@@ -185,5 +189,34 @@ public class MovementTab : ITab
         }
 
         if (i % 2 != 0) GUILayout.EndHorizontal();
+    }
+
+    private void DrawMinimapTeleport()
+    {
+        GUILayout.Space(6);
+        GUILayout.Label("Minimap Teleport", GUIStylePreset.TabSubtitle);
+
+        string bindName = _teleportBindNames[(int)CheatToggles.mapTeleportBind];
+        CheatToggles.mapClickTeleport = GUIStylePreset.CustomToggle(CheatToggles.mapClickTeleport, $" Teleport to Minimap ({bindName})");
+        if (CheatToggles.mapClickTeleport)
+            DrawTeleportBindPicker(ref CheatToggles.mapTeleportBind);
+    }
+
+    private static readonly string[] _teleportBindNames = { "Left click", "Right click", "Shift + Left", "Shift + Right", "Ctrl + Left", "Ctrl + Right" };
+
+    private void DrawTeleportBindPicker(ref CheatToggles.TeleportBind bind)
+    {
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Bind", GUILayout.Width(60));
+        int selected = (int)bind;
+        int next = selected;
+        for (int b = 0; b < _teleportBindNames.Length; b++)
+        {
+            bool on = GUIStylePreset.CustomToggle(selected == b, " " + _teleportBindNames[b]);
+            if (on && selected != b) next = b;
+            if ((b + 1) % 3 == 0 && b + 1 < _teleportBindNames.Length) { GUILayout.EndHorizontal(); GUILayout.BeginHorizontal(); }
+        }
+        GUILayout.EndHorizontal();
+        bind = (CheatToggles.TeleportBind)next;
     }
 }

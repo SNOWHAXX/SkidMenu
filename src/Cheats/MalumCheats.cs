@@ -367,16 +367,61 @@ public static class MalumCheats
         }
     }
 
+    private static bool TeleportBindPressed(CheatToggles.TeleportBind bind)
+    {
+        bool shift = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+        bool ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+        return bind switch
+        {
+            CheatToggles.TeleportBind.Left => Input.GetMouseButtonDown(0) && !shift && !ctrl,
+            CheatToggles.TeleportBind.Right => Input.GetMouseButtonDown(1) && !shift && !ctrl,
+            CheatToggles.TeleportBind.ShiftLeft => Input.GetMouseButtonDown(0) && shift,
+            CheatToggles.TeleportBind.ShiftRight => Input.GetMouseButtonDown(1) && shift,
+            CheatToggles.TeleportBind.CtrlLeft => Input.GetMouseButtonDown(0) && ctrl,
+            CheatToggles.TeleportBind.CtrlRight => Input.GetMouseButtonDown(1) && ctrl,
+            _ => false,
+        };
+    }
+
     public static void TeleportCursorCheat()
     {
         if (PlayerControl.LocalPlayer?.NetTransform == null || Camera.main == null) return;
         if (!CheatToggles.teleportCursor) return;
 
-        // Teleport player to cursor's in-world position on right-click
-        if (Input.GetMouseButtonDown(1))
+        // Teleport player to cursor's in-world position on the configured bind
+        if (TeleportBindPressed(CheatToggles.cursorTeleportBind))
         {
             PlayerControl.LocalPlayer.NetTransform.RpcSnapTo(Camera.main.ScreenToWorldPoint(Input.mousePosition));
         }
+    }
+
+    private static MapBehaviour _cachedOpenMap;
+
+    public static void MapClickTeleportCheat()
+    {
+        if (!CheatToggles.mapClickTeleport) return;
+        if (!TeleportBindPressed(CheatToggles.mapTeleportBind)) return;
+        if (PlayerControl.LocalPlayer?.NetTransform == null || Camera.main == null) return;
+        if (ShipStatus.Instance == null) return;
+
+        // Reuse the cached map while it stays open, rescan only when needed
+        if (_cachedOpenMap == null || !_cachedOpenMap.IsOpen)
+        {
+            _cachedOpenMap = null;
+            foreach (var m in UnityEngine.Object.FindObjectsOfType<MapBehaviour>())
+            {
+                if (m != null && m.IsOpen) { _cachedOpenMap = m; break; }
+            }
+        }
+        if (_cachedOpenMap == null) return;
+
+        // Configured bind on the open map teleports there (mirror of the dot math)
+        Transform parent = _cachedOpenMap.HerePoint != null ? _cachedOpenMap.HerePoint.transform.parent : _cachedOpenMap.transform;
+        Vector2 mouse = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Vector3 local3 = parent.InverseTransformPoint(new Vector3(mouse.x, mouse.y, 0f));
+        Vector2 world = new Vector2(local3.x, local3.y) * ShipStatus.Instance.MapScale;
+        world.x *= Mathf.Sign(ShipStatus.Instance.transform.localScale.x);
+        PlayerControl.LocalPlayer.NetTransform.RpcSnapTo(new Vector3(world.x, world.y, 0f));
     }
 
     public static void NoClipCheat()

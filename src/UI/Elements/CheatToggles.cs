@@ -19,12 +19,17 @@ public struct CheatToggles
     public static bool teleportPlayer;
     public static bool teleportCursor;
     public static bool invertControls;
+    public enum TeleportBind { Left, Right, ShiftLeft, ShiftRight, CtrlLeft, CtrlRight }
+    public static TeleportBind cursorTeleportBind = TeleportBind.Right;
+    public static TeleportBind mapTeleportBind = TeleportBind.Right;
+    public static TeleportBind radarTeleportBind = TeleportBind.Right;
 
     // Roles
     public static bool setFakeRole;
     public static bool setFakeAlive;
     public static bool noKillCd;
     public static bool showTasksMenu;
+    public static bool tasksMenuNoMenu;
     public static bool bypassVisualTasks;
     public static float menuOpacity = 1f;
     public static float menuScaleH = 100f;
@@ -156,6 +161,21 @@ public static bool[] notifExHost = new bool[27];
     public static bool colorBasedMap;
     public static bool distanceBasedMap;
     public static bool simpleRoleBasedMap;
+    public static bool mapClickTeleport;
+    public static bool radarShow;
+    public static bool radarIcons;
+    public static bool radarBodies = true;
+    public static bool radarGhosts = true;
+    public static bool radarClickTp;
+    public static bool radarClickDoors;
+    public static TeleportBind radarDoorsBind = TeleportBind.Left;
+    public static bool radarHideMeeting = true;
+    public static bool radarLock;
+    public static bool radarRealistic;
+    public static bool radarBorder;
+    public static bool radarShowNoMenu;
+    public static float radarScale = 1f;
+    public static float radarAlpha = 0.78f;
 
     // Tracers
     public static bool tracersImps;
@@ -174,6 +194,7 @@ public static bool[] notifExHost = new bool[27];
     public static bool longerMessages;
     public static bool unlockClipboard;
     public static bool lowerRateLimits;
+    public static bool chatNoCooldown;
 
     // Ship
     public static bool closeMeeting;
@@ -194,6 +215,7 @@ public static bool[] notifExHost = new bool[27];
     public static bool mushSab;
     public static bool mushSpore;
     public static bool showDoorsMenu;
+    public static bool doorsMenuNoMenu;
     public static bool openAllDoors;
     public static bool closeAllDoors;
     public static bool spamOpenAllDoors;
@@ -219,7 +241,9 @@ public static bool[] notifExHost = new bool[27];
 
     // Console
     public static bool showConsole;
+    public static bool consoleNoMenu;
     public static bool showChatUI;
+    public static bool chatUINoMenu;
     public static bool logDeaths;
     public static bool logShapeshiftInto;
     public static bool logShapeshiftRevert;
@@ -265,6 +289,7 @@ public static bool logVotes;
     public static bool forceStartGame;
     public static bool noGameEnd;
     public static bool showProtectMenu;
+    public static bool protectMenuNoMenu;
     public static bool noOptionsLimits;
     public static bool ejectPlayer;
     public static bool killPlayer;
@@ -386,6 +411,10 @@ public static bool logVotes;
         writer.WriteLine($"Immortality = {Immortality.Enabled} = KeyCode.None");
         writer.WriteLine($"Self.SelectedColor = {SelfTab.SelectedColor} = KeyCode.None");
         writer.WriteLine($"Self.ImmortalDisableNotification = {features.Immortality.DisableNotification} = KeyCode.None");
+        writer.WriteLine($"Movement.CursorTeleportBind = {(int)cursorTeleportBind} = KeyCode.None");
+        writer.WriteLine($"Movement.MapTeleportBind = {(int)mapTeleportBind} = KeyCode.None");
+        writer.WriteLine($"Movement.RadarTeleportBind = {(int)radarTeleportBind} = KeyCode.None");
+        writer.WriteLine($"Movement.RadarDoorsBind = {(int)radarDoorsBind} = KeyCode.None");
         writer.WriteLine($"Sabotage.UpdateSystemsDirectly = {Sabotage.UpdateSystemsDirectly} = KeyCode.None");
         writer.WriteLine($"Roles.SabotageAsCrewmate = {Roles.SkipSabotageChecks.SabotageAsCrewmate} = KeyCode.None");
         writer.WriteLine($"Roles.SabotageInVents = {Roles.SkipSabotageChecks.SabotageInVents} = KeyCode.None");
@@ -1960,6 +1989,11 @@ public static bool logVotes;
                     if (TryParseRect(valuePart, out var rt)) { TasksUI.PendingRect = rt; TasksUI.PendingRectSet = true; if (TasksUI.Instance != null) TasksUI.Instance.WindowRect = rt; }
                     continue;
             }
+
+            if (name == "Movement.CursorTeleportBind" && int.TryParse(valuePart, out var cursorBind) && System.Enum.IsDefined(typeof(TeleportBind), cursorBind)) { cursorTeleportBind = (TeleportBind)cursorBind; continue; }
+            if (name == "Movement.MapTeleportBind" && int.TryParse(valuePart, out var mapBind) && System.Enum.IsDefined(typeof(TeleportBind), mapBind)) { mapTeleportBind = (TeleportBind)mapBind; continue; }
+            if (name == "Movement.RadarTeleportBind" && int.TryParse(valuePart, out var radarBind) && System.Enum.IsDefined(typeof(TeleportBind), radarBind)) { radarTeleportBind = (TeleportBind)radarBind; continue; }
+            if (name == "Movement.RadarDoorsBind" && int.TryParse(valuePart, out var doorsBind) && System.Enum.IsDefined(typeof(TeleportBind), doorsBind)) { radarDoorsBind = (TeleportBind)doorsBind; continue; }
 
             if (!ToggleFields.TryGetValue(name, out var field)) continue;
 
