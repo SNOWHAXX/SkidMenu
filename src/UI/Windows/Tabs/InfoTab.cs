@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 
 namespace SkidMenu;
@@ -55,27 +56,27 @@ public class InfoTab : ITab
         GUILayout.Label("<color=#A2FAFC><b>Keybinds</b></color>", _subheader, w);
         GUILayout.Space(4);
         KeybindListener.KeybindsDisabled = GUIStylePreset.CustomToggle(KeybindListener.KeybindsDisabled, " Disable all keybinds");
+        KeybindListener.KeybindNotifications = GUIStylePreset.CustomToggle(KeybindListener.KeybindNotifications, " Keybind notifications");
         GUILayout.Space(6);
 
-        // Static keybinds
-        GUILayout.Label("<color=#63CCCF>Hold F1</color>   Close doors in your current room", _line, w);
-        GUILayout.Label("<color=#63CCCF>Hold F2</color>   Close every door on the map", _line, w);
-        GUILayout.Label("<color=#63CCCF>Hold F3</color>   Open every door on the map", _line, w);
-        GUILayout.Label("<color=#63CCCF>Hold F6</color>   Trigger all sabotages at once", _line, w);
-        GUILayout.Label("<color=#63CCCF>Hold F7</color>   Fix all active sabotages", _line, w);
-        GUILayout.Label("<color=#63CCCF>Hold 7</color>    Spam electrical sabotage", _line, w);
-        GUILayout.Label("<color=#63CCCF>F4</color>        Complete your tasks one by one with a small delay between each", _line, w);
-        GUILayout.Label("<color=#63CCCF>F5</color>        Report a random dead body (in game only)", _line, w);
-        GUILayout.Label("<color=#63CCCF>F8</color>        Votekick everyone in the lobby", _line, w);
-        GUILayout.Label("<color=#63CCCF>F9</color>        Ban everyone in the lobby", _line, w);
-        GUILayout.Label("<color=#63CCCF>F10</color>       Ban all impostors", _line, w);
-        GUILayout.Label("<color=#63CCCF>F11</color>       Ban a random player", _line, w);
-        GUILayout.Label("<color=#63CCCF>0</color>         Call an emergency meeting (in game only)", _line, w);
-        GUILayout.Label("<color=#63CCCF>9</color>         Kill a random player (in game only, host or impostor)", _line, w);
-        GUILayout.Label("<color=#63CCCF>8</color>         Teleport kill a random player (in game only, host or impostor)", _line, w);
+        // Editable action keybinds (click key to cycle, None = unbound, saved in Config profile)
+        GUILayout.Label("<color=#A2FAFC><b>Action keybinds</b></color>", _subheader, w);
+        GUILayout.Space(4);
+        GUILayout.Label("Click a key to cycle it. None means unbound. Saved via Config tab.", _body, w);
+        GUILayout.Space(4);
+        if (_listeningAction != null)
+            GUILayout.Label($"Press a key for {_listeningAction}... (Esc = None)", _line, w);
+        foreach (var actionName in KeybindListener.ActionKeys.Keys.ToList())
+        {
+            GUILayout.BeginHorizontal();
+            GUILayout.Label(actionName, _line, GUILayout.Width(150));
+            if (GUILayout.Button(KeybindListener.ActionKeys[actionName].ToString(), GUILayout.Width(120)))
+                _listeningAction = actionName;
+            GUILayout.EndHorizontal();
+        }
         GUILayout.Space(8);
 
-        // Custom keybinds
+        // Custom toggle keybinds
         if (CheatToggles.Keybinds != null && CheatToggles.Keybinds.Count > 0)
         {
             bool hasAny = false;
@@ -93,5 +94,32 @@ public class InfoTab : ITab
         }
 
         GUILayout.EndVertical();
+    }
+
+    private static string _listeningAction;
+
+    public static void HandleKeybindCapture()
+    {
+        if (_listeningAction == null) return;
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            KeybindListener.ActionKeys[_listeningAction] = KeyCode.None;
+            _listeningAction = null;
+            return;
+        }
+        foreach (KeyCode code in System.Enum.GetValues(typeof(KeyCode)))
+        {
+            if (code == KeyCode.None) continue;
+            try
+            {
+                if (Input.GetKeyDown(code))
+                {
+                    KeybindListener.ActionKeys[_listeningAction] = code;
+                    _listeningAction = null;
+                    break;
+                }
+            }
+            catch { }
+        }
     }
 }

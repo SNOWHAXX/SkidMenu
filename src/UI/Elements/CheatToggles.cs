@@ -153,6 +153,14 @@ public static bool[] notifExHost = new bool[27];
     public static bool spectate;
     public static bool zoomOut;
     public static bool freecam;
+    public static bool resizeHUD;
+    public static float hudScale = 100f;
+    public static bool hideHUD;
+    public static float hudOpacity = 100f;
+    public static float hudSizeH = 100f;
+    public static float hudSizeV = 100f;
+    public static float hudOffsetX;
+    public static float hudOffsetY;
 
     // Minimap
     public static bool mapCrew;
@@ -520,6 +528,9 @@ public static bool logVotes;
         writer.WriteLine($"GUI.MenuColor = {SkidMenu.menuHtmlColor} = KeyCode.None");
         writer.WriteLine($"GUI.OpenOnMouse = {SkidMenu.menuOpenOnMouse} = KeyCode.None");
         writer.WriteLine($"GUI.KeepSubwindows = {SkidMenu.menuKeepSubwindowsOpen} = KeyCode.None");
+        writer.WriteLine($"GUI.KeybindNotifications = {KeybindListener.KeybindNotifications} = KeyCode.None");
+        foreach (var (actionName, actionKey) in KeybindListener.ActionKeys)
+            writer.WriteLine($"Keybind.{actionName} = {actionKey} = KeyCode.None");
         writer.WriteLine($"Spoof.Level = {SkidMenu.spoofLevel} = KeyCode.None");
         writer.WriteLine($"Spoof.LevelMin = {SkidMenu.spoofLevelRandomMin} = KeyCode.None");
         writer.WriteLine($"Spoof.LevelMax = {SkidMenu.spoofLevelRandomMax} = KeyCode.None");
@@ -830,6 +841,14 @@ public static bool logVotes;
                 string modKey = name.Substring(13);
                 var mod = anticheat.ModDetection.KnownMods.Find(m => m.Name.Replace(" ", "_").Replace("/", "_") == modKey);
                 if (mod != null && bool.TryParse(valuePart, out var mp)) mod.ShouldPunish = mp;
+                continue;
+            }
+            if (name.StartsWith("Keybind."))
+            {
+                string actionKey = name.Substring(8);
+                if (KeybindListener.ActionKeys.ContainsKey(actionKey) &&
+                    System.Enum.TryParse<UnityEngine.KeyCode>(valuePart, true, out var parsed))
+                    KeybindListener.ActionKeys[actionKey] = parsed;
                 continue;
             }
 
@@ -1637,6 +1656,9 @@ public static bool logVotes;
                     continue;
                 case "GUI.KeepSubwindows":
                     if (bool.TryParse(valuePart, out var gks)) SkidMenu.menuKeepSubwindowsOpen = gks;
+                    continue;
+                case "GUI.KeybindNotifications":
+                    if (bool.TryParse(valuePart, out var gkn)) KeybindListener.KeybindNotifications = gkn;
                     continue;
                 case "Spoof.Level":
                     SkidMenu.spoofLevel = valuePart;

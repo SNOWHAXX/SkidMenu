@@ -13,6 +13,8 @@ public class ESPTab : ITab
         GUILayout.Space(10);
         DrawCamera();
         GUILayout.Space(10);
+        DrawResizeHUD();
+        GUILayout.Space(10);
         DrawTracers();
         GUILayout.Space(10);
         DrawMinimap();
@@ -173,6 +175,22 @@ public class ESPTab : ITab
             MalumESP.FreecamSmoothness = GUILayout.HorizontalSlider(MalumESP.FreecamSmoothness, 0f, 20f);
         }
         CheatToggles.spectate = GUIStylePreset.CustomToggle(CheatToggles.spectate, " Spectate");
+    }
+
+    private void DrawResizeHUD()
+    {
+        GUILayout.Label("Resize HUD", GUIStylePreset.TabSubtitle);
+        CheatToggles.resizeHUD = GUIStylePreset.CustomToggle(CheatToggles.resizeHUD, " Resize Buttons/HUD");
+        GUILayout.Label($"   HUD Size: {CheatToggles.hudScale:F0}%");
+        CheatToggles.hudScale = GUILayout.HorizontalSlider(CheatToggles.hudScale, 25f, 200f);
+        GUILayout.Label($"   Height: {CheatToggles.hudSizeV:F0}%");
+        CheatToggles.hudSizeV = GUILayout.HorizontalSlider(CheatToggles.hudSizeV, 25f, 200f);
+        GUILayout.Label($"   Offset X: {CheatToggles.hudOffsetX:F0}   Y: {CheatToggles.hudOffsetY:F0}");
+        CheatToggles.hudOffsetX = GUILayout.HorizontalSlider(CheatToggles.hudOffsetX, -200f, 200f);
+        CheatToggles.hudOffsetY = GUILayout.HorizontalSlider(CheatToggles.hudOffsetY, -200f, 200f);
+        GUILayout.Label($"   Opacity: {CheatToggles.hudOpacity:F0}%");
+        CheatToggles.hudOpacity = GUILayout.HorizontalSlider(CheatToggles.hudOpacity, 0f, 100f);
+        CheatToggles.hideHUD = GUIStylePreset.CustomToggle(CheatToggles.hideHUD, " Hide HUD");
     }
 
     private void DrawTracers()

@@ -95,15 +95,22 @@ public static class MalumESP
             if (Mathf.Abs(newSize - Camera.main.orthographicSize) > 0.001f)
             {
                 Camera.main.orthographicSize = newSize;
-                hudManager.UICamera.orthographicSize = newSize;
+                hudManager.UICamera.orthographicSize = HudTargetSize(newSize);
                 Utils.AdjustResolution();
+            }
+            else
+            {
+                float wantUI = HudTargetSize(newSize);
+                if (Mathf.Abs(wantUI - hudManager.UICamera.orthographicSize) > 0.001f)
+                    hudManager.UICamera.orthographicSize = wantUI;
             }
         }
         else
         {
             _targetZoom = 3f;
             Camera.main.orthographicSize = 3f;
-            hudManager.UICamera.orthographicSize = 3f;
+            if (!CheatToggles.resizeHUD)
+                hudManager.UICamera.orthographicSize = 3f;
 
             if (_resolutionChangeNeeded)
             {
@@ -111,6 +118,148 @@ public static class MalumESP
                 _resolutionChangeNeeded = false;
             }
         }
+    }
+
+    private static float HudTargetSize(float worldSize)
+    {
+        return worldSize * 100f / Mathf.Clamp(CheatToggles.hudScale, 25f, 200f);
+    }
+
+    private static bool HudCustomized()
+    {
+        return CheatToggles.resizeHUD
+            || CheatToggles.hideHUD
+            || Mathf.Abs(CheatToggles.hudScale - 100f) > 0.01f
+            || Mathf.Abs(CheatToggles.hudSizeV - 100f) > 0.01f
+            || Mathf.Abs(CheatToggles.hudOffsetX) > 0.01f
+            || Mathf.Abs(CheatToggles.hudOffsetY) > 0.01f
+            || Mathf.Abs(CheatToggles.hudOpacity - 100f) > 0.01f;
+    }
+
+    public static void HudResize(HudManager hudManager)
+    {
+        if (hudManager == null || hudManager.UICamera == null) return;
+        if (!HudCustomized())
+        {
+            if (!CheatToggles.zoomOut)
+            {
+                if (Mathf.Abs(3f - hudManager.UICamera.orthographicSize) > 0.001f)
+                    hudManager.UICamera.orthographicSize = 3f;
+                Rect full = new Rect(0f, 0f, 1f, 1f);
+                if (hudManager.UICamera.rect != full)
+                    hudManager.UICamera.rect = full;
+                try
+                {
+                    hudManager.SetHudActive(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer?.Data?.Role, true);
+                }
+                catch { }
+                ApplyHudAlpha(hudManager, 1f);
+                _fadedIds.Clear();
+                _visibleSnapshotted = false;
+                _visibleIds.Clear();
+            }
+            return;
+        }
+
+        var uiCam = hudManager.UICamera;
+        float baseWorld = CheatToggles.zoomOut && Camera.main != null ? Camera.main.orthographicSize : 3f;
+        float size = HudTargetSize(baseWorld);
+        if (Mathf.Abs(size - uiCam.orthographicSize) > 0.001f)
+            uiCam.orthographicSize = size;
+
+        // Anamorphic V scale + offset via camera rect
+        float w = 1f;
+        float h = Mathf.Clamp(CheatToggles.hudSizeV, 25f, 200f) / 100f;
+        float ox = CheatToggles.hudOffsetX / Mathf.Max(1f, Screen.width);
+        float oy = CheatToggles.hudOffsetY / Mathf.Max(1f, Screen.height);
+        Rect want = new Rect((1f - w) * 0.5f + ox, (1f - h) * 0.5f + oy, w, h);
+        if (uiCam.rect != want)
+            uiCam.rect = want;
+
+        // Hide toggle + opacity only when actually engaged, never at vanilla 100%
+        if (CheatToggles.hideHUD || Mathf.Abs(CheatToggles.hudOpacity - 100f) > 0.01f)
+        {
+            float alpha = CheatToggles.hideHUD ? 0f : Mathf.Clamp01(CheatToggles.hudOpacity / 100f);
+            ApplyHudAlpha(hudManager, alpha);
+        }
+    }
+
+    private static readonly System.Collections.Generic.HashSet<int> _fadedIds = new();
+    private static readonly System.Collections.Generic.HashSet<int> _visibleIds = new();
+    private static bool _visibleSnapshotted;
+
+    private static bool FadedAlready(Object o)
+    {
+        int id = o.GetInstanceID();
+        if (_fadedIds.Contains(id)) return true;
+        _fadedIds.Add(id);
+        return false;
+    }
+
+    private static bool WasVisible(Object o)
+    {
+        return _visibleSnapshotted && _visibleIds.Contains(o.GetInstanceID());
+    }
+
+    private static void SnapshotVisible(HudManager hudManager)
+    {
+        _visibleIds.Clear();
+        try
+        {
+            foreach (var r in hudManager.GetComponentsInChildren<SpriteRenderer>(true))
+            {
+                if (r == null || !r.gameObject.activeInHierarchy || !r.enabled || r.color.a <= 0f) continue;
+                _visibleIds.Add(r.GetInstanceID());
+            }
+            foreach (var t in hudManager.GetComponentsInChildren<TMPro.TMP_Text>(true))
+            {
+                if (t == null || !t.gameObject.activeInHierarchy || !t.enabled || t.color.a <= 0f) continue;
+                _visibleIds.Add(t.GetInstanceID());
+            }
+            foreach (var im in hudManager.GetComponentsInChildren<UnityEngine.UI.Image>(true))
+            {
+                if (im == null || !im.gameObject.activeInHierarchy || !im.enabled || im.color.a <= 0f) continue;
+                _visibleIds.Add(im.GetInstanceID());
+            }
+        }
+        catch { }
+        _visibleSnapshotted = true;
+    }
+
+    private static void ApplyHudAlpha(HudManager hudManager, float alpha)
+    {
+        try
+        {
+            if (!_visibleSnapshotted) SnapshotVisible(hudManager);
+            var renderers = hudManager.GetComponentsInChildren<SpriteRenderer>(true);
+            foreach (var r in renderers)
+            {
+                if (r == null || !WasVisible(r)) continue;
+                if (r.color.a <= 0f && !FadedAlready(r)) continue;
+                Color c = r.color;
+                c.a = alpha;
+                r.color = c;
+            }
+            var texts = hudManager.GetComponentsInChildren<TMPro.TMP_Text>(true);
+            foreach (var t in texts)
+            {
+                if (t == null || !WasVisible(t)) continue;
+                if (t.color.a <= 0f && !FadedAlready(t)) continue;
+                Color c = t.color;
+                c.a = alpha;
+                t.color = c;
+            }
+            var images = hudManager.GetComponentsInChildren<UnityEngine.UI.Image>(true);
+            foreach (var im in images)
+            {
+                if (im == null || !WasVisible(im)) continue;
+                if (im.color.a <= 0f && !FadedAlready(im)) continue;
+                Color c = im.color;
+                c.a = alpha;
+                im.color = c;
+            }
+        }
+        catch { }
     }
 
     private static int ComputeNametagLineCount()

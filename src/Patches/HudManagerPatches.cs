@@ -40,6 +40,7 @@ public static class HudManager_Update
 
 		MalumCheats.UseVentCheat(__instance);
 		MalumESP.ZoomOut(__instance);
+		MalumESP.HudResize(__instance);
 		MalumESP.FreecamCheat();
 
 		VotekickHandler.CheckForNewPlayers();
