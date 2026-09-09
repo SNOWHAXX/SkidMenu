@@ -4,7 +4,7 @@
 
 **Host-side toolkit for running private Among Us lobbies.**
 
-Per-player host controls, lobby management, and game-state monitoring in one panel, so a host can run clean, organized custom games. Bundles a large set of convenience features for private play: radar, ESP, kill aura, votekick, lag compensation, instant vote, skin save/load, spoofing, a full randomizer, chat tooling, customizable keybinds, and more.
+Per-player host controls, lobby management, and game-state monitoring in one panel, so a host can run clean, organized custom games. Bundles a large set of convenience features for private play: radar, ESP, kill aura, votekick, lag compensation, instant vote, skin save/load, spoofing, a full randomizer, chat tooling, customizable keybinds, player history, telekill, rainbow, custom body type, custom chat bubbles, anticheat, HUD size and transparency, and much more.
 
 **Created by SNOWHAXX**
 
@@ -76,15 +76,7 @@ Set color, Snipe Color, Rainbow, Body Type, Immortality, Become Immortal keybind
 
 ### ESP
 
-See Roles, Ghosts, Phantoms, Player info, Notifications, Votes, Lobby Info, No Shadows, Zoom Out (bindable), Freecam (bindable), Match info (role colour + detected mod names in the player info line).
-
-### Resize HUD
-
-Resize Buttons/HUD (size, height, offsets, opacity, hide toggle), per-element visibility, works combined with Zoom Out.
-
-### Radar
-
-Draggable live map window (Skeld, Mira HQ, Polus, Airship, Fungle): player dots in outfit colors, dead bodies, ghosts, crewmate icons with visors, click to teleport (configurable binds), click a room to close its doors, scale/alpha sliders, border, hide in meeting, lock position, show even if menu hidden.
+See Roles, Ghosts, Phantoms, Player info, Notifications, Votes, Lobby Info, No Shadows, Zoom Out (bindable), Freecam (bindable), Match info (role colour + detected mod names in the player info line), Resize Buttons/HUD (size, height, offsets, opacity, hide toggle, works combined with Zoom Out), Radar (draggable live map window for Skeld, Mira HQ, Polus, Airship, Fungle with player dots in outfit colors, dead bodies, ghosts, crewmate icons with visors, click to teleport with configurable binds, click a room to close its doors, scale/alpha sliders, border, hide in meeting, lock position, show even if menu hidden).
 
 ### Roles
 
@@ -114,6 +106,18 @@ In game event log (kills, vents, phantom vanishes, shapeshifts, sabotages, sabot
 
 Host only tools (Disable Sabotages, Meetings, Cameras, pre-game role forcing, live role forcing, Disco party, Kill all, Force Start (bindable), END Game, Vote Immune, Protect), Protect Everyone (bindable), God Mode, God Mode All, Auto-Angel (automatic Guardian Angel protect), Disable Close Doors, Queued Lobby Crash, Protect Menu (show even if menu hidden).
 
+### Fun Ban Exploit
+
+A single ban related exploit that can be used to ban SOME players while in-game.
+
+### Vent Kick Exploit
+
+Better version of Fun Ban Exploit (Vent Kick All/Impostors/Random, all bindable).
+
+### Sabotage
+
+Sabotages, Random Sabotage (bindable), Schizo/FakeSab (Fake Sabotage Spam, Doors and Reactor).
+
 ### Host Settings
 
 See, edit, save and load Host settings from ur lobby and different lobbies.
@@ -121,18 +125,6 @@ See, edit, save and load Host settings from ur lobby and different lobbies.
 ### AutoHost
 
 Automatic Match Starting.
-
-### Fun Ban Exploit
-
-A single ban related exploit that can be used to ban SOME players while in-game.
-
-### Vent Kick Exploit
-
-Better version of Fun Ban Exploit.
-
-### Schizo/FakeSab
-
-Fake Sabotage Spam (Doors and Reactor).
 
 ### Passive
 
@@ -166,9 +158,13 @@ Extended lobby list with filters for finding the right kind of lobby, community 
 
 Streamer Mode.
 
-### Settings/Config
+### Settings
 
-Save and load your profile, menu keybind (click-and-press), menu size, max fps, Disable/Spoof Telemetry, Disable/Spoof Device Id, Clear Notifications button.
+Menu keybind (click-and-press), menu size, max fps, Disable/Spoof Telemetry, Disable/Spoof Device Id.
+
+### Config
+
+Save and load your profile, Clear Notifications button (bindable, sits on top of the keybind list).
 
 ### Info
 
