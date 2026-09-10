@@ -793,6 +793,7 @@ public static bool logVotes;
         writer.WriteLine($"LagComp.SkipTicks = {features.LagCompensation.SkipTicks} = KeyCode.None");
         writer.WriteLine($"LagComp.JitterMin = {features.LagCompensation.JitterMin.ToString(System.Globalization.CultureInfo.InvariantCulture)} = KeyCode.None");
         writer.WriteLine($"LagComp.JitterMax = {features.LagCompensation.JitterMax.ToString(System.Globalization.CultureInfo.InvariantCulture)} = KeyCode.None");
+        writer.WriteLine($"LagComp.ShowGhost = {features.LagCompensation.ShowGhost} = KeyCode.None");
         writer.WriteLine($"Invisibility.Enabled = {features.Invisibility.Enabled} = KeyCode.None");
         writer.WriteLine($"Invisibility.OnlyInGame = {features.Invisibility.OnlyInGame} = KeyCode.None");
 
@@ -1415,6 +1416,9 @@ public static bool logVotes;
                     continue;
                 case "LagComp.SkipTicks":
                     if (int.TryParse(valuePart, out var lcst)) features.LagCompensation.SkipTicks = System.Math.Clamp(lcst, 1, 60);
+                    continue;
+                case "LagComp.ShowGhost":
+                    if (bool.TryParse(valuePart, out var lcsg)) features.LagCompensation.ShowGhost = lcsg;
                     continue;
                 case "Invisibility.Enabled":
                     if (bool.TryParse(valuePart, out var inv)) features.Invisibility.Enabled = inv;

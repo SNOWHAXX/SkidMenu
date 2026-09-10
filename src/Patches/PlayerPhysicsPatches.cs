@@ -17,7 +17,7 @@ public static class PlayerPhysics_LateUpdate
         MalumESP.PlayerNametags(__instance);
         MalumESP.SeeGhostsCheat(__instance);
 
-        if (__instance.AmOwner)
+        if (__instance.AmOwner && MalumCheats.AnyPhysicsCheatEnabled())
         {
             MalumCheats.NoClipCheat();
             MalumCheats.ProtectCheat();

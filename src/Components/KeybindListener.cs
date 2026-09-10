@@ -61,6 +61,23 @@ public class KeybindListener : MonoBehaviour
         return ActionKeys.TryGetValue(name, out var key) ? key : KeyCode.None;
     }
 
+    private static readonly System.Collections.Generic.Dictionary<string, KeyCode> _keyCache = new();
+    private static int _keyCacheFrame = -1;
+
+    private static KeyCode CachedKey(string name)
+    {
+        int frame = Time.frameCount;
+        if (frame != _keyCacheFrame)
+        {
+            _keyCacheFrame = frame;
+            _keyCache.Clear();
+        }
+        if (_keyCache.TryGetValue(name, out var cached)) return cached;
+        KeyCode key = GetActionKey(name);
+        _keyCache[name] = key;
+        return key;
+    }
+
     private float _f1Timer  = 0f;
     private float _f2Timer  = 0f;
     private float _f3Timer  = 0f;
@@ -157,13 +174,14 @@ public class KeybindListener : MonoBehaviour
 
     private static bool PressedAction(string name)
     {
-        KeyCode key = GetActionKey(name);
+        if (!Input.anyKeyDown) return false;
+        KeyCode key = CachedKey(name);
         return key != KeyCode.None && Input.GetKeyDown(key);
     }
 
     private static void HandleHoldAction(string name, string label, ref float timer, System.Action action, float interval = HoldInterval)
     {
-        KeyCode key = GetActionKey(name);
+        KeyCode key = CachedKey(name);
         if (key == KeyCode.None) { timer = 0f; return; }
         if (Input.GetKey(key))
         {
@@ -178,8 +196,9 @@ public class KeybindListener : MonoBehaviour
 
     private static void HandleToggleAction(string name, string label, System.Action toggle, System.Func<bool> getState)
     {
-        KeyCode key = GetActionKey(name);
+        KeyCode key = CachedKey(name);
         if (key == KeyCode.None) { _togglePressed.Remove(name); return; }
+        if (!Input.anyKeyDown && !Input.GetKeyUp(key)) return;
         if (Input.GetKeyDown(key) && _togglePressed.Add(name))
         {
             try

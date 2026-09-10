@@ -109,8 +109,6 @@ public static class MalumESP
         {
             _targetZoom = 3f;
             Camera.main.orthographicSize = 3f;
-            if (!CheatToggles.resizeHUD)
-                hudManager.UICamera.orthographicSize = 3f;
 
             if (_resolutionChangeNeeded)
             {
@@ -122,27 +120,44 @@ public static class MalumESP
 
     private static float HudTargetSize(float worldSize)
     {
-        return worldSize * 100f / Mathf.Clamp(CheatToggles.hudScale, 25f, 200f);
+        if (!CheatToggles.resizeHUD) return worldSize;
+        float size = worldSize * 100f / Mathf.Clamp(CheatToggles.hudScale, 25f, 200f);
+        return Mathf.Clamp(size, 0.5f, 30f);
+    }
+
+    private static bool HudSizeCustomized()
+    {
+        return CheatToggles.resizeHUD && (
+            Mathf.Abs(CheatToggles.hudScale - 100f) > 0.01f
+            || Mathf.Abs(CheatToggles.hudSizeV - 100f) > 0.01f
+            || Mathf.Abs(CheatToggles.hudOffsetX) > 0.01f
+            || Mathf.Abs(CheatToggles.hudOffsetY) > 0.01f);
+    }
+
+    private static bool HudAlphaCustomized()
+    {
+        return CheatToggles.hideHUD
+            || Mathf.Abs(CheatToggles.hudOpacity - 100f) > 0.01f;
     }
 
     private static bool HudCustomized()
     {
-        return CheatToggles.resizeHUD
-            || CheatToggles.hideHUD
-            || Mathf.Abs(CheatToggles.hudScale - 100f) > 0.01f
-            || Mathf.Abs(CheatToggles.hudSizeV - 100f) > 0.01f
-            || Mathf.Abs(CheatToggles.hudOffsetX) > 0.01f
-            || Mathf.Abs(CheatToggles.hudOffsetY) > 0.01f
-            || Mathf.Abs(CheatToggles.hudOpacity - 100f) > 0.01f;
+        return HudSizeCustomized() || HudAlphaCustomized();
     }
+
+    private static int _lastScreenW;
+    private static int _lastScreenH;
+    private static float _cachedOx;
+    private static float _cachedOy;
 
     public static void HudResize(HudManager hudManager)
     {
         if (hudManager == null || hudManager.UICamera == null) return;
         if (!HudCustomized())
         {
-            if (!CheatToggles.zoomOut)
+            if (_wasCustomized)
             {
+                _wasCustomized = false;
                 if (Mathf.Abs(3f - hudManager.UICamera.orthographicSize) > 0.001f)
                     hudManager.UICamera.orthographicSize = 3f;
                 Rect full = new Rect(0f, 0f, 1f, 1f);
@@ -160,6 +175,7 @@ public static class MalumESP
             }
             return;
         }
+        _wasCustomized = true;
 
         var uiCam = hudManager.UICamera;
         float baseWorld = CheatToggles.zoomOut && Camera.main != null ? Camera.main.orthographicSize : 3f;
@@ -167,17 +183,28 @@ public static class MalumESP
         if (Mathf.Abs(size - uiCam.orthographicSize) > 0.001f)
             uiCam.orthographicSize = size;
 
-        // Anamorphic V scale + offset via camera rect
-        float w = 1f;
-        float h = Mathf.Clamp(CheatToggles.hudSizeV, 25f, 200f) / 100f;
-        float ox = CheatToggles.hudOffsetX / Mathf.Max(1f, Screen.width);
-        float oy = CheatToggles.hudOffsetY / Mathf.Max(1f, Screen.height);
-        Rect want = new Rect((1f - w) * 0.5f + ox, (1f - h) * 0.5f + oy, w, h);
+        // V scale + offset via camera rect (offsets cached per resolution)
+        if (Screen.width != _lastScreenW || Screen.height != _lastScreenH)
+        {
+            _lastScreenW = Screen.width;
+            _lastScreenH = Screen.height;
+            _cachedOx = CheatToggles.hudOffsetX / Mathf.Max(1f, Screen.width);
+            _cachedOy = CheatToggles.hudOffsetY / Mathf.Max(1f, Screen.height);
+        }
+        else
+        {
+            _cachedOx = CheatToggles.hudOffsetX / Mathf.Max(1f, Screen.width);
+            _cachedOy = CheatToggles.hudOffsetY / Mathf.Max(1f, Screen.height);
+        }
+        float h = HudSizeCustomized() ? Mathf.Clamp(CheatToggles.hudSizeV, 25f, 300f) / 100f : 1f;
+        Rect want = HudSizeCustomized()
+            ? new Rect(_cachedOx - (h - 1f) * 0.5f, (1f - h) * 0.5f + _cachedOy, 1f + (h - 1f), h)
+            : new Rect(0f, 0f, 1f, 1f);
         if (uiCam.rect != want)
             uiCam.rect = want;
 
-        // Hide toggle + opacity only when actually engaged, never at vanilla 100%
-        if (CheatToggles.hideHUD || Mathf.Abs(CheatToggles.hudOpacity - 100f) > 0.01f)
+        // Hide toggle + opacity only under the master toggle
+        if (CheatToggles.resizeHUD && HudAlphaCustomized())
         {
             float alpha = CheatToggles.hideHUD ? 0f : Mathf.Clamp01(CheatToggles.hudOpacity / 100f);
             ApplyHudAlpha(hudManager, alpha);
@@ -187,6 +214,27 @@ public static class MalumESP
     private static readonly System.Collections.Generic.HashSet<int> _fadedIds = new();
     private static readonly System.Collections.Generic.HashSet<int> _visibleIds = new();
     private static bool _visibleSnapshotted;
+    private static bool _wasCustomized;
+    private static SpriteRenderer[] _hudSprites = System.Array.Empty<SpriteRenderer>();
+    private static TMPro.TMP_Text[] _hudTexts = System.Array.Empty<TMPro.TMP_Text>();
+    private static UnityEngine.UI.Image[] _hudImages = System.Array.Empty<UnityEngine.UI.Image>();
+    private static float _hudCacheTimer;
+
+    private static float _snapshotTimer;
+
+    private static void RefreshHudCache(HudManager hudManager)
+    {
+        _hudCacheTimer += Time.unscaledDeltaTime;
+        if (_hudCacheTimer < 1f && (_hudSprites.Length > 0 || _hudTexts.Length > 0 || _hudImages.Length > 0)) return;
+        _hudCacheTimer = 0f;
+        try
+        {
+            _hudSprites = hudManager.GetComponentsInChildren<SpriteRenderer>(true);
+            _hudTexts = hudManager.GetComponentsInChildren<TMPro.TMP_Text>(true);
+            _hudImages = hudManager.GetComponentsInChildren<UnityEngine.UI.Image>(true);
+        }
+        catch { }
+    }
 
     private static bool FadedAlready(Object o)
     {
@@ -206,17 +254,18 @@ public static class MalumESP
         _visibleIds.Clear();
         try
         {
-            foreach (var r in hudManager.GetComponentsInChildren<SpriteRenderer>(true))
+            RefreshHudCache(hudManager);
+            foreach (var r in _hudSprites)
             {
                 if (r == null || !r.gameObject.activeInHierarchy || !r.enabled || r.color.a <= 0f) continue;
                 _visibleIds.Add(r.GetInstanceID());
             }
-            foreach (var t in hudManager.GetComponentsInChildren<TMPro.TMP_Text>(true))
+            foreach (var t in _hudTexts)
             {
                 if (t == null || !t.gameObject.activeInHierarchy || !t.enabled || t.color.a <= 0f) continue;
                 _visibleIds.Add(t.GetInstanceID());
             }
-            foreach (var im in hudManager.GetComponentsInChildren<UnityEngine.UI.Image>(true))
+            foreach (var im in _hudImages)
             {
                 if (im == null || !im.gameObject.activeInHierarchy || !im.enabled || im.color.a <= 0f) continue;
                 _visibleIds.Add(im.GetInstanceID());
@@ -231,29 +280,40 @@ public static class MalumESP
         try
         {
             if (!_visibleSnapshotted) SnapshotVisible(hudManager);
-            var renderers = hudManager.GetComponentsInChildren<SpriteRenderer>(true);
-            foreach (var r in renderers)
+            _snapshotTimer += Time.unscaledDeltaTime;
+            if (_snapshotTimer >= 5f)
+            {
+                _snapshotTimer = 0f;
+                SnapshotVisible(hudManager);
+            }
+            RefreshHudCache(hudManager);
+            bool restoring = Mathf.Abs(alpha - 1f) < 0.001f;
+            foreach (var r in _hudSprites)
             {
                 if (r == null || !WasVisible(r)) continue;
+                if (restoring && !r.gameObject.activeInHierarchy) continue;
                 if (r.color.a <= 0f && !FadedAlready(r)) continue;
+                if (Mathf.Abs(r.color.a - alpha) < 0.001f) continue;
                 Color c = r.color;
                 c.a = alpha;
                 r.color = c;
             }
-            var texts = hudManager.GetComponentsInChildren<TMPro.TMP_Text>(true);
-            foreach (var t in texts)
+            foreach (var t in _hudTexts)
             {
                 if (t == null || !WasVisible(t)) continue;
+                if (restoring && !t.gameObject.activeInHierarchy) continue;
                 if (t.color.a <= 0f && !FadedAlready(t)) continue;
+                if (Mathf.Abs(t.color.a - alpha) < 0.001f) continue;
                 Color c = t.color;
                 c.a = alpha;
                 t.color = c;
             }
-            var images = hudManager.GetComponentsInChildren<UnityEngine.UI.Image>(true);
-            foreach (var im in images)
+            foreach (var im in _hudImages)
             {
                 if (im == null || !WasVisible(im)) continue;
+                if (restoring && !im.gameObject.activeInHierarchy) continue;
                 if (im.color.a <= 0f && !FadedAlready(im)) continue;
+                if (Mathf.Abs(im.color.a - alpha) < 0.001f) continue;
                 Color c = im.color;
                 c.a = alpha;
                 im.color = c;

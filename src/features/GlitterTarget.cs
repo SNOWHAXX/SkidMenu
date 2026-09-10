@@ -19,11 +19,13 @@ public class GlitterTarget : MonoBehaviour
 
     private void Update()
     {
-        if (!Enabled || Target == null || Target.Data == null || Target.Data.Disconnected) return;
+        if (!Enabled) return;
+        if (Target == null || Target.Data == null || Target.Data.Disconnected) return;
         if (!(AmongUsClient.Instance?.AmHost ?? false)) return;
 
         _timer += Time.deltaTime;
-        if (_timer < Mathf.Clamp(Delay, 0.01f, 2f)) return;
+        float interval = Delay < 0.01f ? 0.01f : Delay > 2f ? 2f : Delay;
+        if (_timer < interval) return;
         _timer = 0f;
 
         try
@@ -34,8 +36,7 @@ public class GlitterTarget : MonoBehaviour
             batch.QueueVanish(Target);
             batch.FinishBatch();
 
-            if (AmongUsClient.Instance?.AmHost ?? false)
-                Target.RpcSetColor((byte)Utilities.GetFreeColor());
+            Target.RpcSetColor((byte)Utilities.GetFreeColor());
         }
         catch { }
     }

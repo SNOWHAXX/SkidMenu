@@ -118,6 +118,7 @@ public class MovementTab : ITab
         bool newJitter = GUIStylePreset.CustomToggle(features.LagCompensation.Jitter, " Jitter Mode (random desync intervals)");
         if (newJitter && !features.LagCompensation.Jitter) features.LagCompensation.FreezePosition = false;
         features.LagCompensation.Jitter = newJitter;
+        features.LagCompensation.ShowGhost = GUIStylePreset.CustomToggle(features.LagCompensation.ShowGhost, " Show Server Ghost (where others see you)");
 
         if (!features.LagCompensation.FreezePosition && !features.LagCompensation.Jitter)
         {

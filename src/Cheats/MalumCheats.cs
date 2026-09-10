@@ -367,6 +367,15 @@ public static class MalumCheats
         }
     }
 
+    public static bool AnyPhysicsCheatEnabled()
+    {
+        return CheatToggles.noClip
+            || CheatToggles.teleportCursor
+            || CheatToggles.mapClickTeleport
+            || CheatToggles.teleportPlayer
+            || MalumESP.IsFullbrightActive();
+    }
+
     private static bool TeleportBindPressed(CheatToggles.TeleportBind bind)
     {
         bool shift = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);

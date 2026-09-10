@@ -184,13 +184,24 @@ public class ESPTab : ITab
         GUILayout.Label($"   HUD Size: {CheatToggles.hudScale:F0}%");
         CheatToggles.hudScale = GUILayout.HorizontalSlider(CheatToggles.hudScale, 25f, 200f);
         GUILayout.Label($"   Height: {CheatToggles.hudSizeV:F0}%");
-        CheatToggles.hudSizeV = GUILayout.HorizontalSlider(CheatToggles.hudSizeV, 25f, 200f);
+        CheatToggles.hudSizeV = GUILayout.HorizontalSlider(CheatToggles.hudSizeV, 25f, 300f);
         GUILayout.Label($"   Offset X: {CheatToggles.hudOffsetX:F0}   Y: {CheatToggles.hudOffsetY:F0}");
         CheatToggles.hudOffsetX = GUILayout.HorizontalSlider(CheatToggles.hudOffsetX, -200f, 200f);
         CheatToggles.hudOffsetY = GUILayout.HorizontalSlider(CheatToggles.hudOffsetY, -200f, 200f);
         GUILayout.Label($"   Opacity: {CheatToggles.hudOpacity:F0}%");
         CheatToggles.hudOpacity = GUILayout.HorizontalSlider(CheatToggles.hudOpacity, 0f, 100f);
         CheatToggles.hideHUD = GUIStylePreset.CustomToggle(CheatToggles.hideHUD, " Hide HUD");
+        GUILayout.Space(4);
+        if (GUILayout.Button("Reset HUD", GUILayout.Width(120)))
+        {
+            CheatToggles.resizeHUD = false;
+            CheatToggles.hideHUD = false;
+            CheatToggles.hudScale = 100f;
+            CheatToggles.hudSizeV = 100f;
+            CheatToggles.hudOffsetX = 0f;
+            CheatToggles.hudOffsetY = 0f;
+            CheatToggles.hudOpacity = 100f;
+        }
     }
 
     private void DrawTracers()

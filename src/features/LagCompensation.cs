@@ -11,6 +11,10 @@ public static class LagCompensation
     public static int  SkipTicks      = 5;
     public static float JitterMin     = 2f;
     public static float JitterMax     = 4f;
+    public static bool ShowGhost      = false;
+
+    public static Vector2 LastServerPos;
+    public static bool HasServerPos;
 
     private static int   _tickCounter  = 0;
     private static int   _jitterCount  = 0;
@@ -21,6 +25,7 @@ public static class LagCompensation
         _tickCounter = 0;
         _jitterCount = 0;
         _jitterSend  = false;
+        HasServerPos = false;
     }
 
     [HarmonyPatch(typeof(CustomNetworkTransform), nameof(CustomNetworkTransform.FixedUpdate))]
@@ -31,7 +36,15 @@ public static class LagCompensation
             if (!Enabled) return true;
             if (__instance.myPlayer == null || __instance.myPlayer != PlayerControl.LocalPlayer) return true;
 
-            if (FreezePosition) return false;
+            if (FreezePosition)
+            {
+                if (!HasServerPos)
+                {
+                    LastServerPos = __instance.myPlayer.GetTruePosition();
+                    HasServerPos = true;
+                }
+                return false;
+            }
 
             if (Jitter)
             {
@@ -44,6 +57,11 @@ public static class LagCompensation
                 _jitterCount--;
                 if (!_jitterSend)
                     __instance.lastPosSent = __instance.myPlayer.GetTruePosition();
+                else
+                {
+                    LastServerPos = __instance.myPlayer.GetTruePosition();
+                    HasServerPos = true;
+                }
                 return _jitterSend;
             }
 
@@ -54,6 +72,8 @@ public static class LagCompensation
                 return false;
             }
             _tickCounter = 0;
+            LastServerPos = __instance.myPlayer.GetTruePosition();
+            HasServerPos = true;
             return true;
         }
     }

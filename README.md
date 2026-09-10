@@ -11,7 +11,7 @@ Per-player host controls, lobby management, and game-state monitoring in one pan
 <a href="https://github.com/SNOWHAXX/SkidMenu/"><img src="https://img.shields.io/badge/SkidMenu-GitHub-181717?style=for-the-badge&logo=github" alt="GitHub"></a>
 <a href="https://discord.gg/zgwTD4FFFx"><img src="https://img.shields.io/badge/Discord-Join-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
 <a href="https://github.com/SNOWHAXX/SkidMenu/stargazers"><img src="https://img.shields.io/github/stars/SNOWHAXX/SkidMenu?style=for-the-badge&color=yellow" alt="Stars"></a>
-<a href="https://github.com/SNOWHAXX/SkidMenu/releases"><img src="https://img.shields.io/badge/Version-1.4.3_Stable-success?style=for-the-badge" alt="Version"></a>
+<a href="https://github.com/SNOWHAXX/SkidMenu/releases"><img src="https://img.shields.io/badge/Version-1.4.4_Stable-success?style=for-the-badge" alt="Version"></a>
 
 ![SkidMenu in lobby](image%20in%20lobby.png)
 

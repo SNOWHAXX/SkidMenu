@@ -15,6 +15,7 @@ namespace SkidMenu.ui
 
         public void Update()
         {
+            if (notifications.Count == 0) return;
             for (int i = notifications.Count - 1; i >= 0; i--)
             {
                 Notification n = notifications[i];
